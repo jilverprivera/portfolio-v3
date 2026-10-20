@@ -4,14 +4,19 @@ import { getAllProjectMeta } from "@/content/projects";
 export async function ProjectsContainer() {
   const projects = await getAllProjectMeta();
 
-  const items = projects.map((project) => ({
-    text: project.title,
-    link: `/projects/${project.slug}`,
-    meta: project.year,
-    marquee: `${project.title} • ${project.type}`,
+  const items = projects.map((project) => {
+    // "Work project · Company" names the company; side projects have no company.
+    const company = project.type.split(" · ")[1];
+    return {
+      text: project.title,
+      link: `/projects/${project.slug}`,
+      meta: project.year,
+      tag: company ? "Work Project" : "Side Project",
+      marquee: company ? `${project.title} • ${company}` : project.title,
     // Projects with a cover show it in the flowing band.
-    image: project.cover,
-  }));
+      image: project.cover,
+    };
+  });
 
   return (
     <section

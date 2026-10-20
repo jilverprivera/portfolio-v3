@@ -1,6 +1,7 @@
 "use client";
 
 import { ImageThumb, type ModalImage } from "@/components/project/image-modal";
+import { DeviceScene, type Tone } from "@/components/project/phone-gallery";
 
 type Item = ModalImage & { caption?: string };
 
@@ -26,7 +27,13 @@ export function DiagramGallery({ items }: { items: Item[] }) {
 }
 
 type Layout = "top" | "left" | "right";
-type Screenshot = ModalImage & { caption?: string; features?: string[]; layout?: Layout };
+// An item shows either one image or a scene of phone screens, which is what `scene` is for.
+type Screenshot = ModalImage & {
+  caption?: string;
+  features?: string[];
+  layout?: Layout;
+  scene?: { phones: ModalImage[]; tone: Tone };
+};
 
 // Layouts alternate down the page unless an item sets its own: image on top with the text below,
 // then image on the right with the text on the left, then the image on the left.
@@ -71,7 +78,9 @@ export function ScreenshotGallery({ items }: { items: Screenshot[] }) {
     <div className="flex flex-col gap-28">
       {items.map((item, index) => {
         const layout = item.layout ?? CYCLE[index % CYCLE.length];
-        const image = (
+        const image = item.scene ? (
+          <DeviceScene phones={item.scene.phones} tone={item.scene.tone} />
+        ) : (
           <ImageThumb
             image={item}
             className="block w-full overflow-hidden rounded-[8px] border border-white/15 hover:border-white/40"

@@ -5,7 +5,7 @@ summary: "A real-estate sales and rental platform for Conversion: property inven
 type: "Work project · Conversion"
 date: "2025-12"
 year: "2023–2025"
-status: "Delivered in phases"
+status: "Engagement Apr 2024 – Dec 2025"
 featured: true
 stack:
   - "Node.js and TypeScript"
@@ -15,7 +15,7 @@ stack:
   - "PostgreSQL"
   - "Hasura (GraphQL)"
   - "RabbitMQ"
-  - "Knex and Prisma"
+  - "Knex and Prisma ORM"
   - "Jest and Playwright"
   - "Docker Swarm and GitHub Actions"
   - "Turborepo"
@@ -42,16 +42,37 @@ The core of the sales side is an event-sourced reservation service. Instead of o
 
 </SummarySection>
 
-<ObjectivesSection title="Goals">
+<ChallengeSection title="Challenge & strategy">
 
-- **Quote and sell faster.** Give the commercial team a quoter and a reservation flow that handles discounts, bonuses, extras, several sellers and installments.
-- **Never lose the history of a deal.** Keep every reservation and customer change as an event that can be replayed and audited.
-- **Break up a legacy monolith** into services that can change at their own pace.
-- **Cover rentals as well as sales,** with installments, extensions, contract endings and exchange-rate aware payments.
-- **Keep people informed** with notifications by email, WhatsApp and webhooks, and PDFs for quotes, statements and receipts.
-- **Give customers a mobile way to pay** and to report on their rentals.
+### Challenge
 
-</ObjectivesSection>
+Selling and renting property involves long, money-heavy processes. A reservation can last months, with installments, discounts and changes along the way, and a system that only stores the current state makes it hard to answer what changed, when and by whom. The commercial team needed to quote and sell faster, with discounts, bonuses, extras, several sellers and installments, and rentals needed their own installments, extensions, contract endings and payments aware of the exchange rate.
+
+There was also a legacy to deal with. The platform had to replace an earlier one whose data model dates from 2020, so the work included carrying that legacy forward while breaking the monolith into services that could change at their own pace. Around the deals, people needed to be kept informed by email, WhatsApp and webhooks, and customers needed a mobile way to pay and to report on their rentals.
+
+### Strategy
+
+The platform was designed around the history of each deal. The core of the sales side became an event-sourced reservation service: every reservation and customer change is stored as an event that can be replayed and audited, then projected into the tables the rest of the system reads. Writes follow business rules through CQRS, while the dashboard reads shaped projections through GraphQL served by Hasura, at the cost of two models to maintain.
+
+Business rules were kept independent from frameworks, databases and messaging through a strict hexagonal architecture. RabbitMQ carries events between services so that notifications and inventory react without blocking a sale, and the event store, projections and rentals live in separate databases so they can evolve independently. Each service ships on its own on Docker Swarm with automatic rollback, a simple option with fewer tools than a larger orchestrator. Test-driven development was standardized across the services.
+
+</ChallengeSection>
+
+<PersonasSection title="User persona">
+
+Five profiles shape the platform, from the people who sell a unit to the tenants who pay their rent from a phone.
+
+<PersonaCards
+  items={[
+    { name: "Sales advisor", does: "Quotes units with discounts, bonuses and extras, creates reservations with their down-payment installments and shares the sale with other sellers.", where: "Commercial dashboard", tool: "tie", hair: "short", skin: "#e2ad88", shirt: "#2f3e5e", hairColor: "#2a2a2a" },
+    { name: "Sales manager", does: "Follows commissions, sales reports and the view of the whole team.", where: "Commercial dashboard", tool: "chart", hair: "bob", glasses: true, skin: "#d9a07c", shirt: "#4b7bec", hairColor: "#2a1a14" },
+    { name: "Buyer", does: "An individual or a business that reserves a unit and pays it in installments, and receives quotes, statements and receipts.", where: "Email, WhatsApp and generated PDFs", tool: "bag", hair: "bun", skin: "#e8b48f", shirt: "#e8743b", hairColor: "#3b2a22" },
+    { name: "Rental administrator", does: "Manages rentals: installments, variable rent, extensions, contract endings and rental reports.", where: "Commercial dashboard", tool: "map", hair: "curly", skin: "#a8704d", shirt: "#27a36d", hairColor: "#1c1c1c" },
+    { name: "Tenant", does: "Pays rental installments and checks the payment detail and rental reports.", where: "Customer mobile app", tool: "register", hair: "cap", skin: "#c68863", shirt: "#8e5be0", hairColor: "#222" },
+  ]}
+/>
+
+</PersonasSection>
 
 <FeaturesSection title="Features">
 
@@ -67,48 +88,31 @@ The core of the sales side is an event-sourced reservation service. Instead of o
 | Commercial reports | Commissions, sales reports and a team view in the dashboard. |
 | Mobile app | Login, new payments, rental payment detail and rental reports. |
 
-### Status in the code
-
-The monorepo has ten apps (the dashboard and nine services or infrastructure apps) and seven packages. Two of the apps, authentication and clients, are empty placeholders for services that were planned but not built.
-
 </FeaturesSection>
 
-<MotivationSection title="Why the product was built">
-
-Selling and renting property involves long, money-heavy processes: a reservation can last months, with installments, discounts and changes along the way. A system that only stores the current state makes it hard to answer what changed, when and by whom.
-
-The platform was designed around that history. It also had to replace an earlier platform whose data model dates from 2020, so the work included carrying that legacy forward while moving behavior into smaller services.
-
-</MotivationSection>
-
-<ImplementationSection title="How it was built">
+<ImplementationSection title="Implementation & final design">
 
 ### Architecture
 
-- **Monorepo** with yarn workspaces and Turborepo: the dashboard, services for reservations, rentals, inventory, notifications and PDFs, Hasura, and shared packages for domain types, a design system, the quoters, a table and the tower view.
-- **Event sourcing and CQRS in the reservation service.** Commands arrive at an actions endpoint and are handled by command handlers (24 for reservations and 9 for customers). Events are written to an event store, a handler updates a projection database, and post-actions run side effects and publish to the message bus.
-- **Reads through GraphQL.** Hasura serves the projection and rental databases to the dashboard, with 86 tracked tables.
-- **Strict hexagonal architecture.** The services keep the domain independent from the outside world, with application logic around it and adapters for repositories, messaging and HTTP at the edge.
-- **Several databases.** The event store, the projections, the rental data and the core data are separate Postgres databases.
+The repository is a monorepo with yarn workspaces and Turborepo: the dashboard, services for reservations, rentals, inventory, notifications and PDFs, Hasura, and shared packages for domain types, a design system, the quoters, a table and the tower view. The reservation service uses event sourcing and CQRS. Commands arrive at an actions endpoint and are handled by command handlers (24 for reservations and 9 for customers). Events are written to an event store, a handler updates a projection database, and post-actions run side effects and publish to the message bus.
+
+Reads go through GraphQL, with Hasura serving the projection and rental databases to the dashboard through 86 tracked tables. The services follow a strict hexagonal architecture, keeping the domain independent from the outside world, with application logic around it and adapters for repositories, messaging and HTTP at the edge. The event store, the projections, the rental data and the core data are separate Postgres databases.
 
 ### Messaging
 
-- **RabbitMQ** carries events between services through a durable topic exchange. The notifications and inventory services consume them, and scheduled jobs expire optioned quotes and update rates.
+RabbitMQ carries events between services through a durable topic exchange. The notifications and inventory services consume them, and scheduled jobs expire optioned quotes and update rates.
 
 ### Clients
 
-- **Dashboard** in Next.js with Redux Toolkit, Zustand, Apollo Client with subscriptions, form libraries and a money library for amounts.
-- **Mobile app** in Expo and React Native with file-based routing, for rental payments and reports.
+The dashboard is built in Next.js with Redux Toolkit, Zustand, Apollo Client with subscriptions, form libraries and a money library for amounts. The mobile app is built in Expo and React Native with file-based routing, for rental payments and reports.
 
 ### Quality and delivery
 
-- **Tests.** TDD was standardized across the services, with about 20 active Jest files and 7 Playwright end-to-end specs for the main flows: quotes, reservations, rentals, payments, login and inventory. Together with the rest of the work, this shortened production release cycles by 30%.
-- **Delivery.** Seven GitHub Actions workflows build a Docker image per service on a tag, push it to a registry and update a Docker Swarm service with automatic rollback on failure. Secrets are managed outside the repository.
-- **Data.** 89 Knex migrations for the reservation and rental services, plus the legacy Hasura migrations.
+TDD was standardized across the services, with about 20 active Jest files and 7 Playwright end-to-end specs for the main flows: quotes, reservations, rentals, payments, login and inventory. Together with the rest of the work, this shortened production release cycles by 30%. For delivery, seven GitHub Actions workflows build a Docker image per service on a tag, push it to a registry and update a Docker Swarm service with automatic rollback on failure, with secrets managed outside the repository. On the data side there are 89 Knex migrations for the reservation and rental services, plus the legacy Hasura migrations.
 
-</ImplementationSection>
+### Decisions
 
-<DecisionsSection title="Why it was done this way">
+Each decision below was taken for a concrete reason and carried a cost, which the table records next to it.
 
 | Decision | Why | Trade-off |
 |---|---|---|
@@ -120,14 +124,12 @@ The platform was designed around that history. It also had to replace an earlier
 | Separate databases per concern | The event store, projections and rentals evolve independently. | Cross-database consistency has to be designed. |
 | Docker Swarm with rollback | A simple way to ship each service on its own. | Fewer tools than a larger orchestrator. |
 
-</DecisionsSection>
+</ImplementationSection>
 
-<LimitationsSection title="Limitations and open items">
+<ResultsSection title="Results">
 
-- **Tests do not run in CI.** None of the workflows runs lint, Jest or Playwright, so testing depends on running it locally, and some test files are disabled.
-- **Placeholders.** The authentication and clients services are empty, and one of the Hasura variants has empty migrations.
-- **Authentication hardening is pending.** The dashboard login still has a to-do for credential validation, and token handling in the services should be reviewed.
-- **Open TODOs.** About twenty remain, mostly missing error notifications in the dashboard and some date and decimal validations.
-- **Mixed versions.** The repository mixes JavaScript and TypeScript, two versions of Knex and Prisma, and two of Tailwind.
+The platform unlocked new revenue streams for the client through its quote and booking engines, and sales grew by 40%. Standardizing test-driven development, together with the rest of the work, also shortened production release cycles by 30%.
 
-</LimitationsSection>
+Day to day, the team covers the whole path of a deal in one place: the inventory of projects and units, quotes, reservations with their installments, customers, rentals, payments, receipts and notifications. Tenants can pay their rental installments from the mobile app. Two planned services, authentication and clients, were not built, and the dashboard's login hardening is still pending.
+
+</ResultsSection>

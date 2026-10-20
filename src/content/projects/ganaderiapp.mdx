@@ -1,0 +1,359 @@
+---
+title: "Ganaderiapp"
+slug: "ganaderiapp"
+summary: "A mobile app for cattle farms in Colombia: farms and paddock rotation, herd records with genealogy and weights, health and reproduction, milk, supply inventory, finances with receipts, exportable reports, team roles, push alerts and offline registration, on Expo and Supabase."
+type: "Side project"
+date: "2026-10"
+year: "2026"
+status: "In development"
+featured: true
+cover: "/screenshots/ganaderiapp/cover.png"
+stack:
+  - "Expo SDK 57 and React Native"
+  - "TypeScript and expo-router"
+  - "NativeWind (Tailwind)"
+  - "Zustand"
+  - "React Hook Form and Zod"
+  - "Skia (charts)"
+  - "Supabase Postgres 17 and PL/pgSQL"
+  - "Row Level Security"
+  - "Supabase Auth, Realtime and Storage"
+  - "Edge Functions (Deno)"
+  - "pg_cron and pg_net"
+  - "Expo Push Service (APNs and FCM)"
+highlights:
+  - value: "22"
+    label: "capabilities"
+  - value: "98"
+    label: "features"
+  - value: "25"
+    label: "SQL migrations"
+---
+
+<SummarySection title="Summary">
+
+Ganaderiapp is a mobile app, for iOS and Android, to run a cattle farm from the phone. It brings together the farm and its paddocks, with rotation, rest days and forage measurements, and the herd, with genealogy, weighings, photos, purchase and sale. It also covers health and reproduction, feeding, milk production, supply inventory and finances with receipts.
+
+Reports can be exported as PDF, Excel or CSV for a bank, an accountant or a buyer. A farm can be shared with a team, with a role for each person, and the app sends alerts for vaccines, expected heat and births, low stock and paddocks that are ready. Animals, weighings and photos can be registered without a signal, and they sync when the phone is back online.
+
+I designed and built it end to end. The app is in Spanish, with Colombian pesos and the Bogotá time zone.
+
+</SummarySection>
+
+<ChallengeSection title="Challenge & strategy">
+
+### Challenge
+
+A cattle farm in Colombia is usually run with a notebook, a spreadsheet and the memory of the person in charge. Which animal was vaccinated, when a cow is due, how much a paddock has rested, how much a supply costs and what the farm earned this month end up in different places, or in nobody's head. When the farm has partners, a foreman and a vet, the same information has to reach all of them, and each one should only change what they are responsible for.
+
+The setting is also hard for software. Paddocks and corrals often have no signal, the phone is a mid-range Android used in the sun with one hand, and the people who need the data, such as a bank, an accountant or a buyer, do not use the app at all.
+
+### Strategy
+
+The idea was one app for the whole farm, built around how the work happens in the field. Everything that belongs to a farm is scoped to it: the paddocks, the herd, the supplies, the money and the team. The things that cannot wait for a connection, which are new animals, weighings and photos, can be registered offline and are sent later without duplicates.
+
+Three rules shaped the design. The domain rules live in the database, so no screen can break them, and every operation that touches several tables is one transaction. Money follows the work: buying or selling an animal, a vaccine, an insemination, feeding or buying a supply creates its expense or income by itself. And the team model is simple: an owner, co-owners with permissions per module, and partners who can only read.
+
+</ChallengeSection>
+
+<PersonasSection title="User persona">
+
+Seven personas were defined. Five of them use the app, one only receives its reports, and one operates the platform.
+
+<PersonaCards
+  items={[
+    { name: "Farm owner", does: "Owns one or more farms. Decides purchases and sales, keeps the accounts and wants to know what the farm earns, which animals it has and what has to be done today.", where: "Mobile app, owner role", tool: "tie", hair: "short", glasses: true, skin: "#e2ad88", shirt: "#2f3e5e", hairColor: "#555" },
+    { name: "Co-owner or administrator", does: "A partner or relative who shares the management and writes only in the modules the owner enabled: farm, animals, finance, inventory or members.", where: "Mobile app, co-owner role", tool: "register", hair: "bob", skin: "#f0c8a0", shirt: "#8e5be0", hairColor: "#7a3b2a" },
+    { name: "Field foreman", does: "Works in paddocks and corrals with poor signal. Records births, weighings, vaccines, milkings and paddock moves from the phone.", where: "Mobile app, offline registration", tool: "map", hair: "cap", skin: "#a8704d", shirt: "#27a36d", hairColor: "#1c1c1c" },
+    { name: "Veterinarian or advisor", does: "Reviews health, reproduction and production, and receives the health report. Can join as a read-only partner or as a co-owner with the animals module.", where: "Mobile app and shared reports", tool: "coat", hair: "long", skin: "#d9a07c", shirt: "#f4f4f7", hairColor: "#2a1a14" },
+    { name: "Investor or family partner", does: "Has a share in the farm and wants to see the herd and the alerts without changing anything.", where: "Mobile app, partner role", tool: "magnifier", hair: "short", skin: "#cf9468", shirt: "#7a7f8c", hairColor: "#2a2a2a" },
+    { name: "Report recipient", does: "A bank, an accountant, a cattle or milk buyer or an insurer. Does not use the app: receives the PDF, Excel or CSV the farmer shares.", where: "Email, WhatsApp or Drive", tool: "box", hair: "curly", skin: "#e8b48f", shirt: "#e6a23c", hairColor: "#3b2a22" },
+    { name: "Platform operator", does: "Manages the global catalogs, configures the push sender and watches the scheduled jobs from Supabase.", where: "Supabase", tool: "headset", hair: "bun", skin: "#c68863", shirt: "#4b7bec", hairColor: "#222" },
+  ]}
+/>
+
+</PersonasSection>
+
+<ImplementationSection title="Implementation & design">
+
+### Architecture
+
+An Expo and React Native app is the only interface, and Supabase is the whole backend: there is no server of my own. The schema lives in 25 versioned SQL migrations, and the TypeScript types are generated from it. Click a diagram to open it at full size.
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/ganaderiapp/architecture.svg", title: "Architecture", caption: "The phone app, the Supabase services behind it and the push path to the phone.", width: 1200, height: 600 },
+  ]}
+/>
+
+### Domain model
+
+The domain is split into 12 contexts with 41 entities.
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/ganaderiapp/domain-contexts.svg", title: "Domain contexts", caption: "The contexts of the domain, grouped by what they are for.", width: 1200, height: 645 },
+    { src: "/diagrams/ganaderiapp/money-follows-work.svg", title: "Money follows the work", caption: "Six operations create their expense or income in the same transaction.", width: 1200, height: 560 },
+  ]}
+/>
+
+### Data and security
+
+Authorization is decided by the database, so the app only mirrors it. Row Level Security is on every table, denied by default, and operations that touch several tables are SQL functions that run in one transaction.
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/ganaderiapp/security.svg", title: "From request to data", caption: "The checks a request passes, and how files and accounts are protected.", width: 1200, height: 460 },
+    { src: "/diagrams/ganaderiapp/roles.svg", title: "Roles per farm", caption: "What the owner, a co-owner and a partner can do.", width: 1200, height: 640 },
+  ]}
+/>
+
+### Offline operation
+
+New animals, weighings and photos can be saved without a signal. Each one gets an identifier made on the phone, so sending it twice never duplicates it.
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/ganaderiapp/offline.svg", title: "Offline queue", caption: "What works without a connection, and how queued changes are synced.", width: 1200, height: 620 },
+  ]}
+/>
+
+### Alerts and push notifications
+
+An alert is a row written by a trigger and shown live in the app. Push notifications go through a delivery queue in Postgres, with retries and receipts.
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/ganaderiapp/alerts-push.svg", title: "Alerts and push", caption: "From a change or a schedule to the bell in the app and the notification on the phone.", width: 1200, height: 640 },
+  ]}
+/>
+
+### Reports
+
+Reports are built on the phone, so a farmer can send them to a bank or an accountant straight from the share sheet.
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/ganaderiapp/reports.svg", title: "Reports", caption: "From farm data to PDF, Excel or CSV and the share sheet.", width: 1200, height: 420 },
+  ]}
+/>
+
+### Decisions
+
+| Decision | Why | Trade-off |
+|---|---|---|
+| Domain logic in PostgreSQL functions | Rules and transactions live next to the data, so no screen can skip them. | Business logic in SQL is harder to test and to debug than in application code. |
+| Multi-tenancy by farm with Row Level Security | The database rejects any query outside the person's farms, even if the app has a bug. | Every table needs its policies, and a mistake in one is a data leak. |
+| Partial offline mode | Only new animals, weighings and photos are queued, which is what the field needs most. | Health, feeding, milk, finances and paddocks need a connection, and there is no conflict merge. |
+| Inventory by movements | The stock is a result of its history, never edited by hand, and never negative. | Corrections are new movements, not edits. |
+| Automatic income and expenses | Nobody has to enter the same operation twice. | Deleting or editing the source does not always update the money entry. |
+| Push queue in Postgres | Deliveries survive failures, retry and leave a trace, with no external queue. | At-least-once delivery and a dependency on `pg_cron` and `pg_net` being enabled by hand. |
+| Reports built on the phone | No report server, and the file goes straight to the share sheet. | Large farms depend on the phone, and tables are capped at 20,000 rows. |
+| Zustand and React Hook Form with Zod, no query cache library | Fewer moving parts, and the error handling lives in the services. | Caching and refetching are done by hand. |
+
+</ImplementationSection>
+
+<FeaturesSection title="Features">
+
+Version 1.0 ships everything I set out to build, and it is organized the way a farm is.
+
+| Area | What you can do |
+|---|---|
+| The farm and its pasture | Create farms and their paddocks, up to 50 at a time. Move the herd from paddock to paddock, track how many days each one has rested and record forage measurements. |
+| The herd | Register animals with photos, buy and sell them, weigh them and see their daily gain. Follow their genealogy in a pedigree tree, and check the state of the herd from the home dashboard. |
+| Care and production | Keep the health record and the vaccines, follow heat, inseminations and births, and log feeding and milk production. |
+| Supplies and money | Keep the supply inventory, record income and expenses with a photo of the receipt, and see how the farm is doing in charts. |
+| Everything around it | Sign in, invite the team, get alerts, work without a signal, and export reports and backups. |
+
+Some details that make a difference day to day:
+
+- **You do not type the money twice.** When you buy or sell an animal, apply a vaccine or a treatment, inseminate a cow, feed the herd or buy a supply, the expense or the income is recorded on its own. If the person doing it has no access to finances, the work is still saved and the money part is simply left out.
+- **Each person sees what they should.** The owner can change everything, a co-owner only works in the modules the owner opened for them, and a partner can look but not touch. The server enforces it, and the app hides the buttons a person cannot use.
+- **Alerts twice a day.** At 7 in the morning and 5 in the afternoon the app reminds you of vaccines due, expected heat and births, sick animals to check on, supplies running low and paddocks ready to graze, without repeating the same alert.
+- **Your account is safe to leave.** You can pause your account and come back, or delete it with 15 days to change your mind and reminders 5 days and 1 day before it is gone.
+
+### Product screenshots
+
+Promotional images of the running application with its demo data. The interface is in Spanish, the language of its users. Each one shows what the screen is for and what it brings. Click an image to open it larger.
+
+<ScreenshotGallery
+  items={[
+    {
+      src: "/screens/ganaderiapp/animals.png",
+      title: "Home, herd and finances",
+      caption: "The three screens a farmer opens most: the dashboard in the middle, the herd on the left and the money on the right.",
+      features: [
+        "Monthly balance with a six-month chart of income and expenses.",
+        "Quick actions to register an animal or a new finance entry.",
+        "A searchable herd list with sex, breed, age, state and paddock on each card.",
+        "A floating tab bar for the five main sections.",
+      ],
+      width: 828,
+      height: 1800,
+      scene: {
+        tone: "green",
+        phones: [
+          { src: "/screens/ganaderiapp/animals.png", title: "Herd", width: 828, height: 1800 },
+          { src: "/screens/ganaderiapp/home-dark.png", title: "Home", width: 828, height: 1800 },
+          { src: "/screens/ganaderiapp/finance-dark.png", title: "Finances", width: 828, height: 1800 },
+        ],
+      },
+    },
+    {
+      src: "/screens/ganaderiapp/animal-record.png",
+      title: "Animal record",
+      caption: "Weights, photos, milk, health and genealogy of an animal in a single place.",
+      features: [
+        "Status chips and the farm, paddock, birth date and birth weight.",
+        "Up to 12 photos, the first one used as the cover.",
+        "Weighings with the date and the origin of each one.",
+        "Sections for milk production, care and the pedigree tree.",
+      ],
+      width: 828,
+      height: 1800,
+      layout: "right",
+      scene: {
+        tone: "cream",
+        phones: [
+          { src: "/screens/ganaderiapp/animal-record.png", title: "Animal record", width: 828, height: 1800 },
+          { src: "/screens/ganaderiapp/animal-weights.png", title: "Weights and milk", width: 828, height: 1800 },
+        ],
+      },
+    },
+    {
+      src: "/screens/ganaderiapp/animal-care.png",
+      title: "Purchase, animal finances and genealogy",
+      caption: "Further down the record, what the animal cost and where it comes from.",
+      features: [
+        "Purchase date, price and weight at purchase.",
+        "The income and expenses linked to the animal, such as the expense created when it was bought.",
+        "A button to register an expense for that animal.",
+        "A pedigree tree with mother and father, with placeholders while they are unknown.",
+      ],
+      width: 828,
+      height: 1800,
+      layout: "left",
+      scene: {
+        tone: "mint",
+        phones: [
+          { src: "/screens/ganaderiapp/animal-care.png", title: "Care, purchase and finances", width: 828, height: 1800 },
+          { src: "/screens/ganaderiapp/animal-pedigree.png", title: "Genealogy", width: 828, height: 1800 },
+        ],
+      },
+    },
+    {
+      src: "/screens/ganaderiapp/finance.png",
+      title: "Finances",
+      caption: "Income and expenses of the farm, with the balance of the month on top.",
+      features: [
+        "Balance, income and expenses for the selected period.",
+        "A list of movements with the concept, date and amount, and a form to add an expense or an income.",
+        "Entries created by the app itself when an animal is sold or a supply is bought.",
+        "Up to three receipts per entry, stored in a private bucket.",
+      ],
+      width: 828,
+      height: 1800,
+      layout: "right",
+      scene: {
+        tone: "forest",
+        phones: [
+          { src: "/screens/ganaderiapp/finance.png", title: "Finances", width: 828, height: 1800 },
+          { src: "/screens/ganaderiapp/new-finance.png", title: "New finance entry", width: 828, height: 1800 },
+        ],
+      },
+    },
+    {
+      src: "/screens/ganaderiapp/finance-reports.png",
+      title: "Finance reports",
+      caption: "Charts drawn with Skia that respond to touch.",
+      features: [
+        "Income and expenses by month for the last twelve months, with a table view.",
+        "Accumulated balance over the year.",
+        "Tap a month to see its values.",
+        "Light and dark themes with the same palette.",
+      ],
+      width: 828,
+      height: 1800,
+      layout: "left",
+      scene: {
+        tone: "green",
+        phones: [
+          { src: "/screens/ganaderiapp/finance-reports.png", title: "Finance reports", width: 828, height: 1800 },
+          { src: "/screens/ganaderiapp/finance-categories.png", title: "By category", width: 828, height: 1800 },
+        ],
+      },
+    },
+    {
+      src: "/screens/ganaderiapp/rotation.png",
+      title: "Paddock rotation",
+      caption: "Which paddocks are occupied, which are resting and when each one will be ready.",
+      features: [
+        "Occupied, resting and ready states for every paddock.",
+        "Rest days counted from the last occupation, with a minimum per paddock.",
+        "Move animals between paddocks in one action.",
+        "An alert when a paddock is ready to use again.",
+      ],
+      width: 828,
+      height: 1800,
+      layout: "right",
+      scene: {
+        tone: "dark",
+        phones: [
+          { src: "/screens/ganaderiapp/rotation.png", title: "Paddock rotation", width: 828, height: 1800 },
+          { src: "/screens/ganaderiapp/farm-paddocks.png", title: "Farm paddocks", width: 828, height: 1800 },
+        ],
+      },
+    },
+    {
+      src: "/screens/ganaderiapp/farm-light.png",
+      title: "Farm detail",
+      caption: "The hub of a farm: its herd, paddocks and daily work.",
+      features: [
+        "Active animals and paddocks at a glance, with the location and size of the farm.",
+        "Shortcuts to the herd, milk production and animal registration.",
+        "The list of paddocks with their area and the rotation view.",
+        "Move animals between paddocks and add paddocks in batches.",
+      ],
+      width: 828,
+      height: 1800,
+      layout: "left",
+      scene: {
+        tone: "forest",
+        phones: [
+          { src: "/screens/ganaderiapp/farm-light.png", title: "Farm detail", width: 828, height: 1800 },
+          { src: "/screens/ganaderiapp/farm-inventory.png", title: "Inventory and reports", width: 828, height: 1800 },
+        ],
+      },
+    },
+  ]}
+/>
+
+### The app in motion
+
+Short screen recordings of the app in use, played as silent loops while they are on screen.
+
+<MotionGallery
+  items={[
+    { src: "/videos/ganaderiapp/tabs.mp4", title: "Moving around the app", caption: "The five tabs: home, finances, herd, farms and profile." },
+    { src: "/videos/ganaderiapp/home-scroll.mp4", title: "Home dashboard", caption: "Balance, quick actions and herd metrics." },
+    { src: "/videos/ganaderiapp/animal-record.mp4", title: "Animal record", caption: "Weights, milk, care and finances of one animal." },
+    { src: "/videos/ganaderiapp/charts.mp4", title: "Interactive charts", caption: "Tap a month to see its income and expenses." },
+    { src: "/videos/ganaderiapp/theme.mp4", title: "Light and dark theme", caption: "The theme changes without leaving the screen." },
+    { src: "/videos/ganaderiapp/farm.mp4", title: "A tour of a farm", caption: "From the farm to its paddocks and rotation." },
+    { src: "/videos/ganaderiapp/export.mp4", title: "Exporting a report", caption: "Choose a report and format, then share it." },
+    { src: "/videos/ganaderiapp/new-animal.mp4", title: "Registering an animal", caption: "The form with validation in Spanish and Colombian formats." },
+    { src: "/videos/ganaderiapp/finance.mp4", title: "Finances", caption: "Movements and the balance of the month." },
+  ]}
+/>
+
+</FeaturesSection>
+
+<ResultsSection title="Results">
+
+Ganaderiapp already does what I set out to build. You can create a farm, set up its paddocks and keep the herd in one place, with each animal's photos, weights, health, milk and family tree. Money gets tracked almost on its own, because buying an animal, giving a vaccine or buying feed creates its expense for you.
+
+You can invite the people you work with and decide what each one can touch, get reminders for vaccines, births and low stock, and share a report as a PDF or an Excel file straight from your phone. And in the field, where there is often no signal, you can still register animals, weights and photos, and they sync when you are back online.
+
+It is still in development, so I keep polishing it and testing it with demo data.
+
+</ResultsSection>

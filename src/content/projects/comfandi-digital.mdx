@@ -1,7 +1,7 @@
 ---
 title: "Comfandi Digital Products"
 slug: "comfandi-digital"
-summary: "Web and mobile products for a Colombian family compensation fund: a health portal and app for appointments and lab results, an educational assessment platform, and the NestJS services behind them. Work delivered at OL-Software."
+summary: "Web and mobile products for a Colombian family compensation fund: a health portal and app for appointments and lab results, an educational assessment platform, and the Nest.js services behind them. Work delivered at OL-Software."
 type: "Work project · OL-Software"
 date: "2025-09"
 year: "2025"
@@ -12,8 +12,8 @@ stack:
   - "Expo and React Native"
   - "Solito and NativeWind"
   - "Redux Toolkit"
-  - "NestJS"
-  - "Prisma and PostgreSQL"
+  - "Nest.js"
+  - "PostgreSQL and Prisma ORM"
   - "Jest"
   - "Turborepo"
 highlights:
@@ -29,20 +29,39 @@ highlights:
 
 This engagement was at OL-Software, a software company, on digital products for Comfandi, a Colombian family compensation fund. It is a work project, not a personal one.
 
-Three repositories were part of the work. The health app lets members schedule medical appointments and see lab results, on the web and on mobile. An educational platform lets teachers build and manage assessments. A NestJS backend, split into services by business flow, supports the health and other products.
+Three repositories were part of the work. The health app lets members schedule medical appointments and see lab results, on the web and on mobile. An educational platform lets teachers build and manage assessments. A Nest.js backend, split into services by business flow, supports the health and other products.
 
-The main thread of the work was the health product, in particular the appointment scheduling flow. In parallel, core monolith features were migrated to scalable NestJS microservices, as a separate project from the apps above.
+The main thread of the work was the health product, in particular the appointment scheduling flow. In parallel, core monolith features were migrated to scalable Nest.js microservices, as a separate project from the apps above.
 
 </SummarySection>
 
-<ObjectivesSection title="Goals">
+<ChallengeSection title="Challenge & strategy">
 
-- **One codebase for web and mobile.** Share screens, components and logic between a Next.js app and an Expo app.
-- **Make scheduling a medical appointment simple.** Search available slots, pick a patient, confirm and be sent to pay when needed.
-- **Support teachers with assessments,** with several question types and a way to manage and review them.
-- **Keep the backend modular,** with services grouped by business flow.
+### Challenge
 
-</ObjectivesSection>
+Members of a compensation fund use many services, and each digital product used to be built in its own way. Every new screen cost more than it should, the experience was not consistent from one product to the next, and the backend made it hard for one business flow to change without affecting the rest.
+
+### Strategy
+
+The plan was built around four goals. The first was one codebase for web and mobile, sharing screens, components and logic between a Next.js app and an Expo app, so that a shared base reduces the cost of each new screen and keeps the experience consistent. The second was to make scheduling a medical appointment simple: search available slots, pick a patient, confirm and be sent to pay when needed. The third was to support teachers with assessments, with several question types and a way to manage and review them. The fourth was to keep the backend modular, with services grouped by business flow, so each flow can evolve at its own pace.
+
+Those goals shaped the main decisions. One shared package means screens and logic are written once, at the price of an abstraction such as the navigation hook for platform differences. Clean architecture with atomic design gives a clear place for each kind of code, with more folders for small features. Services grouped by business flow can change on their own, with shared concerns moved into a common library, and an explicit time zone for appointments keeps slots matching local time regardless of the server.
+
+</ChallengeSection>
+
+<PersonasSection title="User persona">
+
+Three profiles shape the products: the fund members who book care, and the teachers and students of the assessment platform.
+
+<PersonaCards
+  items={[
+    { name: "Fund member", does: "Searches available appointments, picks the patient, confirms and is sent to pay when needed, then checks lab results.", where: "Health app on web and mobile", tool: "coat", hair: "bun", skin: "#e8b48f", shirt: "#4b7bec", hairColor: "#3b2a22" },
+    { name: "Teacher", does: "Builds assessments with several question types, manages them and reviews the answers.", where: "Assessment platform on the web", tool: "chart", hair: "short", glasses: true, skin: "#d9a07c", shirt: "#e6a23c", hairColor: "#555" },
+    { name: "Student", does: "Belongs to an academic group and answers the assessments a teacher prepares.", where: "Assessment platform on the web", tool: "magnifier", hair: "curly", skin: "#c68863", shirt: "#27a36d", hairColor: "#1c1c1c" },
+  ]}
+/>
+
+</PersonasSection>
 
 <FeaturesSection title="Features">
 
@@ -56,34 +75,25 @@ The main thread of the work was the health product, in particular the appointmen
 
 </FeaturesSection>
 
-<MotivationSection title="Why the work was done">
-
-Members of a compensation fund use many services, and each digital product used to be built in its own way. A shared base for web and mobile reduces the cost of each new screen and keeps the experience consistent, and a modular backend lets each business flow evolve at its own pace.
-
-</MotivationSection>
-
-<ImplementationSection title="How it was built">
+<ImplementationSection title="Implementation & final design">
 
 ### The health product
 
-- **A monorepo** with an Expo app, a Next.js app and a shared package, built with yarn and Turborepo. The README describes it as a cross-platform base.
-- **Solito and NativeWind** let both apps share routes and styling. A small hook switches between the web router and native navigation according to the platform.
-- **Clean architecture with atomic design.** The shared package separates domain, infrastructure and presentation, and holds the atoms, molecules and the scheduling and lab-result features.
-- **The shared component SDK.** The apps depend on the company UI kit, and I updated that component SDK during the work so both platforms could use the newer components.
+The health product is a monorepo with an Expo app, a Next.js app and a shared package, built with yarn and Turborepo, and its README describes it as a cross-platform base. Solito and NativeWind let both apps share routes and styling, and a small hook switches between the web router and native navigation according to the platform.
+
+The shared package follows clean architecture with atomic design: it separates domain, infrastructure and presentation, and holds the atoms, molecules and the scheduling and lab-result features. The apps depend on the company UI kit, and the component SDK was updated during the work so both platforms could use the newer components.
 
 ### The assessment platform
 
-- **Backend:** a NestJS app with 13 modules, including assessments, questions, answers, students and academic groups, on Prisma with 20 models and 7 migrations.
-- **Frontends:** two Next.js apps that follow the same layered structure, with a shared UI package.
+The backend is a Nest.js app with 13 modules, including assessments, questions, answers, students and academic groups, on Prisma with 20 models and 7 migrations. The frontends are two Next.js apps that follow the same layered structure, with a shared UI package.
 
 ### The core services and the monolith migration
 
-- **A separate project.** The migration of core monolith features to scalable NestJS microservices ran as its own project, apart from the apps above.
-- **A NestJS monorepo** with four services named after business flows, a shared library for authentication, mail, SMS and exceptions, 53 Prisma models and 64 migrations. The work here was on the appointment service, which only offers available slots inside a configurable time window and now uses the Bogotá time zone.
+The migration of core monolith features to scalable Nest.js microservices ran as its own project, apart from the apps above. It is a Nest.js monorepo with four services named after business flows, a shared library for authentication, mail, SMS and exceptions, 53 Prisma models and 64 migrations. The work here was on the appointment service, which only offers available slots inside a configurable time window and now uses the Bogotá time zone.
 
-</ImplementationSection>
+### Decisions
 
-<DecisionsSection title="Why it was done this way">
+Each decision below came with a trade-off that the team accepted.
 
 | Decision | Why | Trade-off |
 |---|---|---|
@@ -92,13 +102,12 @@ Members of a compensation fund use many services, and each digital product used 
 | Services grouped by business flow | Each flow can change on its own. | Shared concerns move into a common library. |
 | Explicit time zone for appointments | Slots must match local time regardless of the server. | Dates need care everywhere they are built. |
 
-</DecisionsSection>
+</ImplementationSection>
 
-<LimitationsSection title="Limitations and open items">
+<ResultsSection title="Results">
 
-- **Test coverage is thin where the work happened.** The health repository and the assessment frontends have no test files, and the core services have tests concentrated in one service.
-- **Version mismatch.** The Expo app uses an older React Native than its shared package expects.
-- **Unfinished pieces.** The organisms folder in the shared package is empty, and the component SDK is still described as under development.
-- **Scope of this page.** It covers three repositories. Other repositories in the same folder were not part of this work and are not documented here.
+Between June and September 2025, the work gave the fund's members and educators concrete tools. Members can schedule medical appointments and see their lab results, on the web and on mobile, and the appointment scheduling flow was the main focus. Teachers can build and manage assessments on the educational platform. In parallel, core features of the fund's monolith were migrated to scalable Nest.js microservices, as a separate project.
 
-</LimitationsSection>
+No usage figures are reported for this engagement. This page covers three repositories only; other repositories in the same folder were not part of this work.
+
+</ResultsSection>

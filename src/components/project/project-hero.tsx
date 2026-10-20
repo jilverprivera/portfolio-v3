@@ -1,20 +1,28 @@
+import Link from "next/link";
 import type { ProjectMeta } from "@/content/projects";
 import { CoverImage } from "@/components/project/cover-image";
 
 // Encabezado del proyecto: fecha y estado, título, portada, metadatos y cifras clave.
 export function ProjectHero({ meta }: { meta: ProjectMeta }) {
   return (
-    <header className="pt-32 md:pt-[200px]">
-      <div className="w-full px-6 md:px-12 text-center">
-        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[14px] text-white/55">
-          <span>{meta.year}</span>
-          <span aria-hidden="true">·</span>
-          <span>{meta.status}</span>
-        </div>
-        <h1 className="mt-8 text-[36px] font-medium leading-[1.4] text-white">{meta.title}</h1>
-      </div>
+    <header className="pt-10 md:pt-12">
+      <nav aria-label="Breadcrumb" className="w-full px-6 text-[15px] md:px-12">
+        <ol className="flex items-center gap-2 text-white/45">
+          <li>
+            <Link href="/" className="transition-colors hover:text-white">
+              Home
+            </Link>
+          </li>
+          <li aria-hidden="true">/</li>
+          <li>
+            <h1 aria-current="page" className="text-[15px] font-normal text-white">
+              {meta.title}
+            </h1>
+          </li>
+        </ol>
+      </nav>
 
-      <div className="mt-16 w-full px-6 md:px-12">
+      <div className="mt-10 w-full px-6 md:px-12">
         {meta.cover ? (
           <CoverImage src={meta.cover} title={`Cover of ${meta.title}`} />
         ) : (
@@ -28,25 +36,36 @@ export function ProjectHero({ meta }: { meta: ProjectMeta }) {
         )}
       </div>
 
-      <div className="mt-16 grid w-full grid-cols-[120px_1fr] gap-x-6 gap-y-5 px-6 md:px-12 md:grid-cols-[160px_1fr]">
-        <span className="text-[14px] text-white/55">Type</span>
-        <span className="text-[16px] text-white">{meta.type}</span>
-        <span className="text-[14px] text-white/55">Status</span>
-        <span className="text-[16px] text-white">{meta.status}</span>
-        <span className="text-[14px] text-white/55">Stack</span>
-        <span className="text-[16px] leading-[1.6] text-white/70">{meta.stack.join(" · ")}</span>
-      </div>
-
-      {meta.highlights.length > 0 && (
-        <dl className="mt-20 grid w-full grid-cols-1 gap-10 px-6 md:px-12 text-center sm:grid-cols-3">
-          {meta.highlights.map((h) => (
-            <div key={h.label}>
-              <dt className="text-[15px] leading-[1.4] text-white/55">{h.label}</dt>
-              <dd className="mt-3 text-[48px] font-medium leading-none text-white">{h.value}</dd>
+      <div className="mt-16 w-full px-6 md:px-12">
+        <dl className="grid grid-cols-2 gap-x-6 gap-y-8 border-y border-white/15 py-8 md:grid-cols-[1fr_1fr_1fr_2fr]">
+          {[
+            ["Year", meta.year],
+            ["Type", meta.type],
+            ["Status", meta.status],
+          ].map(([label, value]) => (
+            <div key={label}>
+              <dt className="font-mono text-[13px] uppercase tracking-[0.1em] text-white/45">{label}</dt>
+              <dd className="mt-3 text-[17px] leading-[1.5] text-white">{value}</dd>
             </div>
           ))}
+          <div className="col-span-2 md:col-span-1">
+            <dt className="font-mono text-[13px] uppercase tracking-[0.1em] text-white/45">Stack</dt>
+            <dd className="mt-3">
+              <ul className="grid grid-cols-1 gap-x-8 gap-y-1.5 text-[17px] leading-[1.5] text-white sm:grid-cols-2">
+                {meta.stack.map((item) => (
+                  <li
+                    key={item}
+                    className="relative pl-4 before:absolute before:left-0 before:top-[0.7em] before:h-1 before:w-1 before:rounded-full before:bg-white"
+                  >
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </dd>
+          </div>
         </dl>
-      )}
+      </div>
+
     </header>
   );
 }

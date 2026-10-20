@@ -1,4 +1,5 @@
 import type { ComponentType } from "react";
+import type { MDXComponents } from "mdx/types";
 
 export type ProjectHighlight = { value: string; label: string };
 
@@ -17,14 +18,15 @@ export type ProjectMeta = {
   cover?: string;
 };
 
-type ProjectModule = { default: ComponentType; frontmatter: Record<string, unknown> };
+type ProjectModule = { default: ComponentType<{ components?: MDXComponents }>; frontmatter: Record<string, unknown> };
 
 // Orden de presentación: el primero es el que aparece primero en la navegación.
 const loaders: Record<string, () => Promise<ProjectModule>> = {
-  emisys: () => import("./emisys.mdx"),
-  mottika: () => import("./mottika.mdx"),
+  ganaderiapp: () => import("./ganaderiapp.mdx"),
   telemetrix: () => import("./telemetrix.mdx"),
   vigia: () => import("./vigia.mdx"),
+  emisys: () => import("./emisys.mdx"),
+  mottika: () => import("./mottika.mdx"),
   nido: () => import("./nido.mdx"),
   "midea-hvac": () => import("./midea-hvac.mdx"),
   getsellers: () => import("./getsellers.mdx"),

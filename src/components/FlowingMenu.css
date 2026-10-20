@@ -75,6 +75,7 @@
   min-width: 1.6em;
   font-size: clamp(11px, 12cqh, 15px);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
   opacity: 0.5;
 }
 
@@ -119,6 +120,7 @@
 .flowing-menu__meta {
   font-size: clamp(11px, 12cqh, 15px);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
   opacity: 0.5;
 }
 
@@ -165,7 +167,7 @@
 .flowing-menu__image {
   display: block;
   flex-shrink: 0;
-  height: calc(56cqh * var(--flowing-menu-band, 1));
+  height: calc(70cqh * var(--flowing-menu-band, 1));
   aspect-ratio: 2.2 / 1;
   margin: 0 calc(3.5cqh * var(--flowing-menu-band, 1));
   border-radius: 999px;

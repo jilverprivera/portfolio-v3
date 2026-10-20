@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getAllProjectMeta, getProject, projectSlugs } from "@/content/projects";
 import { ProjectHero } from "@/components/project/project-hero";
+import { SummarySection } from "@/components/project/sections";
 import { ProjectNav } from "@/components/project/project-nav";
 import { ProjectSidebar } from "@/components/project/project-sidebar";
 
@@ -36,7 +37,7 @@ export default async function ProjectPage({ params }: PageProps) {
       <ProjectSidebar />
       <ProjectHero meta={meta} />
       <div className="pb-8">
-        <Content />
+        <Content components={{ SummarySection: (props) => <SummarySection {...props} highlights={meta.highlights} /> }} />
       </div>
       <ProjectNav current={meta} all={all} />
     </article>

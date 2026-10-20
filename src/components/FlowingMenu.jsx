@@ -569,6 +569,7 @@ function FlowingMenu({
             <>
               <span className={INDEX} data-intro-fade="" aria-hidden="true">
                 {showIndex ? String(index + 1).padStart(2, '0') : null}
+                {showIndex && item.tag ? ` / ${item.tag}` : null}
               </span>
               <span className={LABEL}>
                 <span className={LABEL_TEXT} data-intro-line="">

@@ -40,10 +40,10 @@ export function AboutContainer() {
           </ScrollReveal>
 
           <Link
-            href="/projects"
+            href="/experience"
             className="w-fit text-lg font-bold uppercase tracking-wide text-[#E7F451] underline-offset-8 hover:underline"
           >
-            Dive into the specifics of my work →
+            Explore my professional experience →
           </Link>
         </div>
 

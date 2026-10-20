@@ -4,7 +4,7 @@ import { getAllProjectMeta } from "@/content/projects";
 
 export const metadata: Metadata = {
   title: "Projects · Portfolio",
-  description: "Personal projects: goals, features, decisions and architecture.",
+  description: "Projects: goals, features, decisions and architecture.",
 };
 
 // Index of all projects, with cards linking to each detail view.

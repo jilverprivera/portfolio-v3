@@ -2,8 +2,8 @@
 title: "Vigía"
 slug: "vigia"
 summary: "A multi-tenant PWA for pharmacies and pharmacy chains in Colombia: batch-level inventory with FEFO, a point of sale with offline mode, cash register, store credit, web catalog, prescriptions, controlled-substance logs, product recalls and cold chain."
-type: "Personal project"
-date: "2026-06"
+type: "Side project"
+date: "2026-10"
 year: "2026"
 status: "In development"
 featured: true
@@ -15,7 +15,7 @@ stack:
   - "Supabase Postgres, Auth and Storage"
   - "Redis and asynq"
   - "IndexedDB (Dexie)"
-  - "Prisma Client Go and pgx"
+  - "Prisma ORM and pgx"
   - "Twilio and SendGrid"
   - "OpenTelemetry and Grafana"
   - "Docker and GitHub Actions"
@@ -36,34 +36,25 @@ It serves two customer profiles: the neighborhood pharmacy, where the same perso
 
 </SummarySection>
 
-<ObjectivesSection title="Goals">
+<ChallengeSection title="Challenge & strategy">
 
-The base specification defines five goals:
+### Challenge
 
-1. Reduce the time staff spend answering repetitive questions over WhatsApp or phone.
-2. Avoid losses from expiry and from stockouts of fast-moving products.
-3. Eliminate price differences between shelf, register and catalog.
-4. Provide traceability for every unit sold, damaged, returned or lost.
-5. Retain customers with recurring purchases: chronic patients, older adults and families.
+The story starts at the counter of a neighborhood pharmacy. Dozens of WhatsApp messages and phone calls a day ask the same thing: do you have this, and how much is it? Meanwhile, medicines expire on the shelf and fast-moving products run out without warning. Shelf, register and web show different prices, prescriptions arrive as blurry photos, controlled substances are sold without validation, and finding the batches affected by a recall means searching by hand.
 
-As design constraints, the specification states that the counter never stops: no network, Redis or external-provider failure prevents selling, charging or closing the register. In addition, all patient and prescription data is treated as sensitive from the moment it is captured, in line with Colombian Law 1581 of 2012.
+The context makes each of those problems harder. Margins are thin, staff turns over, internet connectivity is unstable, and health and data-protection obligations leave no room for improvisation. About 40% of SKUs are sold in fractions (a box, a blister, a tablet), which does not fit an inventory counted by package. And in many pharmacies one person does everything, so the interface had to be simple enough for anyone on the team to sell without long training.
 
-</ObjectivesSection>
+### Strategy
 
-<FeaturesSection title="Features">
+The base specification turned those pains into five goals: spend less staff time answering repetitive questions, avoid losses from expiry and stockouts, eliminate price differences between shelf, register and catalog, trace every unit sold, damaged, returned or lost, and retain customers with recurring purchases, such as chronic patients, older adults and families.
 
-The backlog defines 33 capabilities and 146 features, grouped into five blocks:
+Each pain got a direct answer. A web catalog with real-time stock and price replaces the repetitive questions. Batch-level control with FEFO and alerts takes care of expiry. A single price master per SKU and branch, with history and auditing, ends the price mismatch. Pharmacist validation before dispensing and exportable control logs cover compliance.
 
-| Block | Capabilities | Main content |
-|---|---|---|
-| Cross-cutting | 001 to 008 | Platform console, users, branches and roles, audit log, data privacy, notifications, initial import, reports and PWA operation. |
-| Catalog, pricing and inventory | 009 to 013 | Products with units and presentations, price master with validity dates, batch-level inventory, physical counts and alerts for expiry and minimum stock. |
-| Purchasing and supply | 014 to 016 | Suppliers, purchase orders, purchase suggestions and goods receipt. |
-| Sales, cash and credit | 017 to 023 | Counter sales, returns and exchanges, offline sales, shifts and cash reconciliation, store credit, promotions and electronic documents (proposed). |
-| Customers, prescriptions and compliance | 024 to 030 | Web store, customers and patients, pharmacist-validated prescriptions, reminders for chronic patients, controlled-substance log, product recalls and cold chain. |
-| Multi-branch and loyalty | 031 to 033 | Consolidated dashboard, transfers between branches and a points program. |
+Two rules were set as constraints from the start. The counter never stops: no network, Redis or external-provider failure may prevent selling, charging or closing the register. And all patient and prescription data is treated as sensitive from the moment it is captured, in line with Colombian Law 1581 of 2012.
 
-### User personas
+</ChallengeSection>
+
+<PersonasSection title="User persona">
 
 Eight personas drive the design. Each one has a different way of using the product, from a neighborhood counter to the platform team.
 
@@ -79,6 +70,21 @@ Eight personas drive the design. Each one has a different way of using the produ
     { name: "Catalog visitor", does: "An anonymous person checking availability, price and opening hours.", where: "Public store, no sign-in", tool: "magnifier", hair: "short", skin: "#cf9468", shirt: "#7a7f8c", hairColor: "#2a2a2a" },
   ]}
 />
+
+</PersonasSection>
+
+<FeaturesSection title="Features">
+
+The backlog defines 33 capabilities and 146 features, grouped into five blocks:
+
+| Block | Capabilities | Main content |
+|---|---|---|
+| Cross-cutting | 001 to 008 | Platform console, users, branches and roles, audit log, data privacy, notifications, initial import, reports and PWA operation. |
+| Catalog, pricing and inventory | 009 to 013 | Products with units and presentations, price master with validity dates, batch-level inventory, physical counts and alerts for expiry and minimum stock. |
+| Purchasing and supply | 014 to 016 | Suppliers, purchase orders, purchase suggestions and goods receipt. |
+| Sales, cash and credit | 017 to 023 | Counter sales, returns and exchanges, offline sales, shifts and cash reconciliation, store credit, promotions and electronic documents (proposed). |
+| Customers, prescriptions and compliance | 024 to 030 | Web store, customers and patients, pharmacist-validated prescriptions, reminders for chronic patients, controlled-substance log, product recalls and cold chain. |
+| Multi-branch and loyalty | 031 to 033 | Consolidated dashboard, transfers between branches and a points program. |
 
 ### Product screenshots
 
@@ -154,43 +160,19 @@ Screenshots of the running application with its demo data. The interface is in S
   ]}
 />
 
-### Status in the code
-
-The README declares phase 0 (foundations): monorepo, local infrastructure, authentication, tenants, branches, users with per-branch roles, dual control, an immutable audit log, the platform console, and the PWA with public store and dashboard. The repository also has modules already written for catalog, pricing, inventory, counts, sales, cash, customers, alerts, reports, web store, costing and taxes, with 17 database migrations and 79 Go test files.
-
-The purchasing, prescriptions, health compliance, cold chain, multi-branch, privacy, import and notifications modules do not yet have a folder in the backend.
-
 </FeaturesSection>
 
-<MotivationSection title="Why the product was built">
-
-The base specification starts from pain points that repeat in neighborhood pharmacies and in chains. Among the most important:
-
-- **Repetitive questions.** Dozens of daily WhatsApp messages or calls asking about stock and prices. The answer was a web catalog with real-time stock and price.
-- **Expiry and stockouts.** Expired medicines on the shelf and fast-moving products running out without warning. The answer was batch-level control with FEFO and alerts.
-- **Inconsistent prices.** Shelf, register and web do not match. The answer was a single price master per SKU and branch, with history and auditing.
-- **Health compliance.** Prescriptions as blurry photos, controlled substances without validation, and manual searches for batches affected by a recall. The answer was pharmacist validation before dispensing, and exportable control logs.
-- **Loose sales.** About 40% of SKUs are sold in fractions (box, blister, tablet), which does not fit an inventory by package.
-- **Dependence on a single person and high turnover.** The interface had to be simple so anyone on the team could sell without long training.
-
-The context also weighs in: margins are thin, staff turns over, internet connectivity is unstable, and health and data-protection obligations leave no room for improvisation.
-
-</MotivationSection>
-
-<ImplementationSection title="How it was built">
+<ImplementationSection title="Implementation & final design">
 
 ### Architecture
 
-- **Monorepo** with `api/`, `apps/web`, `packages/`, `contracts/`, `supabase/` and `deploy/`.
-- **Go backend as a modular monolith** with two executables: the API and a worker for asynchronous tasks. Each module is a vertical slice with hexagonal architecture inside: the domain depends only on ports, and the adapters (HTTP, database, email, WhatsApp) plug in from the outside.
-- **A single web app** in Next.js with the App Router, organized by features with atomic design, and four surfaces: a public store per pharmacy, staff access, a dashboard with POS, and the platform console.
-- **Multi-tenancy in the database.** Every business table carries `tenant_id`, with forced Row-Level Security and `SET LOCAL` per transaction. The application uses its own roles, never Supabase's `service_role` key, which bypasses RLS.
-- **Events with a transactional outbox.** The event is written in the same transaction as the business change and published afterwards to asynq on Redis. That way there is no dual write.
-- **Inventory as immutable movements.** Every stock change is a movement per batch, in base unit and per branch. The balance is projected in the same transaction, and the deduction uses `SELECT ... FOR UPDATE` in canonical order to apply FEFO without negative stock.
-- **Offline POS.** The branch stores a bundle in IndexedDB with products, prices and batches. Sales are queued with a UUID v7 identifier and an `Idempotency-Key`, and synchronize without duplicating. Conflicts are logged for human review, not hidden.
-- **External providers behind ports.** Twilio and SendGrid are used through adapters, so a sale never waits on a WhatsApp or email delivery.
-- **Private files.** Prescriptions and documents live in private buckets, with signed URLs valid for five minutes.
-- **Observability and goals as code.** OpenTelemetry, Grafana and SLOs declared in the repository.
+The repository is a monorepo with `api/`, `apps/web`, `packages/`, `contracts/`, `supabase/` and `deploy/`. The backend is a Go modular monolith with two executables, the API and a worker for asynchronous tasks. Each module is a vertical slice with hexagonal architecture inside: the domain depends only on ports, and the adapters (HTTP, database, email, WhatsApp) plug in from the outside. The frontend is a single Next.js app with the App Router, organized by features with atomic design, and it serves four surfaces: a public store per pharmacy, staff access, a dashboard with the POS, and the platform console.
+
+Many pharmacies share one database, so multi-tenancy is enforced there. Every business table carries `tenant_id`, with forced Row-Level Security and `SET LOCAL` per transaction, and the application uses its own roles, never Supabase's `service_role` key, which bypasses RLS. Events follow a transactional outbox: the event is written in the same transaction as the business change and published afterwards to asynq on Redis, so there is no dual write.
+
+Inventory is the heart of the model. Every stock change is an immutable movement per batch, in base unit and per branch, and the balance is projected in the same transaction. The deduction uses `SELECT ... FOR UPDATE` in canonical order to apply FEFO without ever going negative.
+
+Then comes the promise that the counter never stops. The branch keeps a bundle of products, prices and batches in IndexedDB, and sales made offline are queued with a UUID v7 identifier and an `Idempotency-Key`, so they synchronize without duplicating. Conflicts are logged for a person to review, not hidden. External providers sit behind ports: Twilio and SendGrid are used through adapters, so a sale never waits on a WhatsApp or email delivery. Prescriptions and documents live in private buckets with signed URLs valid for five minutes, and OpenTelemetry, Grafana and SLOs are declared as code in the repository.
 
 ### Diagrams
 
@@ -224,16 +206,7 @@ The domain is split into bounded contexts. The first diagram shows the contexts 
   ]}
 />
 
-### Documentation consulted
-
-- **Base specification** (15 sections): goals, pain points B1 to B11 and C1 to C8, functional requirements by area, non-functional requirements, technical decisions, data model, API guidelines, integrations, compliance, phased plan and assumptions S1 to S7.
-- **Master identifier catalog**, which is the source for the next five documents: 33 capabilities, 146 features, 110 entities, 10 containers, 21 decisions and 19 risks.
-- **Solution architecture 1.0** (§1 to §9): principles, constraints, set goals, views and 21 architecture decisions.
-- **C4 architecture, domain model, functional backlog, quality attributes**, and the gap backlog with the unified backlog.
-
-</ImplementationSection>
-
-<DecisionsSection title="Why it was done this way">
+### Decisions
 
 | Decision | Why |
 |---|---|
@@ -248,16 +221,19 @@ The domain is split into bounded contexts. The first diagram shows the contexts 
 
 The data-access decision changed during phase 0. The original ADR-004 set sqlc with goose; ADR-014 revised it to Prisma Client Go and it was logged as a risk, because the project has been archived since July 2025.
 
-</DecisionsSection>
+### Documentation consulted
 
-<LimitationsSection title="Limitations and open items">
+- **Base specification** (15 sections): goals, pain points B1 to B11 and C1 to C8, functional requirements by area, non-functional requirements, technical decisions, data model, API guidelines, integrations, compliance, phased plan and assumptions S1 to S7.
+- **Master identifier catalog**, which is the source for the next five documents: 33 capabilities, 146 features, 110 entities, 10 containers, 21 decisions and 19 risks.
+- **Solution architecture 1.0** (§1 to §9): principles, constraints, set goals, views and 21 architecture decisions.
+- **C4 architecture, domain model, functional backlog, quality attributes**, and the gap backlog with the unified backlog.
 
-- **Phase 0 declared.** The README describes the foundations scope. The operation modules already have code, but not all backlog features are complete.
-- **Modules without a backend yet.** Purchasing, prescriptions, health compliance, cold chain, multi-branch and privacy have no folder in the backend.
-- **Electronic invoicing** is a proposal (CAP-023 and ADR-019), pending the choice of a DIAN-authorized provider.
-- **Commercial value of the plans** is still open (PA-10), and the plan model is stored as configurable data, not as constants.
-- **Web store cache** is invalidated by time (60 seconds), not by event, so stock can take up to a minute to show.
-- **Suspending a pharmacy** prevents its owner from approving support access from the dashboard.
-- **Hash-chained audit log** is a proposal (ADR-018) and is not yet implemented.
+</ImplementationSection>
 
-</LimitationsSection>
+<ResultsSection title="Results">
+
+For a pharmacy, the result is the foundation of a single system that replaces WhatsApp answers, loose spreadsheets and paper logs. The operation is in place for users, branches and roles, a public store with stock and price, the dashboard with the point of sale, and an immutable audit log. Modules for catalog, pricing, inventory, counts, sales, cash and customers already have working code.
+
+There is still a lot to build. Purchasing, prescriptions, health compliance, cold chain, multi-branch and privacy are not built yet, electronic invoicing is only a proposal, and the web store can take up to a minute to show a stock change. No pilot results are reported yet.
+
+</ResultsSection>

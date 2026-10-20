@@ -1,9 +1,13 @@
 import type { MDXComponents } from "mdx/types";
 import { ProjectTable } from "@/components/project/project-table";
 import { DiagramGallery, ScreenshotGallery } from "@/components/project/diagram-gallery";
+import { PhoneGallery, MotionGallery } from "@/components/project/phone-gallery";
 import { PersonaCards } from "@/components/project/persona-cards";
 import {
   SummarySection,
+  ChallengeSection,
+  ResultsSection,
+  PersonasSection,
   ObjectivesSection,
   FeaturesSection,
   MotivationSection,
@@ -71,8 +75,13 @@ export function useMDXComponents(): MDXComponents {
     ...typography,
     DiagramGallery,
     ScreenshotGallery,
+    PhoneGallery,
+    MotionGallery,
     PersonaCards,
     SummarySection,
+    ChallengeSection,
+    ResultsSection,
+    PersonasSection,
     ObjectivesSection,
     FeaturesSection,
     MotivationSection,

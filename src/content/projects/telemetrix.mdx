@@ -2,8 +2,8 @@
 title: "Telemetrix"
 slug: "telemetrix"
 summary: "An IoT platform to ingest, store, visualize and react to device telemetry, with real-time dashboards, rules, outbound actions, scheduled tasks and device commands."
-type: "Personal project"
-date: "2026-06"
+type: "Side project"
+date: "2026-10"
 year: "2026"
 status: "In development"
 featured: true
@@ -36,16 +36,36 @@ Data is organized in channels: a channel groups up to eight data fields, plus lo
 
 </SummarySection>
 
-<ObjectivesSection title="Goals">
+<ChallengeSection title="Challenge & strategy">
 
-- **Simple device onboarding.** A device only needs an API key and its identifiers to start sending readings over HTTP, MQTT or WebSocket.
-- **Ingestion that does not depend on the database.** A reading is acknowledged to the device once it is persisted in the event buffer, not in the time-series database. The design target is a p99 acknowledgement of 50 ms or less.
-- **Real time.** A reading must show up on the dashboard within 2 seconds (p95) of reaching ingestion.
-- **Secure by default.** Channels are private when created, API keys are stored only as an HMAC, TLS is a production requirement, and every resource is strictly isolated by owner.
-- **A sustainable free plan.** The platform was planned for a mix in which about 80% of devices are on the Free plan, so limits are enforced at the edge, before any costly resource is used.
-- **Designed for 100,000 active devices in the first year** (a planning assumption), with 250,000 simultaneous MQTT connections as headroom.
+### Challenge
 
-</ObjectivesSection>
+It began with a gap. On one side are hobby-grade tools, fine for a weekend prototype; on the other, industrial platforms built for companies with a team to run them. Makers and small teams sit in between: they need to collect data from their devices, watch it live and react to it, but they do not want to assemble and operate a stack of brokers, databases and dashboards just to get there.
+
+The business model made the problem harder. Telemetrix was planned as a SaaS with a massive free plan for makers, and paying customers who integrate the platform into their own systems. With roughly 80% of devices expected on the Free plan, every free device had to cost almost nothing to serve, so the design could not afford waste on the hot path.
+
+### Strategy
+
+The plan started from the device. A device should only need an API key and its identifiers to begin sending readings, whether over HTTP, MQTT or WebSocket. From there, the most important choice was to keep ingestion independent of the database: a reading is acknowledged once it is safely in the event buffer, not when it lands in the time-series store, with a design target of a p99 acknowledgement of 50 ms or less. A reading then has to reach the dashboard within 2 seconds (p95), so people see what their devices are doing as it happens.
+
+Cost and safety shaped the rest. Plan limits are enforced at the edge, before any expensive resource is touched, which keeps the free plan sustainable. Channels are private when created, API keys are stored only as an HMAC, TLS is a production requirement and every resource is isolated by its owner. All of this was sized for 100,000 active devices in the first year, a planning assumption, with room for 250,000 simultaneous MQTT connections.
+
+</ChallengeSection>
+
+<PersonasSection title="User persona">
+
+Four personas drive the design. The platform has global roles, so there are no organizations: every resource belongs to its owner.
+
+<PersonaCards
+  items={[
+    { name: "Maker or IoT developer", does: "Builds devices (ESP32, Arduino, Raspberry Pi, PLCs behind a gateway), creates channels, integrates the API and automates.", where: "Web console, mobile app and the REST API", tool: "chip", hair: "cap", glasses: true, skin: "#e2ad88", shirt: "#e8743b", hairColor: "#2a2a2a" },
+    { name: "Monitoring analyst", does: "Reads dashboards and time series and receives alerts to react to.", where: "Web console and mobile app", tool: "chart", hair: "bob", glasses: true, skin: "#c68863", shirt: "#4b7bec", hairColor: "#2a1a14" },
+    { name: "Platform operator", does: "Internal staff who manage plans, operate the platform and handle support.", where: "Back-office and the observability platform", tool: "headset", hair: "curly", skin: "#a8704d", shirt: "#8e5be0", hairColor: "#1c1c1c" },
+    { name: "Public channel visitor", does: "An anonymous person looking at public channels and embedded charts.", where: "Public pages and embeddable widgets", tool: "magnifier", hair: "short", skin: "#f0c8a0", shirt: "#7a7f8c", hairColor: "#5a3a22" },
+  ]}
+/>
+
+</PersonasSection>
 
 <FeaturesSection title="Features">
 
@@ -63,19 +83,6 @@ The backlog documentation defines 16 capabilities and 85 features. The main ones
 | Scheduling and analysis | One-off or recurring tasks with time zones, and sandboxed analysis scripts that write results to derived channels. |
 | Commands | Command queues to devices over HTTP and MQTT, with execution acknowledgement. |
 | Operations and audit | Immutable audit log, an owner console with audited reads, a health dashboard and end-to-end traces. |
-
-### User personas
-
-Four personas drive the design. The platform has global roles, so there are no organizations: every resource belongs to its owner.
-
-<PersonaCards
-  items={[
-    { name: "Maker or IoT developer", does: "Builds devices (ESP32, Arduino, Raspberry Pi, PLCs behind a gateway), creates channels, integrates the API and automates.", where: "Web console, mobile app and the REST API", tool: "chip", hair: "cap", glasses: true, skin: "#e2ad88", shirt: "#e8743b", hairColor: "#2a2a2a" },
-    { name: "Monitoring analyst", does: "Reads dashboards and time series and receives alerts to react to.", where: "Web console and mobile app", tool: "chart", hair: "bob", glasses: true, skin: "#c68863", shirt: "#4b7bec", hairColor: "#2a1a14" },
-    { name: "Platform operator", does: "Internal staff who manage plans, operate the platform and handle support.", where: "Back-office and the observability platform", tool: "headset", hair: "curly", skin: "#a8704d", shirt: "#8e5be0", hairColor: "#1c1c1c" },
-    { name: "Public channel visitor", does: "An anonymous person looking at public channels and embedded charts.", where: "Public pages and embeddable widgets", tool: "magnifier", hair: "short", skin: "#f0c8a0", shirt: "#7a7f8c", hairColor: "#5a3a22" },
-  ]}
-/>
 
 ### Product screenshots
 
@@ -151,46 +158,29 @@ Screenshots of the running console with local demo data. The interface is in Spa
   ]}
 />
 
-### Status in the code
-
-Reviewing the repository, there are module folders for identity, devices, ingestion, telemetry, real time, channels, spaces, commands, rules, actions, scheduling, analysis, exports, notifications, plans, security and operations. There are also 50 Go test files and a web console with dashboards, devices, a playground, components, API key, activity log and the owner console. Not all 85 features are verified as complete.
-
 </FeaturesSection>
 
-<MotivationSection title="Why the product was built">
-
-The starting point was a gap between hobby-grade tools and industrial platforms. Makers and small teams need to collect device data, see it live and react to it, without assembling and operating a stack of brokers, databases and dashboards.
-
-The documentation also sets a concrete business model: a SaaS with a massive free plan for makers, and paying customers who integrate the platform into their own systems. That explains several design decisions, above all the low marginal cost of each free device.
-
-</MotivationSection>
-
-<ImplementationSection title="How it was built">
+<ImplementationSection title="Implementation & final design">
 
 ### Architecture
 
-- **Monorepo** with pnpm and Turborepo: the Go API, the Next.js web app, the Expo mobile app, and shared packages for the generated API client, UI components, design tokens, authentication, real time and fonts.
-- **Backend as a modular monolith.** A single binary with domain modules (`ingest`, `telemetry`, `rules`, `actions`, `scheduling`, `realtime`, among others) organized as vertical slices with hexagonal architecture. A module never imports another: they communicate through events. Dependency rules are verified with go-arch-lint.
-- **Read/write separation (logical CQRS).** Commands write to the transactional model with an outbox; queries read from `read_*` projections and a Redis cache.
-- **Decoupled ingestion.** The flow is: validate, apply the plan's rate limit, deduplicate by `message_id`, assign a per-channel sequence number, publish to Redis Streams and reply 202 only after the stream confirms. The telemetry module then persists the data and publishes an event that feeds real time.
-- **Event bus and buffer on Redis Streams.** Telemetry is partitioned across 32 streams by channel hash (to keep per-channel ordering), plus streams for domain events, actions and a dead-letter queue.
-- **Partitioned Postgres telemetry** by day with `pg_partman`, and per-minute, hourly and daily aggregate tables consolidated by `pg_cron`.
-- **MQTT with EMQX.** The broker stores no credentials: it delegates authentication and ACLs to the API through protected HTTP hooks. The API also has a bridge that translates MQTT messages into the same use cases HTTP uses.
-- **Real time.** A WebSocket hub in the API for the web and mobile apps, with MQTT as an optional path.
-- **Contracts first.** OpenAPI 3.1 and AsyncAPI 3.0 contracts live in `contracts/` and generate the TypeScript client used by web and mobile.
+Everything lives in one monorepo managed with pnpm and Turborepo: the Go API, the Next.js web app, the Expo mobile app, and shared packages for the generated API client, UI components, design tokens, authentication, real time and fonts. The contracts come first: OpenAPI 3.1 and AsyncAPI 3.0 files in `contracts/` generate the TypeScript client that web and mobile both use.
+
+The backend is a modular monolith, a single binary with domain modules such as `ingest`, `telemetry`, `rules`, `actions`, `scheduling` and `realtime`. Each one is a vertical slice with hexagonal architecture, and a module never imports another: they talk through events, with the dependency rules verified by go-arch-lint. Inside, reads and writes are separated (a logical CQRS): commands write to the transactional model with an outbox, while queries read from `read_*` projections and a Redis cache.
+
+The life of a reading shows how the pieces fit. It is validated, checked against the plan's rate limit, deduplicated by `message_id` and given a per-channel sequence number. Then it is published to Redis Streams, and only when the stream confirms does the API reply 202. The telemetry module persists it afterwards and publishes an event that feeds real time. Redis Streams is both the event bus and the buffer: telemetry is spread across 32 streams by channel hash to keep per-channel ordering, with more streams for domain events, actions and a dead-letter queue.
+
+In storage, telemetry sits in Postgres partitioned by day with `pg_partman`, and per-minute, hourly and daily aggregates are consolidated by `pg_cron`. For devices that speak MQTT, EMQX stores no credentials at all: it delegates authentication and ACLs to the API through protected HTTP hooks, and a bridge in the API translates MQTT messages into the same use cases HTTP uses. The web and mobile apps get real time from a WebSocket hub in the API, with MQTT as an optional path.
 
 ### Authentication and devices
 
-- **Supabase Auth** with global `owner` and `developer` roles, no organizations. Every resource belongs to its `owner_id` and queries are filtered with RLS.
-- **One API key per account** (`tpk_` with 256 random bits). Only its HMAC with a server-side pepper is stored, and the full value is shown only once.
-- **A device authenticates with three headers:** the API key, the developer identifier and the device identifier. Any failure returns the same 401 so it never reveals which of the three values failed.
+Sign-in uses Supabase Auth with two global roles, `owner` and `developer`, and no organizations. Every resource belongs to its `owner_id`, and queries are filtered with row-level security.
+
+A device proves who it is with an API key, a developer identifier and a device identifier. Each account has one key (`tpk_` with 256 random bits), and only its HMAC with a server-side pepper is stored; the full value is shown once. If any of the three values fails, the answer is the same 401, so it never reveals which one was wrong.
 
 ### Load and performance
 
-- Configurable Postgres pool (25 connections per replica), with per-query time limits.
-- Ingestion caches channel information and the owner's limits for 10 seconds, with generation-based invalidation.
-- The telemetry consumer writes in batches of up to 200 readings or 50 ms, using `INSERT ... ON CONFLICT DO NOTHING`, and sends to a dead-letter queue after several retries.
-- The last 48 readings of each channel live in a Redis sorted set, so recent-history queries never touch Postgres.
+The bottleneck turned out to be Postgres, with many devices writing and many dashboards reading, so the load work went there. The pool is configurable (25 connections per replica) with per-query time limits. Ingestion caches channel information and the owner's limits for 10 seconds, with generation-based invalidation. The telemetry consumer writes in batches of up to 200 readings or 50 ms using `INSERT ... ON CONFLICT DO NOTHING`, and sends a reading to the dead-letter queue after several retries. Finally, the last 48 readings of each channel live in a Redis sorted set, so recent-history queries never touch Postgres.
 
 ### Diagrams
 
@@ -224,17 +214,7 @@ The domain is split into bounded contexts. The first diagram shows the contexts 
   ]}
 />
 
-### Documentation consulted
-
-- **Solution architecture 1.0** (§1 to §9): goals, principles, constraints, quality attributes, and the functional, integration, information and technology views, plus 17 initial decisions (ADR-001 to ADR-017).
-- **C4 architecture, domain model and quality attributes**, which set containers, components, entities and measurable criteria.
-- **Functional backlog**: 16 capabilities and 85 features with stories, business rules and acceptance criteria.
-- **OpenAPI and AsyncAPI contracts** for the HTTP API, events and MQTT.
-- **Later decisions** (ADR-018 to ADR-029) that replaced parts of the 1.0 architecture.
-
-</ImplementationSection>
-
-<DecisionsSection title="Why it was done this way">
+### Decisions
 
 | Decision | Why | What changed from the 1.0 plan |
 |---|---|---|
@@ -250,17 +230,20 @@ The domain is split into bounded contexts. The first diagram shows the contexts 
 
 Two things were documented as evolution, not as mistakes. Version 1.0 mentions Go 1.23, Next.js 15 and Expo SDK 52, while the current README states Go 1.26, Next.js 16 and Expo SDK 57. ADR-024 (a one-time code per device) was replaced: sign-in is password only.
 
-</DecisionsSection>
+### Documentation consulted
 
-<LimitationsSection title="Limitations and open items">
+- **Solution architecture 1.0** (§1 to §9): goals, principles, constraints, quality attributes, and the functional, integration, information and technology views, plus 17 initial decisions (ADR-001 to ADR-017).
+- **C4 architecture, domain model and quality attributes**, which set containers, components, entities and measurable criteria.
+- **Functional backlog**: 16 capabilities and 85 features with stories, business rules and acceptance criteria.
+- **OpenAPI and AsyncAPI contracts** for the HTTP API, events and MQTT.
+- **Later decisions** (ADR-018 to ADR-029) that replaced parts of the 1.0 architecture.
 
-- **WebSocket presence per replica.** With several replicas, knowing which devices are connected is not global. MQTT presence is.
-- **Production TLS pending** on the broker and on the WebSocket listeners (`wss`).
-- **Redis buffer shorter than planned.** The 24-hour no-loss target does not fit in memory at planning load; the real buffer depends on the instance size.
-- **Retention and rollups** of telemetry are still to be completed.
-- **No load test against a real Postgres.** Batches were tested with mocks and with a `PREPARE` against the schema.
-- **Shared spaces cannot send values to devices.** Commands and real-time readings belong only to the device owner, until it is defined how to authorize someone else without the commands module reading the spaces module.
-- **Low-level auditing.** A LOW event accepted into the queue can be lost if the process dies without shutting down cleanly.
-- **References without a document.** ADR-026 and ADR-027 are cited in ADR-028 but are not in the repository.
+</ImplementationSection>
 
-</LimitationsSection>
+<ResultsSection title="Results">
+
+For a maker or a small team, the result is a platform that already covers the path from device to decision. Devices send readings over HTTP, MQTT or WebSocket and see them on live dashboards, and people can react to them with rules, outbound actions, scheduled tasks, device commands and sandboxed analysis, through a web console and a mobile app. A reading is designed to reach the dashboard within 2 seconds.
+
+The product is still in development, and not every one of the 85 features in the backlog is verified as complete. Some pieces still to come are production TLS, finishing telemetry retention, and letting shared spaces send values to devices. The performance targets are design goals, not measured results.
+
+</ResultsSection>

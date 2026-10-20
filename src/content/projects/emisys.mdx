@@ -19,12 +19,12 @@ stack:
   - "Turborepo and pnpm"
   - "PWA"
 highlights:
-  - value: "3"
-    label: "web apps by audience"
   - value: "26"
-    label: "capability API contracts"
-  - value: "5"
-    label: "delivery chunks"
+    label: "capabilities"
+  - value: "113"
+    label: "features"
+  - value: "912"
+    label: "API operations"
 ---
 
 <SummarySection title="Summary">
@@ -37,19 +37,35 @@ The platform has three web apps: a back-office for the operator, a portal for ea
 
 </SummarySection>
 
-<ObjectivesSection title="Goals">
+<ChallengeSection title="Challenge & strategy">
 
-The planning work started from an impact map that links business goals to the people who use the system and to what they need. Its five business objectives are:
+### Challenge
 
-- **Faster onboarding and card administration.** Reduce the time from registering a member to having an active card, and the share of requests that need rework.
-- **Continuity and reliability.** Keep the flow of operations running even when a third party fails, with safe retries and recovery.
-- **Financial control and reconciliation.** Shorten reconciliation and resolve differences inside the cycle.
-- **Governed interoperability.** Connect with third parties through stable, versioned contracts.
-- **Service, compliance and auditability.** Leave a trace of every relevant operation.
+Card operations at employee funds often ran on scattered manual processes: emails, loose files and data typed twice. They were slow, opaque and prone to error, and they made reconciliation and audits harder than they should have been. Each connection with a processor, a manufacturer or an accounting system added more hand-offs where something could be lost.
 
-Targets for these goals were deliberately left open until a baseline can be measured after go-live.
+### Strategy
 
-</ObjectivesSection>
+The planning work started from an impact map that linked business goals to the people who use the system and to what they need. Five objectives came out of it: faster onboarding and card administration, with less time from registering a member to having an active card and fewer requests needing rework; continuity and reliability, so operations keep flowing when a third party fails, with safe retries and recovery; financial control and reconciliation, shortening reconciliation and resolving differences inside the cycle; governed interoperability, connecting with third parties through stable, versioned contracts; and service, compliance and auditability, leaving a trace of every relevant operation.
+
+The answer was a single platform where each actor has the tools for their part of the lifecycle, and where the connections with processors, manufacturers and accounting systems are explicit and governed. Several reasons shaped it. External parties are treated as integration points, so Emisys stays independent of each third party's internals. APIs are contract-first, so teams can work in parallel against stable interfaces. Authentication and authorization are separate, so identity can change without touching business rules. An outbox with idempotency and at-least-once delivery means a failure never loses or duplicates an operation, and the interface never shows invented data, so users can trust what they see in a financial product. Targets for the goals were deliberately left open until a baseline can be measured after go-live.
+
+</ChallengeSection>
+
+<PersonasSection title="User persona">
+
+Five personas work with Emisys. The external parties, such as the card processor, are modeled as integration points and not as people.
+
+<PersonaCards
+  items={[
+    { name: "Fund administrator", does: "Registers associates, links them to card products, assigns cards from batches and follows claims, for their own fund only.", where: "Fund portal", tool: "tie", hair: "long", skin: "#d9a07c", shirt: "#2f3e5e", hairColor: "#2a1a14", glasses: true, },
+    { name: "Associate", does: "A member of the fund who sees their card, balance and movements, blocks the card or sets the PIN, and opens claims.", where: "Associate app, phone first", tool: "bag", hair: "curly", skin: "#a8704d", shirt: "#27a36d", hairColor: "#1c1c1c", },
+    { name: "Back-office operator", does: "Configures funds, limits and the product catalog, manages card batches and watches the operations dashboard.", where: "Back-office", tool: "headset", hair: "short", skin: "#e2ad88", shirt: "#8e5be0", hairColor: "#5a3a22", },
+    { name: "Reconciliation analyst", does: "Reconciles periods, manages differences, validates charges and sends accounting movements.", where: "Back-office", tool: "chart", hair: "bob", skin: "#f0c8a0", shirt: "#4b7bec", hairColor: "#7a3b2a", glasses: true, },
+    { name: "Governance approver", does: "Reviews settlement and collateral with their evidence and approves with four-eyes control.", where: "Governance portal", tool: "magnifier", hair: "short", skin: "#c68863", shirt: "#7a7f8c", hairColor: "#2a2a2a", glasses: true, },
+  ]}
+/>
+
+</PersonasSection>
 
 <FeaturesSection title="Features">
 
@@ -79,103 +95,53 @@ Emisys is the orchestrator and system of record of a card program run by an empl
 
 Emisys talks to Mottika and to third parties only through versioned, contract-first REST APIs and events. It never reads another system's database. Events are published with an outbox and delivered at least once, and receivers are idempotent. Every operation carries a correlation identifier and a controlled state, and the interface never shows data it does not have: when information from a third party is not available, it says so.
 
-### User personas
-
-Five personas work with Emisys. The external parties, such as the card processor, are modeled as integration points and not as people.
-
-<PersonaCards
-  items={[
-    { name: "Fund administrator", does: "Registers associates, links them to card products, assigns cards from batches and follows claims, for their own fund only.", where: "Fund portal", tool: "tie", hair: "long", skin: "#d9a07c", shirt: "#2f3e5e", hairColor: "#2a1a14", glasses: true, },
-    { name: "Associate", does: "A member of the fund who sees their card, balance and movements, blocks the card or sets the PIN, and opens claims.", where: "Associate app, phone first", tool: "bag", hair: "curly", skin: "#a8704d", shirt: "#27a36d", hairColor: "#1c1c1c", },
-    { name: "Back-office operator", does: "Configures funds, limits and the product catalog, manages card batches and watches the operations dashboard.", where: "Back-office", tool: "headset", hair: "short", skin: "#e2ad88", shirt: "#8e5be0", hairColor: "#5a3a22", },
-    { name: "Reconciliation analyst", does: "Reconciles periods, manages differences, validates charges and sends accounting movements.", where: "Back-office", tool: "chart", hair: "bob", skin: "#f0c8a0", shirt: "#4b7bec", hairColor: "#7a3b2a", glasses: true, },
-    { name: "Governance approver", does: "Reviews settlement and collateral with their evidence and approves with four-eyes control.", where: "Governance portal", tool: "magnifier", hair: "short", skin: "#c68863", shirt: "#7a7f8c", hairColor: "#2a2a2a", glasses: true, },
-  ]}
-/>
-
-### Status in the code
-
-Identity and access, funds, products, associates and rules are built, together with the web shells with login, password reset, theming, languages and installable PWAs. Card batches and lifecycle, transactions, statements, reconciliation and billing are specified in contracts and documentation and are being built in later chunks.
-
 </FeaturesSection>
 
-<MotivationSection title="Why the product was built">
-
-Card operations at employee funds often run on scattered manual processes: emails, loose files and data typed twice. They are slow, opaque and prone to error, and they make reconciliation and audits harder than they should be.
-
-Emisys replaces that with a single platform where each actor has the tools for their part of the lifecycle, and where the connections with processors, manufacturers and accounting systems are explicit and governed.
-
-</MotivationSection>
-
-<ImplementationSection title="How it was built">
+<ImplementationSection title="Implementation & final design">
 
 ### Architecture
 
-- **Two halves in one monorepo:** a Go backend and a web workspace. The architecture follows a C4 design reviewed by an external architecture partner at fixed checkpoints, and changes to it are requested rather than made unilaterally.
-- **Hexagonal backend sliced by feature.** Services hold modules per feature and share an internal platform library for configuration, HTTP and gRPC servers, logging, security and safe SQL.
-- **Authentication and authorization are separate.** Identity is delegated to an OpenID Connect provider, and a separate authorization service answers every permission check over gRPC. If it is unreachable, the answer is a service error and never a silent denial.
-- **An API gateway** routes requests by path prefix to the right service.
+The project lives in one monorepo with two halves, a Go backend and a web workspace. The architecture follows a C4 design reviewed by an external architecture partner at fixed checkpoints, and changes to it are requested rather than made unilaterally. The backend is hexagonal and sliced by feature: services hold modules per feature and share an internal platform library for configuration, HTTP and gRPC servers, logging, security and safe SQL.
+
+Authentication and authorization are kept apart. Identity is delegated to an OpenID Connect provider, and a separate authorization service answers every permission check over gRPC. If it is unreachable, the answer is a service error and never a silent denial. An API gateway routes requests by path prefix to the right service.
 
 ### Domain model
 
-The domain is large, and the core of it can be read in a few ideas:
+The domain is large, and the core of it can be read in a few ideas. The fund is the root of isolation: nothing is visible across funds, and a fund moves from draft to active and can be suspended and reactivated. An associate belongs to one fund and links to the products enabled for it. A product is versioned, going from editable to authorized, published and suspended, with immutable codes and a change history.
 
-- **Fund** is the root of isolation. Nothing is visible across funds. It moves from draft to active and can be suspended and reactivated.
-- **Associate** belongs to one fund and links to the products enabled for it.
-- **Product** is versioned: editable, authorized, published and suspended, with immutable codes and a change history.
-- **Card** stores only a masked number. Its states are assigned, delivered, active and temporarily blocked, with cancelled as a permanent end. Each block has its own origin, so lifting one never lifts another.
-- **Authorization operation and transaction** are separate: the first is the request-response moment, the second accumulates the facts of the purchase over time.
-- **Settlement, reconciliation and billing** are periods and runs with versioned results, so each figure can be explained later.
-- **Cross-cutting concepts** are custom roles by scope, audit records, documents as evidence and integration events.
+A card stores only a masked number. Its states are assigned, delivered, active and temporarily blocked, with cancelled as a permanent end, and each block has its own origin, so lifting one never lifts another. The authorization operation and the transaction are separate: the first is the request-response moment, the second accumulates the facts of the purchase over time. Settlement, reconciliation and billing are periods and runs with versioned results, so each figure can be explained later. Custom roles by scope, audit records, documents as evidence and integration events cut across all of it.
 
 A few invariants hold everywhere: every critical operation is idempotent, a technical state is never shown as a business state, and no fund can see another's data.
 
 ### Quality attributes
 
-The quality attributes were derived from principles and traced to their sources. The ones that matter most, and how they are met:
+The quality attributes were derived from principles and traced to their sources. For availability, the authorization path gets the highest tier, with active-passive cores, multi-zone data, zero-downtime deploys and rebuild drills. For latency, authorization is synchronous with a tight budget and no queues on that path, while long jobs are asynchronous with visible progress. Rate limits per fund keep a noisy fund from hurting the others.
 
-- **Availability.** The authorization path gets the highest tier, with active-passive cores, multi-zone data, zero-downtime deploys and rebuild drills.
-- **Latency.** Authorization is synchronous with a tight budget and no queues on that path, while long jobs are asynchronous with visible progress.
-- **Isolation and scale.** Rate limits per fund so that a noisy fund cannot hurt others.
-- **Security.** Second factor for every person, deny-by-default access, fund context resolved on the server, encryption in transit and at rest, and no card number, security code or PIN stored or logged.
-- **Resilience.** Timeouts and circuit breakers per third party, retries only for transient faults, and an unreachable authority always means access is denied.
-- **Auditability.** Every effect, and every denial, is logged so that a critical transaction can be rebuilt end to end.
-- **Interoperability.** Versioned contracts in one catalog, invalid messages rejected at the edge, and idempotency at every boundary.
+On security, every person uses a second factor, access is deny-by-default, the fund context is resolved on the server, data is encrypted in transit and at rest, and no card number, security code or PIN is stored or logged. For resilience, each third party has timeouts and circuit breakers, retries happen only for transient faults, and an unreachable authority always means access is denied. Every effect, and every denial, is logged so that a critical transaction can be rebuilt end to end, and for interoperability contracts are versioned in one catalog, invalid messages are rejected at the edge and idempotency holds at every boundary.
 
 ### UX design
 
-The blueprint defines four surfaces: the back-office, the fund portal, the member app and a governance portal where approvers review settlement and collateral. The member app is phone-first, with one task per screen. The key journeys are:
-
-- A member activates a card and sets a PIN.
-- A fund onboards members in bulk and gets a result per row.
-- A fund requests a batch, receives it and assigns cards.
-- A member or fund blocks, cancels or reissues a card.
-- An operator handles degraded authorizations with only the permitted recovery actions.
-- An analyst reconciles a period and approves billing, with four-eyes approval where it matters.
+The blueprint defines four surfaces: the back-office, the fund portal, the member app and a governance portal where approvers review settlement and collateral. The member app is phone-first, with one task per screen. The key journeys cover a member activating a card and setting a PIN, a fund onboarding members in bulk and getting a result per row, and a fund requesting a batch, receiving it and assigning cards. They also include a member or fund blocking, cancelling or reissuing a card, an operator handling degraded authorizations with only the permitted recovery actions, and an analyst reconciling a period and approving billing, with four-eyes approval where it matters.
 
 Its principles are one shared design system, the fund context always visible, four kinds of message (success, business rejection, technical failure and "pending confirmation") and sensitive data shown only through short-lived protected components.
 
 ### Contracts first
 
-- **OpenAPI is the specification,** linted automatically, with one contract per capability. Contracts are delivered ahead of each build chunk, and a test fails when a contract operation has no handler.
+OpenAPI is the specification, linted automatically, with one contract per capability. Contracts are delivered ahead of each build chunk, and a test fails when a contract operation has no handler.
 
 ### The web apps
 
-- **Three apps by audience:** back-office, funds and associates, sharing a design system of shadcn-based primitives with theme tokens.
-- **White-label by fund.** The funds and associates apps load each fund's branding after login.
-- **Space Grotesk and Satoshi,** light and dark themes, Spanish and English, and installable PWAs with an offline route.
-- **Server-side auth routes** in each app handle login, callback, logout, password reset and one-time codes.
+There are three apps by audience, back-office, funds and associates, sharing a design system of shadcn-based primitives with theme tokens. The funds and associates apps are white-label by fund and load each fund's branding after login. The interface uses Space Grotesk and Satoshi, light and dark themes, Spanish and English, and installable PWAs with an offline route. Server-side auth routes in each app handle login, callback, logout, password reset and one-time codes.
 
 ### Delivery
 
-- **Twenty weeks in five chunks,** from operational foundation to reconciliation and billing, with a short refinement and design phase up front and a stabilization phase at the end.
-- **Security in CI.** Secret scanning over the full history, static analysis with coverage, and vulnerability scans of the source and of every container image, plus separate deploy workflows for each service and app.
-- **Quality strategy.** Specs are reviewed before they are built, and testing goes deepest where risk is highest: authorization and its corrections, accounting duplication, isolation between funds and the PIN never being persisted. Integrations are tested at the contract level, and each defect links back to its spec.
-- **Agent-assisted development.** The repository includes maps and rules for AI coding agents, with session folders and reviewer checklists, while people keep control of git.
+Delivery was planned as twenty weeks in five chunks, from operational foundation to reconciliation and billing, with a short refinement and design phase up front and a stabilization phase at the end. Security runs in CI: secret scanning over the full history, static analysis with coverage, and vulnerability scans of the source and of every container image, plus separate deploy workflows for each service and app.
 
-</ImplementationSection>
+The quality strategy reviews specs before they are built, and testing goes deepest where risk is highest: authorization and its corrections, accounting duplication, isolation between funds and the PIN never being persisted. Integrations are tested at the contract level, and each defect links back to its spec. The repository also includes maps and rules for AI coding agents, with session folders and reviewer checklists, while people keep control of git.
 
-<DecisionsSection title="Why it was done this way">
+### Decisions
+
+The main decisions, and what each one costs, are summarized below.
 
 | Decision | Why | Trade-off |
 |---|---|---|
@@ -186,15 +152,12 @@ Its principles are one shared design system, the fund context always visible, fo
 | Never show invented data | Users can trust what they see in a financial product. | Some screens show "unavailable" until a third party answers. |
 | Three apps by audience | Each audience gets a focused experience and its own release. | Shared pieces live in a design system, and each app keeps its own types on purpose. |
 
-</DecisionsSection>
+</ImplementationSection>
 
-<LimitationsSection title="Limitations and open items">
+<ResultsSection title="Results">
 
-- **Work in progress.** Later chunks, such as transactions, statements, reconciliation and billing, are specified but not yet in code.
-- **Third-party integration is pending.** The card-processor integration does not exist yet, and several details are still to be confirmed with that vendor.
-- **Business targets are open** until a baseline is measured after go-live.
-- **Dependencies on other parties** such as sandboxes, vendor contracts, legal sign-off and reconciliation formats sit on the critical path.
-- **A contract check has a known gap.** The linter confirms that query parameters are declared, but not that handlers honor them, so extra tests cover that.
-- **Some code is duplicated on purpose,** such as the query-parameter handler, until it is consolidated.
+Funds and their operators already have the base of the platform: identity and access, funds, products, associates and rules are built, together with the web apps for the back-office, the funds and the associates, with login, password reset, themes, languages and installable PWAs. The next chunks bring card batches and lifecycle, transactions, statements, reconciliation and billing.
 
-</LimitationsSection>
+The results the client expects are still to be measured: the business targets stay open until a baseline is taken after go-live. The card-processor integration does not exist yet, and legal sign-off and reconciliation formats are among the dependencies on other parties.
+
+</ResultsSection>

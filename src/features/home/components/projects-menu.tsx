@@ -2,7 +2,7 @@
 
 import FlowingMenu from "@/components/FlowingMenu";
 
-type MenuItem = { text: string; link: string; meta?: string; marquee?: string; image?: string };
+type MenuItem = { text: string; link: string; meta?: string; tag?: string; marquee?: string; image?: string };
 
 export function ProjectsMenu({ items }: { items: MenuItem[] }) {
   return (
