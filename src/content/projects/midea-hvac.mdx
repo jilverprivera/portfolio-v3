@@ -1,0 +1,140 @@
+---
+title: "Midea HVAC"
+slug: "midea-hvac"
+summary: "A bilingual ecosystem platform for Midea Germany's HVAC business: a portal for installers, technicians and trainers, an admin back-office and an API with SSO, role-based access, a product catalog, a documentation center and a thermal load calculator. A client project delivered at Tres Astronautas."
+type: "Work project · Tres Astronautas"
+date: "2026-09"
+year: "2026"
+status: "Platform build"
+featured: true
+stack:
+  - "NestJS 11"
+  - "Prisma 7 and PostgreSQL"
+  - "Next.js 16"
+  - "React 19"
+  - "Tailwind CSS 4"
+  - "TanStack Query"
+  - "next-intl"
+  - "Google Cloud Storage"
+  - "SendGrid"
+  - "Cloud Run and Firebase Hosting"
+  - "Turborepo"
+highlights:
+  - value: "3"
+    label: "apps in the monorepo"
+  - value: "~125"
+    label: "API endpoints"
+  - value: "69"
+    label: "database migrations"
+---
+
+<SummarySection title="Summary">
+
+This is an ecosystem platform for Midea Germany's HVAC business. It brings installers, technicians, trainers and sales people into one portal, and gives Midea's team a back-office to manage everything they see.
+
+It is a work project, not a personal one: it was built at Tres Astronautas for a client. The monorepo contains a user portal, an admin back-office and the REST API behind both, in German and English.
+
+The portal's most distinctive tool is a thermal load calculator that sizes air-conditioning equipment for a building, room by room.
+
+</SummarySection>
+
+<ObjectivesSection title="Goals">
+
+- **One place for the HVAC community.** Installers, technicians, trainers and sales people share a portal for products, documentation, training and commissioning.
+- **Single sign-on with Midea.** Users should arrive with their existing Midea account and be provisioned automatically.
+- **Roles that can change without a deploy.** Permissions are stored in the database and edited from the admin.
+- **Bilingual by design.** German is the default locale, English is available everywhere, and domain content is stored in both languages.
+- **Everything is auditable.** Every business action leaves a record of who did what and whether it succeeded.
+
+</ObjectivesSection>
+
+<FeaturesSection title="Features">
+
+| Area | What it enables |
+|---|---|
+| Authentication | Email and password with a one-time code, assisted registration by an admin, public self-registration, password reset, forced password change on first login and rotating refresh tokens. |
+| Single sign-on | OAuth 2.0 against Midea's identity provider, with automatic user provisioning and a role-selection step for new users. |
+| Roles and permissions | Roles mapped to modules and to actions (view, create, edit, delete, use, download), enforced on the server for each request. |
+| Product catalog | A taxonomy of categories, subcategories, series and tiers, with product sheets, compatibilities, combinations, 3D models and multimedia, plus a guided create and edit wizard. |
+| Documentation center | Manuals and resources with versions, independent publishing per resource and per version, and assignment to several products. |
+| Thermal calculator | Room-by-room load estimation, indoor and outdoor unit suggestions, multi-split combinations, saved and shareable results, and a PDF export. |
+| Training and roadshows | Events with participants, trainer statistics and certificates, with scheduled jobs that start and close events automatically. |
+| Commissioning | Installers request a commissioning, a commissioner accepts, performs and certifies it with photo evidence. |
+| Admin settings | A landing carousel, social links and legal documents such as terms, privacy and the imprint. |
+| Audit log | An event log with status, priority and actor, and an admin screen with dashboard statistics. |
+
+### User personas
+
+Six profiles use the platform. The first four are the HVAC community, and the last two work behind the scenes.
+
+<PersonaCards
+  items={[
+    { name: "Installer", does: "Looks up products and manuals, sizes equipment with the calculator and requests a commissioning of the installation.", where: "Web portal", tool: "box", hair: "cap", skin: "#c68863", shirt: "#e8743b", hairColor: "#222", },
+    { name: "Technician", does: "Finds the documentation of each model, its compatibilities and its combinations.", where: "Web portal", tool: "chip", hair: "short", skin: "#e2ad88", shirt: "#4b7bec", hairColor: "#2a2a2a", glasses: true, },
+    { name: "Trainer", does: "Runs trainings and roadshows, manages participants and issues certificates.", where: "Web portal", tool: "chart", hair: "long", skin: "#d9a07c", shirt: "#27a36d", hairColor: "#2a1a14", glasses: true, },
+    { name: "Sales representative", does: "Uses the catalog and the calculator to propose the right equipment to a customer.", where: "Web portal", tool: "tie", hair: "curly", skin: "#a8704d", shirt: "#e0566b", hairColor: "#1c1c1c", },
+    { name: "Commissioner", does: "Accepts a commissioning request, performs it and certifies the installation with photo evidence.", where: "Web portal", tool: "magnifier", hair: "bob", skin: "#f0c8a0", shirt: "#7a7f8c", hairColor: "#7a3b2a", },
+    { name: "Back-office administrator", does: "Manages users, roles, products, documentation, training events and the audit log.", where: "Admin back-office", tool: "headset", hair: "bun", skin: "#f0c8a0", shirt: "#8e5be0", hairColor: "#5a3a22", },
+  ]}
+/>
+
+### The thermal calculator
+
+The calculation estimates the load of each room from its volume and from the people in it, then adds the rooms together. It then compares that load with the nominal capacity of each candidate indoor unit and classifies the match as undersized, optimal or acceptable. For multi-split systems it picks the smallest outdoor unit that covers the load and has a valid combination, and spreads the load over several outdoor units when one is not enough. The method is documented with worked examples in the repository.
+
+</FeaturesSection>
+
+<MotivationSection title="Why the product was built">
+
+Midea's HVAC business depends on a network of installers, technicians and trainers who need current product information, manuals, training and a way to size equipment correctly. Doing that across emails, PDFs and spreadsheets is slow and hard to keep consistent.
+
+The platform puts it in one place, tied to the Midea account people already have, with the language and permissions that each audience needs.
+
+</MotivationSection>
+
+<ImplementationSection title="How it was built">
+
+### Architecture
+
+- **Monorepo** with yarn workspaces and Turborepo: three apps (the API, the portal and the admin) and two shared packages, one with TypeScript contracts and one with the design system.
+- **Hexagonal modules.** Each API feature has a domain layer that never imports NestJS or Prisma, an application layer with handlers and use cases, and an infrastructure layer with controllers and repositories. Modules talk to each other only through exported handlers or ports.
+- **Shared contracts.** The types package mirrors the database enums and the JSON shapes, so the frontends never depend on the Prisma client.
+- **Design system.** The portal and the admin share one UI package built with Atomic Design, shadcn components, rich text and data tables.
+
+### Authorization and security
+
+- **Permissions are decided on the server** by a global guard that checks the role's module and action, using data stored in the database. The frontends only read permissions to hide what a user cannot use.
+- Helmet, throttling, an HTML sanitization pipe and strict validation that rejects unknown fields. Raw SQL is blocked by default in the database service.
+- Secret scanning with gitleaks as a pre-commit hook, plus Trivy and SonarQube in CI.
+
+### Files, language and delivery
+
+- **Direct uploads to Google Cloud Storage** with signed URLs, in resumable chunks, so large files never pass through the API.
+- **Automatic translation.** When only one language is supplied, the API fills the other with Google Cloud Translation.
+- **Tag-driven deployments.** A tag names the app and the environment, and the pipeline builds a Docker image, pushes it and deploys to Cloud Run. The two frontends sit behind Firebase Hosting.
+- **Spec-driven work.** Features start as written specs, and the repository carries rules and skills for AI coding agents.
+
+</ImplementationSection>
+
+<DecisionsSection title="Why it was done this way">
+
+| Decision | Why | Trade-off |
+|---|---|---|
+| Hexagonal modules per feature | Keeps the domain free of frameworks and easy to test. | More boilerplate, and very large repositories in the products module. |
+| Permissions stored in the database | Roles can be edited at runtime without a deploy. | One extra query on every guarded request. |
+| A shared types package | One source of truth for contracts across three apps. | It has to be built before the apps that use it. |
+| Separate portal and admin | Different audiences and navigation, one design system. | Two Next.js apps to deploy and maintain. |
+| Direct-to-storage uploads | Large manuals and media should not load the API. | The upload flow lives in the client. |
+| Bilingual content as data | Every piece of domain content exists in German and English. | Editors work with two fields, and automatic translation fills gaps. |
+
+</DecisionsSection>
+
+<LimitationsSection title="Limitations and open items">
+
+- **Test coverage is uneven.** The API has 35 unit test files and one end-to-end test, but the portal, the admin and the shared packages have none.
+- **Some dependencies are provisioned but unused.** Redis, Elasticsearch and a job queue appear in the local setup and dependencies, but the code I reviewed does not use them, so the README is out of date.
+- **Hardening items.** CSRF protection and the content security policy are switched off, and CORS is open globally.
+- **The thermal model is a simplified rule.** It uses room volume and occupants, with no climate zone, insulation, glazing or orientation, and the outdoor unit combination matrix is held in memory.
+- **Some pages still use placeholder data,** such as roadshow statistics, and a few feature specs are still drafts or planned.
+
+</LimitationsSection>

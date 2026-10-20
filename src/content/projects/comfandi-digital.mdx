@@ -1,0 +1,104 @@
+---
+title: "Comfandi Digital Products"
+slug: "comfandi-digital"
+summary: "Web and mobile products for a Colombian family compensation fund: a health portal and app for appointments and lab results, an educational assessment platform, and the NestJS services behind them. Work delivered at OL-Software."
+type: "Work project · OL-Software"
+date: "2025-09"
+year: "2025"
+status: "Engagement Jun – Sep 2025"
+featured: true
+stack:
+  - "Next.js 13 and 14"
+  - "Expo and React Native"
+  - "Solito and NativeWind"
+  - "Redux Toolkit"
+  - "NestJS"
+  - "Prisma and PostgreSQL"
+  - "Jest"
+  - "Turborepo"
+highlights:
+  - value: "3"
+    label: "repositories worked in"
+  - value: "230+"
+    label: "commits in the health repo since June"
+  - value: "53"
+    label: "data models in the core service"
+---
+
+<SummarySection title="Summary">
+
+This engagement was at OL-Software, a software company, on digital products for Comfandi, a Colombian family compensation fund. It is a work project, not a personal one.
+
+Three repositories were part of the work. The health app lets members schedule medical appointments and see lab results, on the web and on mobile. An educational platform lets teachers build and manage assessments. A NestJS backend, split into services by business flow, supports the health and other products.
+
+The main thread of the work was the health product, in particular the appointment scheduling flow. In parallel, core monolith features were migrated to scalable NestJS microservices, as a separate project from the apps above.
+
+</SummarySection>
+
+<ObjectivesSection title="Goals">
+
+- **One codebase for web and mobile.** Share screens, components and logic between a Next.js app and an Expo app.
+- **Make scheduling a medical appointment simple.** Search available slots, pick a patient, confirm and be sent to pay when needed.
+- **Support teachers with assessments,** with several question types and a way to manage and review them.
+- **Keep the backend modular,** with services grouped by business flow.
+
+</ObjectivesSection>
+
+<FeaturesSection title="Features">
+
+| Area | What it enables |
+|---|---|
+| Appointment scheduling | A stepper that searches available appointments with retries, patient selection and registration, confirmation and a redirect to pay a scheduled appointment. |
+| Lab results | A patient selection step and a list of results with a detail modal. |
+| Shared interface | Toasts, loading modals and responsive layouts that behave the same on web and mobile. |
+| Assessments | Questions with extra input fields, a new true or false type, a detail view and an update flow, with filtering by creation and update dates. |
+| Backend services | Services for sales, subsidies and credit, health, and core adjustments with identity and external integrations. |
+
+</FeaturesSection>
+
+<MotivationSection title="Why the work was done">
+
+Members of a compensation fund use many services, and each digital product used to be built in its own way. A shared base for web and mobile reduces the cost of each new screen and keeps the experience consistent, and a modular backend lets each business flow evolve at its own pace.
+
+</MotivationSection>
+
+<ImplementationSection title="How it was built">
+
+### The health product
+
+- **A monorepo** with an Expo app, a Next.js app and a shared package, built with yarn and Turborepo. The README describes it as a cross-platform base.
+- **Solito and NativeWind** let both apps share routes and styling. A small hook switches between the web router and native navigation according to the platform.
+- **Clean architecture with atomic design.** The shared package separates domain, infrastructure and presentation, and holds the atoms, molecules and the scheduling and lab-result features.
+- **The shared component SDK.** The apps depend on the company UI kit, and I updated that component SDK during the work so both platforms could use the newer components.
+
+### The assessment platform
+
+- **Backend:** a NestJS app with 13 modules, including assessments, questions, answers, students and academic groups, on Prisma with 20 models and 7 migrations.
+- **Frontends:** two Next.js apps that follow the same layered structure, with a shared UI package.
+
+### The core services and the monolith migration
+
+- **A separate project.** The migration of core monolith features to scalable NestJS microservices ran as its own project, apart from the apps above.
+- **A NestJS monorepo** with four services named after business flows, a shared library for authentication, mail, SMS and exceptions, 53 Prisma models and 64 migrations. The work here was on the appointment service, which only offers available slots inside a configurable time window and now uses the Bogotá time zone.
+
+</ImplementationSection>
+
+<DecisionsSection title="Why it was done this way">
+
+| Decision | Why | Trade-off |
+|---|---|---|
+| One shared package for web and mobile | Screens and logic are written once. | Platform differences need an abstraction, such as the navigation hook. |
+| Clean architecture with atomic design | A clear place for each kind of code. | More folders for small features. |
+| Services grouped by business flow | Each flow can change on its own. | Shared concerns move into a common library. |
+| Explicit time zone for appointments | Slots must match local time regardless of the server. | Dates need care everywhere they are built. |
+
+</DecisionsSection>
+
+<LimitationsSection title="Limitations and open items">
+
+- **Test coverage is thin where the work happened.** The health repository and the assessment frontends have no test files, and the core services have tests concentrated in one service.
+- **Version mismatch.** The Expo app uses an older React Native than its shared package expects.
+- **Unfinished pieces.** The organisms folder in the shared package is empty, and the component SDK is still described as under development.
+- **Scope of this page.** It covers three repositories. Other repositories in the same folder were not part of this work and are not documented here.
+
+</LimitationsSection>

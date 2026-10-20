@@ -1,0 +1,147 @@
+---
+title: "NIDO"
+slug: "nido"
+summary: "A condominium management platform: residents get notices, visitor authorization, amenity reservations, events, encrypted chat, fees and a local marketplace, while admins, guards, partners and providers work from a web portal. A client project delivered at Tres Astronautas."
+type: "Work project · Tres Astronautas"
+date: "2026-10"
+year: "2026"
+status: "Platform build"
+featured: true
+stack:
+  - "NestJS 11"
+  - "Prisma 7 and PostgreSQL"
+  - "MongoDB"
+  - "Socket.IO"
+  - "Next.js 16"
+  - "React 19"
+  - "Expo 54 and React Native"
+  - "Tailwind CSS 4 and NativeWind"
+  - "Google Cloud Run"
+  - "Firebase Hosting"
+  - "Turborepo"
+highlights:
+  - value: "37"
+    label: "API modules"
+  - value: "100"
+    label: "data models"
+  - value: "1,100+"
+    label: "test files"
+---
+
+<SummarySection title="Summary">
+
+NIDO is a condominium management platform. A resident gets notices from the administration, authorizes visitors, reserves common areas, signs up for events, chats with neighbors, pays fees, buys from local providers and uses partner benefits.
+
+It is a work project, not a personal one: it was built at Tres Astronautas for a client. The platform has an API, a web portal, a resident mobile app and a staff app, in Spanish and English with light and dark themes.
+
+There are six roles: resident, guard, condominium admin, platform admin, partner and provider. The mobile app is for residents only, and every other role works from the web portal.
+
+</SummarySection>
+
+<ObjectivesSection title="Goals">
+
+- **One app for daily life in a condominium,** from notices and visitors to fees and local commerce.
+- **Separate experiences for each role,** with a resident-only mobile app and a web portal for administration, guards, partners and providers.
+- **Many condominiums on one platform,** with data scoped to each condominium.
+- **Private conversations.** Chat messages are encrypted individually, with keys managed outside the database.
+- **Every sensitive action is traceable,** so each mutating flow writes an audit record.
+
+</ObjectivesSection>
+
+<FeaturesSection title="Features">
+
+| Area | What it enables |
+|---|---|
+| Announcements | Notices from the administration, urgent announcements and an AI writing assistant for administrators. |
+| Visitors and access | Pre-registration of visitors, guest passes, a visitor blocklist, guard access and access history. |
+| Reservations | Common areas with reservations, invitations and guest passes. |
+| Events and clubs | Events residents can sign up for, plus clubs with moderation. |
+| Chat | Real-time conversations between neighbors, with encrypted messages, a profanity filter and a retention policy. |
+| Fees and payments | Charges per unit with an overdue sweep, receipt-based payment validated by an admin, and a payment gateway integration being wired in step by step. |
+| Marketplace | Local providers, a catalog, orders, offers and deals, and partner benefits. |
+| Administration | Condominiums, units, residents, guards, vendors, legal documents, settings and a platform admin area. |
+| Premium and metrics | Premium plans and metrics for the platform. |
+| Notifications | Push notifications, email and SMS. |
+| Account safety | Device one-time codes, account deletion with verification and versioned terms acceptance. |
+
+### User personas
+
+Six roles use NIDO. The mobile app is for residents only, and every other role works from the web portal.
+
+<PersonaCards
+  items={[
+    { name: "Resident", does: "Gets notices, authorizes visitors, reserves common areas, joins events, chats with neighbors, pays fees and buys from local providers.", where: "Mobile app", tool: "bag", hair: "bun", skin: "#e8b48f", shirt: "#4b7bec", hairColor: "#3b2a22", },
+    { name: "Guard", does: "Checks visitors in and out and keeps the access history of the condominium.", where: "Web portal, guard access", tool: "magnifier", hair: "cap", skin: "#a8704d", shirt: "#3b4a6b", hairColor: "#222", },
+    { name: "Condominium administrator", does: "Publishes announcements, manages residents, units, vendors, reservations and fees.", where: "Web portal", tool: "tie", hair: "short", skin: "#e2ad88", shirt: "#2f3e5e", hairColor: "#555", glasses: true, },
+    { name: "Platform administrator", does: "Manages condominiums, plans, legal documents and the health of the platform.", where: "Web portal, platform area", tool: "headset", hair: "bob", skin: "#f0c8a0", shirt: "#8e5be0", hairColor: "#7a3b2a", },
+    { name: "Partner", does: "Offers benefits and deals to residents through the platform.", where: "Web portal, partner area", tool: "map", hair: "curly", skin: "#a8704d", shirt: "#27a36d", hairColor: "#1c1c1c", },
+    { name: "Provider", does: "A local business that publishes a catalog and receives orders from residents.", where: "Web portal, provider area", tool: "box", hair: "short", skin: "#cf9468", shirt: "#e6a23c", hairColor: "#2a2a2a", },
+  ]}
+/>
+
+### Status in the code
+
+The API has 37 module folders, 55 controllers and about 480 routes. The database has 100 models, 88 enums and 231 migrations. The web portal has 38 feature folders, and the mobile and staff apps are built with Expo.
+
+</FeaturesSection>
+
+<MotivationSection title="Why the product was built">
+
+Life in a condominium runs through a lot of separate channels: group chats, paper notices, guard logbooks, receipts sent as screenshots and word of mouth for local services. Residents, administrators and guards each lose time to it.
+
+NIDO brings those flows into one product, with the right tool for each role, and gives local providers and partners a way to reach residents.
+
+</MotivationSection>
+
+<ImplementationSection title="How it was built">
+
+### Architecture
+
+- **Monorepo** with yarn workspaces and Turborepo: the API, the web portal, the resident app, the staff app and two shared packages, one for contracts and one for a profanity filter.
+- **Hexagonal modules.** Each API module has a domain layer free of frameworks, an application layer with handlers, use cases and services, and an infrastructure layer with controllers and repositories. Dependencies only point inwards, and the rules are written down for people and for AI agents.
+- **Two databases.** PostgreSQL through Prisma holds the relational data, and MongoDB holds chat conversations, messages and read state.
+- **Real time.** A Socket.IO gateway for chat runs in the same service as the REST API.
+- **A static web portal.** The Next.js portal is exported as static files, uses a locale segment in its routes and is served from Firebase Hosting.
+
+### Security and privacy
+
+- **Encrypted chat.** Each message is encrypted with AES-256-GCM, using envelope encryption with a key from a KMS provider that is chosen by configuration.
+- **Short-lived sessions.** A 15-minute access token and a refresh token that rotates only when it is close to expiry. Roles are enforced with a decorator and a guard.
+- **Audit logging is mandatory.** A single log table receives a record from every mutating or security-sensitive flow.
+- **Secret scanning in four layers:** a history audit, a pre-commit hook, a pre-push hook and a CI job.
+
+### Delivery
+
+- **Cloud Run per environment.** The API runs on Cloud Run with development, staging and production services, deployed by git tags.
+- **CI on every push.** Dependency install, Prisma validation, linting, API and web tests with coverage, SonarQube and Trivy scans.
+- **A real incident, documented.** Cloud Run's default timeout cut the WebSocket connection every five minutes, and with a 15-minute token the chat died. The fix was a gateway check that rejects with stable reasons, plus token refresh with backoff in the client.
+
+### Working with AI agents
+
+The repository includes a small harness for sessions of people and AI agents on one checkout: a registry of sessions with path claims, locks for shared resources, a leader agent that splits work, implementer and reviewer agents that write reports to disk, and written end-state criteria. People own git, and agents never commit.
+
+</ImplementationSection>
+
+<DecisionsSection title="Why it was done this way">
+
+| Decision | Why | Trade-off |
+|---|---|---|
+| Hexagonal modules with ports outside the shared types package | Keeps the domain free of frameworks and the shared package thin. | More files per module. |
+| PostgreSQL plus MongoDB | Relational data for the platform and a document store for chat. | Two databases to run and back up. |
+| Envelope encryption for chat | Messages stay private even from someone with database access. | Key management and a backfill for older data. |
+| A single audit log table | One place to answer who did what. | Every mutation must remember to write to it. |
+| A static web export | Cheap, fast hosting with no server to run. | No server-side rendering for the portal. |
+| Receipt-based payments first | Fees can be collected now while the gateway is integrated gradually. | An admin validates receipts by hand. |
+| Permissive CSV import | Header matching ignores case and separators, and unknown headers are hints rather than errors. | Looser validation on import files. |
+
+</DecisionsSection>
+
+<LimitationsSection title="Limitations and open items">
+
+- **The payment gateway is partly integrated.** The docs say the production flow is receipt-based, while some gateway code and tests already exist, so the two disagree.
+- **Test results were not run for this write-up,** so there are no coverage numbers here, only counts of test files.
+- **Some fixes were only verified with unit tests,** not in a real browser, and a number of older type errors remain in unrelated test files.
+- **Development fallbacks exist for some configuration values,** which is a hardening item for production.
+- **Documentation drift.** The API README is minimal and out of date on the database version and on script names, and the web app still has some legacy component folders pending migration.
+
+</LimitationsSection>

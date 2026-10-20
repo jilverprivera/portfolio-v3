@@ -1,0 +1,263 @@
+---
+title: "Vigía"
+slug: "vigia"
+summary: "A multi-tenant PWA for pharmacies and pharmacy chains in Colombia: batch-level inventory with FEFO, a point of sale with offline mode, cash register, store credit, web catalog, prescriptions, controlled-substance logs, product recalls and cold chain."
+type: "Personal project"
+date: "2026-06"
+year: "2026"
+status: "In development"
+featured: true
+cover: "/screenshots/vigia/dashboard.png"
+stack:
+  - "Go"
+  - "Next.js 16"
+  - "React"
+  - "Supabase Postgres, Auth and Storage"
+  - "Redis and asynq"
+  - "IndexedDB (Dexie)"
+  - "Prisma Client Go and pgx"
+  - "Twilio and SendGrid"
+  - "OpenTelemetry and Grafana"
+  - "Docker and GitHub Actions"
+highlights:
+  - value: "33"
+    label: "product capabilities"
+  - value: "146"
+    label: "features in the backlog"
+  - value: "79"
+    label: "Go test files"
+---
+
+<SummarySection title="Summary">
+
+Vigía is a progressive web app that unifies the operation of a pharmacy: batch-level inventory with FEFO dispatch (first expired, first out), expiry tracking, pricing, supplier purchasing, point of sale, cash register and reconciliation, and store credit. It also serves customers with a web catalog showing stock and price per branch, and covers health-regulation obligations: the controlled-substance log, product recalls and batch traceability.
+
+It serves two customer profiles: the neighborhood pharmacy, where the same person sells, receives goods and closes the register, and the multi-branch chain, which needs consolidated stock, transfers and central promotions.
+
+</SummarySection>
+
+<ObjectivesSection title="Goals">
+
+The base specification defines five goals:
+
+1. Reduce the time staff spend answering repetitive questions over WhatsApp or phone.
+2. Avoid losses from expiry and from stockouts of fast-moving products.
+3. Eliminate price differences between shelf, register and catalog.
+4. Provide traceability for every unit sold, damaged, returned or lost.
+5. Retain customers with recurring purchases: chronic patients, older adults and families.
+
+As design constraints, the specification states that the counter never stops: no network, Redis or external-provider failure prevents selling, charging or closing the register. In addition, all patient and prescription data is treated as sensitive from the moment it is captured, in line with Colombian Law 1581 of 2012.
+
+</ObjectivesSection>
+
+<FeaturesSection title="Features">
+
+The backlog defines 33 capabilities and 146 features, grouped into five blocks:
+
+| Block | Capabilities | Main content |
+|---|---|---|
+| Cross-cutting | 001 to 008 | Platform console, users, branches and roles, audit log, data privacy, notifications, initial import, reports and PWA operation. |
+| Catalog, pricing and inventory | 009 to 013 | Products with units and presentations, price master with validity dates, batch-level inventory, physical counts and alerts for expiry and minimum stock. |
+| Purchasing and supply | 014 to 016 | Suppliers, purchase orders, purchase suggestions and goods receipt. |
+| Sales, cash and credit | 017 to 023 | Counter sales, returns and exchanges, offline sales, shifts and cash reconciliation, store credit, promotions and electronic documents (proposed). |
+| Customers, prescriptions and compliance | 024 to 030 | Web store, customers and patients, pharmacist-validated prescriptions, reminders for chronic patients, controlled-substance log, product recalls and cold chain. |
+| Multi-branch and loyalty | 031 to 033 | Consolidated dashboard, transfers between branches and a points program. |
+
+### User personas
+
+Eight personas drive the design. Each one has a different way of using the product, from a neighborhood counter to the platform team.
+
+<PersonaCards
+  items={[
+    { name: "Customer or patient", does: "Looks up products, stock and prices, uploads prescriptions, receives reminders and buys. Includes older adults and families managing dependents.", where: "Public store, WhatsApp, SMS and email", tool: "bag", hair: "bun", skin: "#e8b48f", shirt: "#4b7bec", hairColor: "#3b2a22" },
+    { name: "Counter staff", does: "Sells, charges, handles returns and store credit and closes the register. In a neighborhood pharmacy, often has other roles too.", where: "Point of sale and panel", tool: "register", hair: "cap", skin: "#c68863", shirt: "#e0566b", hairColor: "#222" },
+    { name: "Warehouse staff", does: "Receives goods, adjusts stock, counts and transfers.", where: "Panel: receipts, batches and counts", tool: "box", hair: "short", skin: "#f0c8a0", shirt: "#e6a23c", hairColor: "#5a3a22" },
+    { name: "Pharmacist-in-charge", does: "Validates prescriptions, authorizes controlled substances, signs the logs and answers for the cold chain and recalls.", where: "Panel and counter authorization", tool: "coat", hair: "long", skin: "#d9a07c", shirt: "#f4f4f7", hairColor: "#2a1a14" },
+    { name: "Owner or administrator", does: "Sets prices, suppliers, purchasing, users, reports and the configuration of their branches.", where: "Panel", tool: "tie", hair: "short", glasses: true, skin: "#e2ad88", shirt: "#2f3e5e", hairColor: "#555" },
+    { name: "Chain administrator", does: "Manages the central catalog, transfers, promotions and central purchasing across branches.", where: "Multi-branch panel", tool: "map", hair: "curly", skin: "#a8704d", shirt: "#27a36d", hairColor: "#1c1c1c" },
+    { name: "Platform operator", does: "Onboards pharmacies, manages plans, operations and support.", where: "Platform console, on a separate domain", tool: "headset", hair: "bob", skin: "#f0c8a0", shirt: "#8e5be0", hairColor: "#7a3b2a" },
+    { name: "Catalog visitor", does: "An anonymous person checking availability, price and opening hours.", where: "Public store, no sign-in", tool: "magnifier", hair: "short", skin: "#cf9468", shirt: "#7a7f8c", hairColor: "#2a2a2a" },
+  ]}
+/>
+
+### Product screenshots
+
+Screenshots of the running application with its demo data. The interface is in Spanish, the language of its users. Each one shows what the screen is for and what it brings. Click a screenshot to open it larger.
+
+<ScreenshotGallery
+  items={[
+    {
+      src: "/screenshots/vigia/dashboard.png",
+      title: "Pharmacy panel",
+      caption: "The home of the staff panel. After signing in, the person chooses a branch and the role they will work with, and the panel adapts to that choice.",
+      features: [
+        "Branch and role selector in the top bar, so the same person can switch context without signing out.",
+        "Modules grouped by product, stock, purchasing and sales, each with a short description.",
+        "Menu and cards limited to what the active role is allowed to do.",
+        "Notification bell with the number of open alerts.",
+      ],
+      width: 2160,
+      height: 1350,
+    },
+    {
+      src: "/screenshots/vigia/inventory-lots.png",
+      title: "Inventory by batch",
+      caption: "Every unit of stock belongs to a batch, listed in dispatch order: the batch that expires first comes first (FEFO).",
+      features: [
+        "Expiry badges that show expired batches and the days left on the rest.",
+        "Filters by status, location and expiry window, and a switch to hide empty batches.",
+        "Actions per batch: adjust stock, send to quarantine and move to another location.",
+        "Stock, cost per base unit and total value for each batch, with tabs for stock, movements, warehouses and valuation.",
+      ],
+      width: 2160,
+      height: 1350,
+    },
+    {
+      src: "/screenshots/vigia/expiry-alerts.png",
+      title: "Expiry and stock alerts",
+      caption: "The process engine generates alerts so nobody has to look for them: soon-to-expire, expired, low stock and overstock.",
+      features: [
+        "Counters by alert type and filters by state, expiry window and category.",
+        "Each alert shows the batch, the quantity and its value at cost.",
+        "A suggested action for each one, such as returning to the supplier or transferring to another branch.",
+        "Acknowledge or resolve an alert, and configure when alerts are generated.",
+      ],
+      width: 2160,
+      height: 1350,
+    },
+    {
+      src: "/screenshots/vigia/pricing.png",
+      title: "Single price master",
+      caption: "One price per product, branch and presentation. The register, the web store and the shelf label all read the same value.",
+      features: [
+        "Current price and scheduled price next to each presentation.",
+        "Change a price or set one where it is missing, with the change kept in the history.",
+        "Tools for rounding rules, customer lists, customer discounts, promotions and label printing.",
+        "Search by name, SKU, active ingredient or code.",
+      ],
+      width: 2160,
+      height: 1350,
+    },
+    {
+      src: "/screenshots/vigia/storefront.png",
+      title: "Public storefront",
+      caption: "The public page of each pharmacy, with no sign-in. Customers can check if it is open and how to reach it.",
+      features: [
+        "An open-now status calculated in the time zone of the pharmacy, refreshed every minute.",
+        "Weekly opening hours, with today highlighted.",
+        "Contact options: write on WhatsApp, call the branch or get directions.",
+        "Accessibility controls for larger text and high contrast, plus a light and dark theme.",
+      ],
+      width: 2160,
+      height: 1350,
+    },
+  ]}
+/>
+
+### Status in the code
+
+The README declares phase 0 (foundations): monorepo, local infrastructure, authentication, tenants, branches, users with per-branch roles, dual control, an immutable audit log, the platform console, and the PWA with public store and dashboard. The repository also has modules already written for catalog, pricing, inventory, counts, sales, cash, customers, alerts, reports, web store, costing and taxes, with 17 database migrations and 79 Go test files.
+
+The purchasing, prescriptions, health compliance, cold chain, multi-branch, privacy, import and notifications modules do not yet have a folder in the backend.
+
+</FeaturesSection>
+
+<MotivationSection title="Why the product was built">
+
+The base specification starts from pain points that repeat in neighborhood pharmacies and in chains. Among the most important:
+
+- **Repetitive questions.** Dozens of daily WhatsApp messages or calls asking about stock and prices. The answer was a web catalog with real-time stock and price.
+- **Expiry and stockouts.** Expired medicines on the shelf and fast-moving products running out without warning. The answer was batch-level control with FEFO and alerts.
+- **Inconsistent prices.** Shelf, register and web do not match. The answer was a single price master per SKU and branch, with history and auditing.
+- **Health compliance.** Prescriptions as blurry photos, controlled substances without validation, and manual searches for batches affected by a recall. The answer was pharmacist validation before dispensing, and exportable control logs.
+- **Loose sales.** About 40% of SKUs are sold in fractions (box, blister, tablet), which does not fit an inventory by package.
+- **Dependence on a single person and high turnover.** The interface had to be simple so anyone on the team could sell without long training.
+
+The context also weighs in: margins are thin, staff turns over, internet connectivity is unstable, and health and data-protection obligations leave no room for improvisation.
+
+</MotivationSection>
+
+<ImplementationSection title="How it was built">
+
+### Architecture
+
+- **Monorepo** with `api/`, `apps/web`, `packages/`, `contracts/`, `supabase/` and `deploy/`.
+- **Go backend as a modular monolith** with two executables: the API and a worker for asynchronous tasks. Each module is a vertical slice with hexagonal architecture inside: the domain depends only on ports, and the adapters (HTTP, database, email, WhatsApp) plug in from the outside.
+- **A single web app** in Next.js with the App Router, organized by features with atomic design, and four surfaces: a public store per pharmacy, staff access, a dashboard with POS, and the platform console.
+- **Multi-tenancy in the database.** Every business table carries `tenant_id`, with forced Row-Level Security and `SET LOCAL` per transaction. The application uses its own roles, never Supabase's `service_role` key, which bypasses RLS.
+- **Events with a transactional outbox.** The event is written in the same transaction as the business change and published afterwards to asynq on Redis. That way there is no dual write.
+- **Inventory as immutable movements.** Every stock change is a movement per batch, in base unit and per branch. The balance is projected in the same transaction, and the deduction uses `SELECT ... FOR UPDATE` in canonical order to apply FEFO without negative stock.
+- **Offline POS.** The branch stores a bundle in IndexedDB with products, prices and batches. Sales are queued with a UUID v7 identifier and an `Idempotency-Key`, and synchronize without duplicating. Conflicts are logged for human review, not hidden.
+- **External providers behind ports.** Twilio and SendGrid are used through adapters, so a sale never waits on a WhatsApp or email delivery.
+- **Private files.** Prescriptions and documents live in private buckets, with signed URLs valid for five minutes.
+- **Observability and goals as code.** OpenTelemetry, Grafana and SLOs declared in the repository.
+
+### Diagrams
+
+Exported from the architecture documentation. Click a diagram to open it at full size. The diagrams are in Spanish, the language of the original documents.
+
+<DiagramGallery
+  items={[
+  { src: "/diagrams/vigia/system-context.png", title: "System context", caption: "Pharmacy staff, customers and platform operators, and the external services around the product.", width: 1568, height: 838 },
+  { src: "/diagrams/vigia/containers.png", title: "Containers", caption: "The web app, API, worker, data stores and external services, and how they connect.", width: 1568, height: 656 },
+  { src: "/diagrams/vigia/stock-to-sale-flow.png", title: "From purchase to sale", caption: "Supplier purchase, batch receipt, FEFO sale and expiry alerts.", width: 1568, height: 134 },
+  { src: "/diagrams/vigia/offline-sync.png", title: "Offline sales and sync", caption: "How the point of sale keeps selling without a connection and reconciles later.", width: 1568, height: 1144 },
+  { src: "/diagrams/vigia/persistence.png", title: "Persistence", caption: "What is stored where: transactional data, cache and queues, and private files.", width: 1138, height: 1514 },
+  ]}
+/>
+
+### Domain model
+
+The domain is split into bounded contexts. The first diagram shows the contexts and how they depend on each other. The rest are the life cycles of the entities that carry the most rules: a sale, a batch, a prescription, a cash shift, offline synchronization, a recall and a temperature alert.
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/vigia/domain-contexts.png", title: "Domain contexts", caption: "The bounded contexts of the domain and the dependencies between them.", width: 1568, height: 1166 },
+    { src: "/diagrams/vigia/state-sale.png", title: "Sale life cycle", caption: "From a counter sale or a synced offline sale to returns and voids with a second authorization.", width: 1568, height: 1390 },
+    { src: "/diagrams/vigia/state-batch.png", title: "Batch life cycle", caption: "A batch moves from receipt to available, quarantined, expired or depleted.", width: 1568, height: 816 },
+    { src: "/diagrams/vigia/state-prescription.png", title: "Prescription life cycle", caption: "From upload to validation by the pharmacist and dispensing.", width: 1568, height: 1238 },
+    { src: "/diagrams/vigia/state-cash-shift.png", title: "Cash shift life cycle", caption: "Opening, selling, counting and closing, with approval of the reconciliation.", width: 1312, height: 1192 },
+    { src: "/diagrams/vigia/state-offline-sync.png", title: "Offline synchronization", caption: "The state of each sale in the offline queue until it is synced or sent to review.", width: 1024, height: 1208 },
+    { src: "/diagrams/vigia/state-sync-conflict.png", title: "Sync conflict", caption: "How a conflict is detected and resolved by a person, never hidden.", width: 432, height: 840 },
+    { src: "/diagrams/vigia/state-product-recall.png", title: "Product recall", caption: "From the recall notice to locating affected batches and closing the case.", width: 1568, height: 1128 },
+    { src: "/diagrams/vigia/state-temperature-alert.png", title: "Temperature alert", caption: "Cold-chain readings out of range, acknowledged and resolved.", width: 1244, height: 1248 },
+  ]}
+/>
+
+### Documentation consulted
+
+- **Base specification** (15 sections): goals, pain points B1 to B11 and C1 to C8, functional requirements by area, non-functional requirements, technical decisions, data model, API guidelines, integrations, compliance, phased plan and assumptions S1 to S7.
+- **Master identifier catalog**, which is the source for the next five documents: 33 capabilities, 146 features, 110 entities, 10 containers, 21 decisions and 19 risks.
+- **Solution architecture 1.0** (§1 to §9): principles, constraints, set goals, views and 21 architecture decisions.
+- **C4 architecture, domain model, functional backlog, quality attributes**, and the gap backlog with the unified backlog.
+
+</ImplementationSection>
+
+<DecisionsSection title="Why it was done this way">
+
+| Decision | Why |
+|---|---|
+| A single PWA instead of a native app | One codebase serves the public store, the staff dashboard and the POS, and it runs in the browser with no installation on each machine. |
+| Modular monolith with vertical slices | There are two deployables and a small team. Each use case is isolated in its own directory, and dependency rules are verified in CI. |
+| Multi-tenancy with RLS and own roles | Three hundred pharmacies are projected on the same database. Filtering only in the application would be a health-data incident, so the database rejects queries without context. |
+| Inventory by immutable movements and FEFO with locking | It allows selling fractions without opening boxes, rebuilding the stock ledger and tracing every unit to the customer for a recall. The cost is contention on heavily sold batches at peak hours. |
+| Offline POS with IndexedDB | Internet outages at the store were a high risk. The counter must keep selling for eight hours or five hundred sales without a connection. |
+| Integrations always asynchronous | An outage at Twilio, SendGrid or the billing provider cannot prevent charging. |
+| Compliance in the same transaction | A controlled substance sold without pharmacist validation, or a recalled batch that keeps being sold, is not fixed with a later report. The control-log entry is written together with the sale. |
+| Prisma Client Go with pgx for critical operations | Prisma gives a declarative schema and diff detection in CI. Since that library is archived and does not support interactive transactions, operations that read and decide together (FEFO, sequence numbers, changing an operation type) use pgx directly. |
+
+The data-access decision changed during phase 0. The original ADR-004 set sqlc with goose; ADR-014 revised it to Prisma Client Go and it was logged as a risk, because the project has been archived since July 2025.
+
+</DecisionsSection>
+
+<LimitationsSection title="Limitations and open items">
+
+- **Phase 0 declared.** The README describes the foundations scope. The operation modules already have code, but not all backlog features are complete.
+- **Modules without a backend yet.** Purchasing, prescriptions, health compliance, cold chain, multi-branch and privacy have no folder in the backend.
+- **Electronic invoicing** is a proposal (CAP-023 and ADR-019), pending the choice of a DIAN-authorized provider.
+- **Commercial value of the plans** is still open (PA-10), and the plan model is stored as configurable data, not as constants.
+- **Web store cache** is invalidated by time (60 seconds), not by event, so stock can take up to a minute to show.
+- **Suspending a pharmacy** prevents its owner from approving support access from the dashboard.
+- **Hash-chained audit log** is a proposal (ADR-018) and is not yet implemented.
+
+</LimitationsSection>

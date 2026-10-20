@@ -1,0 +1,113 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #000000;
+  --foreground: #ffffff;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-space-grotesk: var(--font-space-grotesk), ui-sans-serif, sans-serif;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-space-grotesk);
+}
+
+/* Page reveal that grows from the click point as an irregular shape (see components/page-transitions.tsx).
+   The new page is clipped to the shape, and a thin ring in the accent color sits on its edge:
+   the group paints the accent color, and the old page is clipped with a slightly larger hole.
+   The clip paths are animated from script; the values here only avoid a flash before it starts. */
+:root {
+  --vt-accent: rgba(231, 244, 81, 0.5);
+}
+
+::view-transition-group(root) {
+  animation-duration: 0.9s;
+  background: var(--vt-accent);
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 2;
+  clip-path: circle(0 at var(--vt-x, 50%) var(--vt-y, 50%));
+}
+
+/* Project covers inside the flowing menu band are shown in grayscale. */
+.flowing-menu__image {
+  filter: grayscale(1);
+}
+
+/* Idle animation of the persona illustrations. */
+@keyframes persona-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2.5px);
+  }
+}
+
+@keyframes persona-blink {
+  0%,
+  92%,
+  100% {
+    transform: scaleY(1);
+  }
+  95% {
+    transform: scaleY(0.1);
+  }
+}
+
+@keyframes persona-sway {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(-4px) rotate(2deg);
+  }
+}
+
+.persona-float {
+  animation: persona-float 3.2s ease-in-out infinite;
+}
+
+.persona-blink {
+  animation: persona-blink 4.6s infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.persona-tool {
+  animation: persona-sway 2.8s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .persona-float,
+  .persona-blink,
+  .persona-tool {
+    animation: none;
+  }
+}

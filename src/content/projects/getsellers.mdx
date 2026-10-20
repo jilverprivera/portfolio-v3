@@ -1,0 +1,146 @@
+---
+title: "GetSellers"
+slug: "getsellers"
+summary: "A marketplace that routes US real-estate seller leads to investors by county, with a prepaid wallet, refunds, referrals and an internal admin site. A client project delivered at Tres Astronautas as a handover and modernization of an existing product."
+type: "Work project · Tres Astronautas"
+date: "2026-03"
+year: "2025–2026"
+status: "Handover and modernization"
+featured: true
+stack:
+  - "Node.js 22"
+  - "Express 5"
+  - "TypeScript"
+  - "MongoDB and Mongoose"
+  - "React 18 and Vite"
+  - "TanStack Query"
+  - "Zustand"
+  - "Tailwind CSS and Radix UI"
+  - "Stripe"
+  - "Socket.IO"
+  - "Twilio"
+  - "AWS S3"
+  - "Turborepo"
+  - "Azure Pipelines and Docker"
+highlights:
+  - value: "3"
+    label: "apps in the monorepo"
+  - value: "~180"
+    label: "HTTP routes"
+  - value: "340+"
+    label: "test files"
+---
+
+<SummarySection title="Summary">
+
+GetSellers is a marketplace for US real-estate investor leads. Homeowners who want to sell enter through marketing campaigns, their data is registered as leads, and each lead is routed automatically to the investors subscribed to that county, which the product calls a market.
+
+This is a work project, not a personal one: it was built at Tres Astronautas for a client. The engagement was a handover and modernization of a live product, covering an investor web app, an internal admin site and the API behind both.
+
+Investors sign up, pick markets, add a payment method and receive leads by in-app notification, email or SMS. From there they manage each lead in a pipeline (New Lead, Following Up, Under Contract, Closed, Cold) and can request a refund on a bad lead.
+
+</SummarySection>
+
+<ObjectivesSection title="Goals">
+
+- **Take over a live product safely.** Review the outgoing team's documentation, run a gap analysis and set a performance baseline before changing anything.
+- **Modernize the backend.** Move from a layered structure to a hexagonal one so each use case can be tested on its own.
+- **Protect lead data.** Remove sensitive and duplicate data from the schemas and mask personal information when a lead is delivered to the frontend.
+- **Keep lead delivery running.** Billing must not block a lead: a prepaid wallet with auto-recharge, a monthly budget cap and a backup payment method.
+- **Give operations their own tools.** Build an admin site for refunds, broadcasts, reports, source prices and referrals.
+
+</ObjectivesSection>
+
+<FeaturesSection title="Features">
+
+| Area | What it enables |
+|---|---|
+| Lead feed and pipeline | A live feed of new leads, a pipeline from New Lead to Closed or Cold, lead detail, closed-lead traceability and approximate map locations by design. |
+| Markets (counties) | Subscribe to US counties, with statuses Open, Secured, Held and Released. |
+| Billing and wallet | Stripe payment methods, a primary and a backup method with a 3% discount on the backup, auto-recharge, a monthly spend cap with monthly reset, receipts and billing history. |
+| Refunds | Request a refund on a bad lead, with at most two per lead and one active at a time, and states Pending, Approved, Rejected and Completed. |
+| Notifications | In-app notifications over Socket.IO, transactional email with Handlebars templates, and SMS through Twilio. |
+| Lead intake | Webhook adapters that normalize external payloads into the internal lead model, configurable outbound webhooks and sharing a lead by email. |
+| Referral program | Referral codes, settings and commissions, with a scheduled job that processes pending commissions. |
+| Integrations | Calendly for appointments, Intercom chat, GoHighLevel CRM and Google Maps. |
+| Authentication | Email and password, then an emailed one-time code, then a JWT. Google sign-in is also available. |
+| Admin site | Broadcasts, reports, source prices, sales representatives, user groups, partners, refunds, webhooks and reload events. |
+
+### User personas
+
+Four profiles shape the product. One of them never opens the app: the homeowner is the reason the leads exist.
+
+<PersonaCards
+  items={[
+    { name: "Real-estate investor", does: "Subscribes to counties, receives leads, works them in a pipeline from new lead to closed, and manages the wallet and refunds.", where: "Investor app", tool: "tie", hair: "short", skin: "#e2ad88", shirt: "#2f3e5e", hairColor: "#555", glasses: true, },
+    { name: "Homeowner", does: "Someone who wants to sell. Comes in through a marketing campaign and is registered as a lead, with their data masked for the investor.", where: "Marketing campaigns", tool: "map", hair: "curly", skin: "#a8704d", shirt: "#27a36d", hairColor: "#1c1c1c", },
+    { name: "Platform administrator", does: "Manages users, sources and prices, refunds, broadcasts, reports and webhooks from the internal admin site.", where: "Admin site", tool: "headset", hair: "bun", skin: "#f0c8a0", shirt: "#8e5be0", hairColor: "#7a3b2a", },
+    { name: "Sales representative", does: "Follows investors and referrals, with their commissions tracked by the referral program.", where: "Admin site", tool: "chart", hair: "cap", skin: "#c68863", shirt: "#e0566b", hairColor: "#222", },
+  ]}
+/>
+
+### Status in the code
+
+The monorepo has three apps: the API, the investor app and the admin site. The API has about 180 route registrations across 13 route files, 24 application handlers, 12 use-case domains, 42 Mongoose schemas and 4 scheduled jobs. The investor app covers lead feed, counties, dashboard, performance, refunds, integrations, settings and a setup wizard.
+
+</FeaturesSection>
+
+<MotivationSection title="Why the product was worked on">
+
+The work began as a handover. The first sprint, called Sprint 0, was spent reviewing the outgoing team's technical document, running a gap analysis and measuring a performance baseline of the live product. The critical areas it named were the lead feed, counties, billing and the setup wizard.
+
+From there the work was organized in sprints 0 to 6. Sprint 1 restructured the backend and set up the monorepo; later sprints migrated payments, built the admin site and reworked the product language.
+
+</MotivationSection>
+
+<ImplementationSection title="How it was built">
+
+### Architecture
+
+- **Monorepo** with yarn workspaces and Turborepo: the API, the investor app, the admin site and shared packages for ESLint, TypeScript configuration and a logger.
+- **Hexagonal backend.** The flow is routes, controllers, handlers, then use cases with one operation each. The domain holds repository interfaces, types, validators and schemas. Infrastructure holds the repository implementations, services such as Stripe, the Mongo connection and Socket.IO. Dependencies are wired in a manual container, with path aliases per layer.
+- **Documentation.** C4 diagrams from level 1 to 3, sequence diagrams and a list of API routes live next to the code, along with one feature document per area.
+
+### Security and data
+
+- Helmet, an allow-listed CORS policy, centralized rate limiting, input sanitization and ObjectId validation.
+- Lead personal data is masked before it reaches the frontend.
+- Terms and conditions are accepted with a signature and rendered to PDF with Puppeteer. Files are served through signed S3 URLs.
+
+### Payments and scheduled work
+
+- Payments moved from Braintree to Stripe in Sprint 3.
+- Auto-recharge runs as an event pipeline plus a scheduled job. Other jobs clean expired one-time codes, process pending referral commissions and reset monthly billing.
+
+### Quality and delivery
+
+- **289 backend test files** (270 unit and 19 integration) with Jest, supertest and an in-memory MongoDB, and a 60% global coverage threshold. The investor app has 55 test files with Vitest and Testing Library.
+- **Tag-driven deployments** with Azure Pipelines. A tag of the form prefix, semver and environment deploys a single app, and the API ships as a Docker image.
+
+</ImplementationSection>
+
+<DecisionsSection title="Why it was done this way">
+
+| Decision | Why | Trade-off |
+|---|---|---|
+| Layered to hexagonal backend | Each use case can be tested alone and with less coupling. | A large restructure up front, in exchange for the extensive unit test suite. |
+| Braintree to Stripe | One payment provider for the wallet and the investor app. | Some Braintree code and dependencies remain in the repository. |
+| Prepaid wallet with a backup payment method | Lead delivery should continue when the primary charge fails. | More billing states to model and test. |
+| A new admin site built from scratch | The planned refund integration with the client's own backend could not be completed because of connectivity issues. | More surface to build and maintain. |
+| Webhook adapters for lead intake | Each external source sends a different payload, so each is normalized before it is stored. | One adapter to write per source. |
+| Masking lead data in the API | Personal data should not leave the backend unless the investor needs it. | Extra mapping on every lead response. |
+| Tag-driven, per-app deployments | The API, investor app and admin site can ship independently. | Releases depend on tagging discipline. |
+
+</DecisionsSection>
+
+<LimitationsSection title="Limitations and open items">
+
+- **The refund integration with the client's backend** was never completed and is marked as not done.
+- **No tests in the admin site.** Vitest is configured, but it has no test files, and the end-to-end test script has no files behind it.
+- **Thin shared package.** It only holds a logger, so shared types are less shared than the structure suggests.
+- **Legacy dependencies remain,** such as Braintree and an unused Postgres client, and the two frontends have drifted apart on several library versions.
+- **No versioned database migrations.** Data changes are one-off scripts run by hand.
+- **Production runs TypeScript through tsx** instead of compiled JavaScript.
+- **The deployment documentation** does not mention the production environment that the pipeline supports.
+
+</LimitationsSection>

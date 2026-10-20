@@ -12,6 +12,12 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored react-bits components.
+    "src/components/WarpText.jsx",
+    "src/components/GlowCursor.jsx",
+    "src/components/CircularText.jsx",
+    "src/components/ScrollReveal.jsx",
+    "src/components/FlowingMenu.jsx",
   ]),
 ]);
 
