@@ -164,45 +164,65 @@ Screenshots of the running console with local demo data. The interface is in Spa
 
 ### Architecture
 
-Everything lives in one monorepo managed with pnpm and Turborepo: the Go API, the Next.js web app, the Expo mobile app, and shared packages for the generated API client, UI components, design tokens, authentication, real time and fonts. The contracts come first: OpenAPI 3.1 and AsyncAPI 3.0 files in `contracts/` generate the TypeScript client that web and mobile both use.
-
-The backend is a modular monolith, a single binary with domain modules such as `ingest`, `telemetry`, `rules`, `actions`, `scheduling` and `realtime`. Each one is a vertical slice with hexagonal architecture, and a module never imports another: they talk through events, with the dependency rules verified by go-arch-lint. Inside, reads and writes are separated (a logical CQRS): commands write to the transactional model with an outbox, while queries read from `read_*` projections and a Redis cache.
-
-The life of a reading shows how the pieces fit. It is validated, checked against the plan's rate limit, deduplicated by `message_id` and given a per-channel sequence number. Then it is published to Redis Streams, and only when the stream confirms does the API reply 202. The telemetry module persists it afterwards and publishes an event that feeds real time. Redis Streams is both the event bus and the buffer: telemetry is spread across 32 streams by channel hash to keep per-channel ordering, with more streams for domain events, actions and a dead-letter queue.
-
-In storage, telemetry sits in Postgres partitioned by day with `pg_partman`, and per-minute, hourly and daily aggregates are consolidated by `pg_cron`. For devices that speak MQTT, EMQX stores no credentials at all: it delegates authentication and ACLs to the API through protected HTTP hooks, and a bridge in the API translates MQTT messages into the same use cases HTTP uses. The web and mobile apps get real time from a WebSocket hub in the API, with MQTT as an optional path.
-
-### Authentication and devices
-
-Sign-in uses Supabase Auth with two global roles, `owner` and `developer`, and no organizations. Every resource belongs to its `owner_id`, and queries are filtered with row-level security.
-
-A device proves who it is with an API key, a developer identifier and a device identifier. Each account has one key (`tpk_` with 256 random bits), and only its HMAC with a server-side pepper is stored; the full value is shown once. If any of the three values fails, the answer is the same 401, so it never reveals which one was wrong.
-
-### Load and performance
-
-The bottleneck turned out to be Postgres, with many devices writing and many dashboards reading, so the load work went there. The pool is configurable (25 connections per replica) with per-query time limits. Ingestion caches channel information and the owner's limits for 10 seconds, with generation-based invalidation. The telemetry consumer writes in batches of up to 200 readings or 50 ms using `INSERT ... ON CONFLICT DO NOTHING`, and sends a reading to the dead-letter queue after several retries. Finally, the last 48 readings of each channel live in a Redis sorted set, so recent-history queries never touch Postgres.
-
-### Diagrams
-
-Exported from the architecture documentation. Click a diagram to open it at full size. The diagrams are in Spanish, the language of the original documents.
+One monorepo holds the Go API, the Next.js web app, the Expo mobile app and shared packages. The contracts come first: OpenAPI and AsyncAPI files generate the client that web and mobile share. Click a diagram to open it at full size.
 
 <DiagramGallery
   items={[
-  { src: "/diagrams/telemetrix/system-context.png", title: "System context", caption: "Who uses the platform and which external systems it talks to.", width: 1568, height: 576 },
-  { src: "/diagrams/telemetrix/containers.png", title: "Containers", caption: "The main deployable pieces: clients, gateway, services, event bus, data stores and identity.", width: 1568, height: 488 },
-  { src: "/diagrams/telemetrix/value-flow.png", title: "End-to-end value flow", caption: "How a reading travels from a device to dashboards, rules and actions.", width: 1568, height: 598 },
-  { src: "/diagrams/telemetrix/cqrs.png", title: "Reads and writes (CQRS)", caption: "Commands write to the transactional model, while queries read projections and a cache.", width: 1568, height: 428 },
-  { src: "/diagrams/telemetrix/persistence.png", title: "Polyglot persistence", caption: "Which data lives in the operational database, the time-series store, the cache and object storage.", width: 1172, height: 1936 },
+    { src: "/diagrams/telemetrix/architecture.svg", title: "Architecture", caption: "Clients, the modular monolith and the services behind it.", width: 1200, height: 640 },
+  ]}
+/>
+
+### Life of a reading
+
+A reading is acknowledged once it is safe in the event buffer, not when Postgres stores it.
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/telemetrix/value-flow.svg", title: "From device to dashboard", caption: "Validation, limits and deduplication, then the stream, storage, real time and rules.", width: 1200, height: 600 },
+  ]}
+/>
+
+### Reads and writes
+
+Commands write with an outbox, and queries read projections and a cache.
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/telemetrix/cqrs.svg", title: "Reads and writes (CQRS)", caption: "Events build the read model and invalidate the cache.", width: 1200, height: 520 },
+  ]}
+/>
+
+### Storage
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/telemetrix/persistence.svg", title: "Where data lives", caption: "Redis for speed, Postgres for history and aggregates, object storage for files.", width: 1200, height: 560 },
+  ]}
+/>
+
+### Authentication and devices
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/telemetrix/auth.svg", title: "Who is calling", caption: "People sign in with Supabase Auth, and devices prove themselves with an HMAC-checked key.", width: 1200, height: 560 },
+  ]}
+/>
+
+### Load and performance
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/telemetrix/load.svg", title: "Load decisions", caption: "Five measures that keep Postgres from being the bottleneck.", width: 1200, height: 430 },
   ]}
 />
 
 ### Domain model
 
-The domain is split into bounded contexts. The first diagram shows the contexts and how they depend on each other. The rest are the life cycles of the entities that carry the most rules: channels, devices, rules, actions and their deliveries, commands, scheduled tasks and exports.
+The domain is split into bounded contexts. The first diagram shows how they depend on each other, and the rest are the life cycles of the entities with the most rules.
 
 <DiagramGallery
   items={[
-    { src: "/diagrams/telemetrix/domain-contexts.png", title: "Domain contexts", caption: "The bounded contexts of the domain and the dependencies between them.", width: 1568, height: 2510 },
+    { src: "/diagrams/telemetrix/domain-contexts.svg", title: "Domain contexts", caption: "The bounded contexts of the domain and their main dependencies.", width: 1640, height: 830 },
     { src: "/diagrams/telemetrix/state-channel.png", title: "Channel life cycle", caption: "How a channel moves between its states, from creation to deletion.", width: 1560, height: 1640 },
     { src: "/diagrams/telemetrix/state-device.png", title: "Device life cycle", caption: "Registration, credentials and connection of a device.", width: 1242, height: 1624 },
     { src: "/diagrams/telemetrix/state-rule.png", title: "Rule life cycle", caption: "A rule is a draft, becomes active, and can be paused, suspended by a plan limit or deleted.", width: 1568, height: 1486 },
@@ -226,6 +246,7 @@ The domain is split into bounded contexts. The first diagram shows the contexts 
 | Global roles without organizations | Per-owner resource isolation is enough for the real use case and simplifies permissions and billing. | Removes the multi-organization model of version 1.0 (ADR-023). |
 | API key per account with HMAC, no Argon2 | With 256 bits of entropy a slow hash is unnecessary, and it would weigh on the hot ingestion path. | New decision for devices (ADR-025). |
 | MQTT for the apps too | The product must support all three transports end to end. Commands still go through the API to validate, audit and deliver. | Exception to ADR-012, which gave MQTT only to devices (ADR-025). |
+| No APISIX, Terraform or AWS | The product was simplified and only the local environment exists, so a provider is not worth choosing before real load and cost data. | Replaces the AWS and EKS plan (ADR-030). There is no production path yet: no API Dockerfile, CI, TLS edge or observability. |
 | Batched writes and read cache | The bottleneck was Postgres, with many dashboard readers and many devices writing. | New load decision (ADR-029). |
 
 Two things were documented as evolution, not as mistakes. Version 1.0 mentions Go 1.23, Next.js 15 and Expo SDK 52, while the current README states Go 1.26, Next.js 16 and Expo SDK 57. ADR-024 (a one-time code per device) was replaced: sign-in is password only.
@@ -236,7 +257,7 @@ Two things were documented as evolution, not as mistakes. Version 1.0 mentions G
 - **C4 architecture, domain model and quality attributes**, which set containers, components, entities and measurable criteria.
 - **Functional backlog**: 16 capabilities and 85 features with stories, business rules and acceptance criteria.
 - **OpenAPI and AsyncAPI contracts** for the HTTP API, events and MQTT.
-- **Later decisions** (ADR-018 to ADR-029) that replaced parts of the 1.0 architecture.
+- **Later decisions** (ADR-018 to ADR-030) that replaced parts of the 1.0 architecture.
 
 </ImplementationSection>
 

@@ -14,7 +14,7 @@ export const jobs: Job[] = [
   {
     company: "Tres Astronautas",
     role: "Senior Software Engineer",
-    period: "November 2025 – Present",
+    period: "November 2025 – November 2026",
     location: "Bogota D.C., Colombia (Remote)",
     stack: ["Go", "Nest.js", "Next.js", "React Native", "Expo", "Tailwind CSS", "NativeWind", "Socket.IO", "PostgreSQL", "Prisma ORM", "MongoDB", "Kafka", "Transactional Outbox", "ISO 8583", "PCI DSS", "Hexagonal Architecture", "Redis", "SOLID principles", "PayPal", "Braintree", "Yappy", "Jest", "React Testing Library", "SDD (Spec-Driven Development)", "TDD (Test-Driven Development)", "BDD (Behavior-Driven Development)", "APISIX", "Keycloak"],
     highlights: [

@@ -20,11 +20,11 @@ stack:
   - "OpenTelemetry and Grafana"
   - "Docker and GitHub Actions"
 highlights:
-  - value: "33"
+  - value: "46"
     label: "product capabilities"
-  - value: "146"
+  - value: "205"
     label: "features in the backlog"
-  - value: "79"
+  - value: "129"
     label: "Go test files"
 ---
 
@@ -75,7 +75,7 @@ Eight personas drive the design. Each one has a different way of using the produ
 
 <FeaturesSection title="Features">
 
-The backlog defines 33 capabilities and 146 features, grouped into five blocks:
+The backlog defines 46 capabilities and 205 features, grouped into six blocks:
 
 | Block | Capabilities | Main content |
 |---|---|---|
@@ -85,6 +85,7 @@ The backlog defines 33 capabilities and 146 features, grouped into five blocks:
 | Sales, cash and credit | 017 to 023 | Counter sales, returns and exchanges, offline sales, shifts and cash reconciliation, store credit, promotions and electronic documents (proposed). |
 | Customers, prescriptions and compliance | 024 to 030 | Web store, customers and patients, pharmacist-validated prescriptions, reminders for chronic patients, controlled-substance log, product recalls and cold chain. |
 | Multi-branch and loyalty | 031 to 033 | Consolidated dashboard, transfers between branches and a points program. |
+| Commercial and accounting extensions | 034 to 046 | Taxes and withholdings, sales documents and receivables, per-customer pricing, richer product records, cost centers, sales reports, warehouses, expenses, accounting and payroll (the last two proposed). |
 
 ### Product screenshots
 
@@ -166,35 +167,65 @@ Screenshots of the running application with its demo data. The interface is in S
 
 ### Architecture
 
-The repository is a monorepo with `api/`, `apps/web`, `packages/`, `contracts/`, `supabase/` and `deploy/`. The backend is a Go modular monolith with two executables, the API and a worker for asynchronous tasks. Each module is a vertical slice with hexagonal architecture inside: the domain depends only on ports, and the adapters (HTTP, database, email, WhatsApp) plug in from the outside. The frontend is a single Next.js app with the App Router, organized by features with atomic design, and it serves four surfaces: a public store per pharmacy, staff access, a dashboard with the POS, and the platform console.
-
-Many pharmacies share one database, so multi-tenancy is enforced there. Every business table carries `tenant_id`, with forced Row-Level Security and `SET LOCAL` per transaction, and the application uses its own roles, never Supabase's `service_role` key, which bypasses RLS. Events follow a transactional outbox: the event is written in the same transaction as the business change and published afterwards to asynq on Redis, so there is no dual write.
-
-Inventory is the heart of the model. Every stock change is an immutable movement per batch, in base unit and per branch, and the balance is projected in the same transaction. The deduction uses `SELECT ... FOR UPDATE` in canonical order to apply FEFO without ever going negative.
-
-Then comes the promise that the counter never stops. The branch keeps a bundle of products, prices and batches in IndexedDB, and sales made offline are queued with a UUID v7 identifier and an `Idempotency-Key`, so they synchronize without duplicating. Conflicts are logged for a person to review, not hidden. External providers sit behind ports: Twilio and SendGrid are used through adapters, so a sale never waits on a WhatsApp or email delivery. Prescriptions and documents live in private buckets with signed URLs valid for five minutes, and OpenTelemetry, Grafana and SLOs are declared as code in the repository.
-
-### Diagrams
-
-Exported from the architecture documentation. Click a diagram to open it at full size. The diagrams are in Spanish, the language of the original documents.
+A Go modular monolith with two executables, the API and a worker, and one Next.js PWA that serves the public store, the pharmacy panel with the POS and the platform console. Each module is a vertical slice with hexagonal architecture inside. Click a diagram to open it at full size.
 
 <DiagramGallery
   items={[
-  { src: "/diagrams/vigia/system-context.png", title: "System context", caption: "Pharmacy staff, customers and platform operators, and the external services around the product.", width: 1568, height: 838 },
-  { src: "/diagrams/vigia/containers.png", title: "Containers", caption: "The web app, API, worker, data stores and external services, and how they connect.", width: 1568, height: 656 },
-  { src: "/diagrams/vigia/stock-to-sale-flow.png", title: "From purchase to sale", caption: "Supplier purchase, batch receipt, FEFO sale and expiry alerts.", width: 1568, height: 134 },
-  { src: "/diagrams/vigia/offline-sync.png", title: "Offline sales and sync", caption: "How the point of sale keeps selling without a connection and reconciles later.", width: 1568, height: 1144 },
-  { src: "/diagrams/vigia/persistence.png", title: "Persistence", caption: "What is stored where: transactional data, cache and queues, and private files.", width: 1138, height: 1514 },
+    { src: "/diagrams/vigia/architecture.svg", title: "Architecture", caption: "The PWA, the Go API and worker, and the services behind them.", width: 1200, height: 640 },
+  ]}
+/>
+
+### Stock and sales
+
+Inventory is the heart of the model: every change is an immutable movement per batch.
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/vigia/stock-to-sale-flow.svg", title: "From purchase to sale", caption: "Batches in, FEFO out, and alerts when stock is about to expire or run out.", width: 1200, height: 520 },
+  ]}
+/>
+
+### Offline point of sale
+
+The counter never stops, even without a connection.
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/vigia/offline-sync.svg", title: "Offline sales and sync", caption: "Sales queue on the device and replay without duplicates, and conflicts go to a person.", width: 1200, height: 560 },
+  ]}
+/>
+
+### Multi-tenancy and security
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/vigia/tenancy.svg", title: "One database, many pharmacies", caption: "Row-Level Security rejects any query that has no tenant.", width: 1200, height: 520 },
+  ]}
+/>
+
+### Asynchronous work
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/vigia/async.svg", title: "Outbox and providers", caption: "Events are written with the change and delivered later, so a sale never waits on a message.", width: 1200, height: 520 },
+  ]}
+/>
+
+### Pharmacy segments
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/vigia/segments.svg", title: "Five segments", caption: "Each segment fixes branches, people, roles and dual control.", width: 1200, height: 520 },
   ]}
 />
 
 ### Domain model
 
-The domain is split into bounded contexts. The first diagram shows the contexts and how they depend on each other. The rest are the life cycles of the entities that carry the most rules: a sale, a batch, a prescription, a cash shift, offline synchronization, a recall and a temperature alert.
+The domain is split into bounded contexts. The first diagram shows how they depend on each other, and the rest are the life cycles of the entities with the most rules.
 
 <DiagramGallery
   items={[
-    { src: "/diagrams/vigia/domain-contexts.png", title: "Domain contexts", caption: "The bounded contexts of the domain and the dependencies between them.", width: 1568, height: 1166 },
+    { src: "/diagrams/vigia/domain-contexts.svg", title: "Domain contexts", caption: "The bounded contexts of the domain and their main dependencies.", width: 1640, height: 1230 },
     { src: "/diagrams/vigia/state-sale.png", title: "Sale life cycle", caption: "From a counter sale or a synced offline sale to returns and voids with a second authorization.", width: 1568, height: 1390 },
     { src: "/diagrams/vigia/state-batch.png", title: "Batch life cycle", caption: "A batch moves from receipt to available, quarantined, expired or depleted.", width: 1568, height: 816 },
     { src: "/diagrams/vigia/state-prescription.png", title: "Prescription life cycle", caption: "From upload to validation by the pharmacist and dispensing.", width: 1568, height: 1238 },
@@ -217,23 +248,25 @@ The domain is split into bounded contexts. The first diagram shows the contexts 
 | Offline POS with IndexedDB | Internet outages at the store were a high risk. The counter must keep selling for eight hours or five hundred sales without a connection. |
 | Integrations always asynchronous | An outage at Twilio, SendGrid or the billing provider cannot prevent charging. |
 | Compliance in the same transaction | A controlled substance sold without pharmacist validation, or a recalled batch that keeps being sold, is not fixed with a later report. The control-log entry is written together with the sale. |
+| Five pharmacy segments | A one-person pharmacy and a chain cannot share the same rules. The segment fixes branches, people, roles and whether a second person must authorize sensitive operations. | A segment limit no plan can exceed, and a role the segment does not have cannot be assigned. In single-person segments, authorizations are granted to the requester and left in the audit log. |
 | Prisma Client Go with pgx for critical operations | Prisma gives a declarative schema and diff detection in CI. Since that library is archived and does not support interactive transactions, operations that read and decide together (FEFO, sequence numbers, changing an operation type) use pgx directly. |
 
 The data-access decision changed during phase 0. The original ADR-004 set sqlc with goose; ADR-014 revised it to Prisma Client Go and it was logged as a risk, because the project has been archived since July 2025.
 
 ### Documentation consulted
 
-- **Base specification** (15 sections): goals, pain points B1 to B11 and C1 to C8, functional requirements by area, non-functional requirements, technical decisions, data model, API guidelines, integrations, compliance, phased plan and assumptions S1 to S7.
-- **Master identifier catalog**, which is the source for the next five documents: 33 capabilities, 146 features, 110 entities, 10 containers, 21 decisions and 19 risks.
-- **Solution architecture 1.0** (§1 to §9): principles, constraints, set goals, views and 21 architecture decisions.
-- **C4 architecture, domain model, functional backlog, quality attributes**, and the gap backlog with the unified backlog.
+- **Base specification** (15 sections): goals, pain points, functional and non-functional requirements, technical decisions, data model, compliance and the phased plan.
+- **Master identifier catalog**, the source for the five main documents: capabilities, entities, containers, decisions and risks.
+- **Solution architecture 1.0**, **C4 architecture**, **domain model**, **functional backlog** and **quality attributes**, with 21 architecture decisions.
+- **Gap backlog and unified backlog** (features 147 to 205), which contrast every feature against the code.
+- **Pharmacy segments**, with the roles and limits of each segment.
 
 </ImplementationSection>
 
 <ResultsSection title="Results">
 
-For a pharmacy, the result is the foundation of a single system that replaces WhatsApp answers, loose spreadsheets and paper logs. The operation is in place for users, branches and roles, a public store with stock and price, the dashboard with the point of sale, and an immutable audit log. Modules for catalog, pricing, inventory, counts, sales, cash and customers already have working code.
+For a pharmacy, the result is a system that is already taking the place of WhatsApp answers, loose spreadsheets and paper logs. Users, branches, roles and segments, the public store, the dashboard with the point of sale, catalog, pricing, batch inventory, counts, alerts, cash and sales are working, and the API has grown to 31 contracts and 25 migrations.
 
-There is still a lot to build. Purchasing, prescriptions, health compliance, cold chain, multi-branch and privacy are not built yet, electronic invoicing is only a proposal, and the web store can take up to a minute to show a stock change. No pilot results are reported yet.
+The unified backlog compares each of the 205 features with the code: 80 are done, 30 are partial, 82 are missing and 13 have no evidence yet. Still to build are prescriptions, recalls, most of the cold chain, expenses, accounting and payroll, and electronic invoicing is only a proposal. The public store can take up to a minute to show a stock change. No pilot results are reported yet.
 
 </ResultsSection>
