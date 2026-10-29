@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { Anton, Space_Grotesk, Space_Mono } from "next/font/google";
 import GlowCursor from "@/components/GlowCursor";
 import { PageTransitions } from "@/components/page-transitions";
@@ -50,6 +51,7 @@ export default function RootLayout({
           {null}
         </GlowCursor>
         <PageTransitions />
+        <Analytics />
       </body>
     </html>
   );
