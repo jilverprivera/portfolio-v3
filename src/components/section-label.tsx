@@ -1,3 +1,5 @@
+import { Reveal } from "@/components/reveal";
+
 // Mono label that opens a home section: a dark tag with accent text, and corner crosshairs
 // that sit on the top corners of the section's content box.
 export const labelClass = "font-label text-[11px] uppercase tracking-[0.12em]";
@@ -30,10 +32,19 @@ export function SectionHeader({ label, title, note }: { label: string; title: st
   return (
     <>
       <SectionLabel>{label}</SectionLabel>
-      <h2 className="mt-4 font-display text-[clamp(2.75rem,8vw,7.5rem)] uppercase leading-[0.92] tracking-[-0.01em]">
+      <Reveal
+        as="h2"
+        className="!mt-4"
+        textClassName="!font-display !text-[clamp(2.75rem,8vw,7.5rem)] !font-normal uppercase !leading-[0.92] !tracking-[-0.01em]"
+      >
         {title}
-      </h2>
-      <p className={`${labelClass} mt-6 max-w-md leading-[1.7] text-ink-muted`}>{note}</p>
+      </Reveal>
+      <Reveal
+        className="!mt-6 max-w-md text-ink-muted"
+        textClassName={`${labelClass} !text-[11px] !font-normal !leading-[1.7]`}
+      >
+        {note}
+      </Reveal>
     </>
   );
 }

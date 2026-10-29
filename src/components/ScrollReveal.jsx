@@ -60,6 +60,7 @@ const paintPiece = (piece, t, look) => {
 };
 
 const ScrollReveal = ({
+  as: Tag = 'h2',
   children,
   scrollContainerRef,
   enableBlur = true,
@@ -290,7 +291,7 @@ const ScrollReveal = ({
   ]);
 
   return (
-    <h2 ref={containerRef} className={`scroll-reveal ${containerClassName}`} aria-label={text ?? undefined}>
+    <Tag ref={containerRef} className={`scroll-reveal ${containerClassName}`} aria-label={text ?? undefined}>
       <span
         ref={textRef}
         className={`scroll-reveal-text ${textClassName}`}
@@ -298,7 +299,7 @@ const ScrollReveal = ({
       >
         {splitText ?? children}
       </span>
-    </h2>
+    </Tag>
   );
 };
 

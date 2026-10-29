@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Reveal } from "@/components/reveal";
 import { education, groupStack, jobs } from "@/content/experience";
 
 export const metadata: Metadata = {
@@ -29,9 +30,13 @@ export default function ExperiencePage() {
       </nav>
 
       <section className="w-full px-6 pt-24 md:px-12 md:pt-32">
-        <h2 className="text-[22px] font-bold uppercase leading-7 tracking-[0.12em] text-accent-text">
+        <Reveal
+          as="h2"
+          className="text-accent-text"
+          textClassName="!text-[22px] !font-bold uppercase !leading-7 !tracking-[0.12em]"
+        >
           Professional experience
-        </h2>
+        </Reveal>
 
         <ol className="mt-12 flex flex-col">
           {jobs.map((job) => (
@@ -56,7 +61,10 @@ export default function ExperiencePage() {
                       key={h.title}
                       className="relative pl-6 text-[18px] leading-[1.6] text-ink-soft before:absolute before:left-0 before:top-[0.75em] before:h-1 before:w-1 before:rounded-full before:bg-ink"
                     >
-                      <strong className="font-medium text-ink">{h.title}.</strong> {h.text}
+                      <Reveal className="text-ink" textClassName="!text-[18px] !font-medium !leading-[1.6]">
+                        {`${h.title}.`}
+                      </Reveal>
+                      <Reveal textClassName="!text-[18px] !font-normal !leading-[1.6]">{h.text}</Reveal>
                     </li>
                   ))}
                 </ul>
@@ -98,9 +106,13 @@ export default function ExperiencePage() {
       </section>
 
       <section className="w-full px-6 pt-24 md:px-12 md:pt-32">
-        <h2 className="text-[22px] font-bold uppercase leading-7 tracking-[0.12em] text-accent-text">
+        <Reveal
+          as="h2"
+          className="text-accent-text"
+          textClassName="!text-[22px] !font-bold uppercase !leading-7 !tracking-[0.12em]"
+        >
           Education & honors
-        </h2>
+        </Reveal>
 
         <div className="mt-12 grid gap-6 border-t border-line py-10 md:grid-cols-[minmax(0,1fr)_minmax(0,2.4fr)] md:gap-12">
           <div className="flex flex-col gap-3">
@@ -118,7 +130,7 @@ export default function ExperiencePage() {
                   key={h}
                   className="relative pl-6 text-[18px] leading-[1.6] text-ink-soft before:absolute before:left-0 before:top-[0.75em] before:h-1 before:w-1 before:rounded-full before:bg-ink"
                 >
-                  {h}
+                  <Reveal textClassName="!text-[18px] !font-normal !leading-[1.6]">{h}</Reveal>
                 </li>
               ))}
             </ul>
