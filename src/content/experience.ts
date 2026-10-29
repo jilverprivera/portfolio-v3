@@ -16,23 +16,27 @@ export const jobs: Job[] = [
     role: "Senior Software Engineer",
     period: "November 2025 – November 2026",
     location: "Bogota D.C., Colombia (Remote)",
-    stack: ["Go", "Nest.js", "Next.js", "React Native", "Expo", "Tailwind CSS", "NativeWind", "Socket.IO", "PostgreSQL", "Prisma ORM", "MongoDB", "Kafka", "Transactional Outbox", "ISO 8583", "PCI DSS", "Hexagonal Architecture", "Redis", "SOLID principles", "PayPal", "Braintree", "Yappy", "Jest", "React Testing Library", "SDD (Spec-Driven Development)", "TDD (Test-Driven Development)", "BDD (Behavior-Driven Development)", "APISIX", "Keycloak"],
+    stack: ["Go", "Nest.js", "Next.js", "React Native", "Expo", "Tailwind CSS", "NativeWind", "Socket.IO", "PostgreSQL", "Prisma ORM", "MongoDB", "Kafka", "Transactional Outbox", "ISO 8583", "PCI DSS", "Hexagonal Architecture", "Redis", "SOLID principles", "PayPal", "Braintree", "Yappy", "Jest", "React Testing Library", "SDD (Spec-Driven Development)", "TDD (Test-Driven Development)", "BDD (Behavior-Driven Development)", "APISIX", "Keycloak", "gRPC"],
     highlights: [
       {
         title: "Fintech & transactional core",
-        text: "Engineered high-throughput Go microservices for a PCI DSS-compliant transactional core, bridging ISO 8583 protocols with modern REST APIs. Implemented an in-memory rule engine and event-driven architecture using Kafka and Transactional Outbox, sustaining sub-second p99 latency under heavy load.",
+        text: "Developed Golang microservices for the transactional core of a platform for employee fund management in Colombia, PCI DSS compliant, integrating the ISO 8583 protocol, an in-memory rules engine, and an event-driven architecture with Kafka, the Transactional Outbox pattern, and DLQ, with internal service-to-service communication over gRPC, achieving p99 latency under 500 ms under heavy load.",
       },
       {
         title: "Multi-tenant & mobile platforms",
-        text: "Built an enterprise multi-tenant solution comprising a Next.js web portal and two React Native/Expo mobile apps, incorporating Socket.IO, Device Binding, OTP verification, and hybrid database persistence (PostgreSQL/MongoDB).",
+        text: "Built a multi-tenant solution with a web platform (Next.js) and two mobile apps (React Native/Expo), featuring Socket.IO, Device Binding, OTP verification, and hybrid persistence (PostgreSQL/MongoDB).",
       },
       {
-        title: "Enterprise solutions (Midea Germany HVAC)",
-        text: "Developed corporative platforms using Nest.js, Prisma ORM, and PostgreSQL with centralized SSO/RBAC authentication, internationalization (i18n) support, and an automated thermal load calculation engine for equipment sizing.",
+        title: "Custom enterprise solutions",
+        text: "Developed platforms with NestJS, Prisma ORM, and PostgreSQL, featuring centralized SSO/RBAC authentication, multi-language (i18n) support, and a thermal calculation engine for automated equipment recommendations.",
       },
       {
         title: "Modernization, security & observability",
-        text: "Migrated legacy services to Hexagonal Architecture and optimized MongoDB query patterns, reducing latencies by 65%; implemented structured logging, distributed tracing, and robust controls against NoSQL injection and rate limiting.",
+        text: "Migrated legacy services to Hexagonal Architecture and optimized MongoDB queries, reducing latency by 65%. Implemented structured logging, distributed tracing, rate limiting, and NoSQL injection protections.",
+      },
+      {
+        title: "Technical documentation & architecture",
+        text: "Produced technical documentation across several projects: C4 architecture, quality attributes, domain model, system flows and views, and functional backlog, working hand in hand with the client and the product team to gather requirements.",
       },
     ],
     projects: [
@@ -182,6 +186,7 @@ const stackGroups: Record<string, string[]> = {
     "SOLID principles",
     "APISIX",
     "Keycloak",
+    "gRPC",
     "Hasura (GraphQL)"
   ],
   "Frontend & mobile": [

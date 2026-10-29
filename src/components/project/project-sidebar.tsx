@@ -83,7 +83,7 @@ export function ProjectSidebar() {
     <aside className="fixed left-0 top-12 z-10 hidden h-[calc(100dvh-3rem)] w-64 flex-col px-6 lg:flex">
       <Link
         href="/"
-        className="mb-8 inline-flex items-center gap-2 text-[17px] text-white/70 transition-colors hover:text-white"
+        className="mb-8 inline-flex items-center gap-2 text-[17px] text-ink-muted transition-colors hover:text-ink"
       >
         <span aria-hidden="true">←</span> Back to home
       </Link>
@@ -98,13 +98,13 @@ export function ProjectSidebar() {
                   onClick={goTo(s.id)}
                   aria-current={isActive ? "true" : undefined}
                   className={`flex items-center gap-3 text-[17px] transition-colors ${
-                    isActive ? "text-white" : "text-white/45 hover:text-white/80"
+                    isActive ? "text-ink" : "text-ink-faint hover:text-ink-soft"
                   }`}
                 >
                   <span
                     aria-hidden="true"
                     className={`h-1.5 w-1.5 rounded-full transition-opacity ${
-                      isActive ? "bg-[#E7F451] opacity-100" : "opacity-0"
+                      isActive ? "bg-accent opacity-100" : "opacity-0"
                     }`}
                   />
                   {s.label}

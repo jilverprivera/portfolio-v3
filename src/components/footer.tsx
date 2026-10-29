@@ -18,8 +18,8 @@ const socials = [
 export function Footer() {
   return (
     <footer
-      className="font-space-grotesk px-6 pt-32 text-white sm:px-8"
-      style={{ background: "linear-gradient(to bottom, #000 0, #0d0d0d 16rem)" }}
+      className="font-space-grotesk px-6 pt-32 text-ink sm:px-8"
+      style={{ background: "var(--paper)" }}
     >
       <div className="grid gap-16 lg:grid-cols-2 lg:gap-8">
         <div>
@@ -29,7 +29,7 @@ export function Footer() {
             I&rsquo;d love to{" "}
             <a
               href={`mailto:${EMAIL}`}
-              className="underline decoration-1 underline-offset-[0.12em] transition-colors hover:text-[#E7F451]"
+              className="underline decoration-1 underline-offset-[0.12em] transition-colors hover:text-accent-text"
             >
               connect
             </a>
@@ -38,17 +38,15 @@ export function Footer() {
         </div>
 
         <div className="flex flex-col gap-8 lg:flex-row lg:justify-between lg:gap-0">
-          <h2 className="text-[clamp(1.75rem,3vw,2.75rem)] leading-none tracking-tight text-white/85">
-            Find me on
-          </h2>
-          <ul className="flex flex-col lg:w-[60%]">
+          <h2 className="sr-only">Find me on</h2>
+          <ul className="flex flex-col lg:ml-auto lg:w-[60%]">
             {socials.map(({ label, href }) => (
-              <li key={label} className="border-b border-white/15 first:border-t-0">
+              <li key={label} className="border-b border-line first:border-t-0">
                 <a
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group flex items-center justify-between py-6 text-lg text-white/55 transition-colors hover:text-white"
+                  className="group flex items-center justify-between py-6 text-lg text-ink-muted transition-colors hover:text-ink"
                 >
                   {label}
                   <span
@@ -64,7 +62,7 @@ export function Footer() {
         </div>
       </div>
 
-      <p className="mt-24 flex flex-wrap items-center justify-center gap-x-1.5 border-t border-white/15 py-8 text-center text-sm text-white/80">
+      <p className="mt-24 flex flex-wrap items-center justify-center gap-x-1.5 border-t border-line py-8 text-center text-sm text-ink-soft">
         Last update: {LAST_UPDATE}
       </p>
     </footer>

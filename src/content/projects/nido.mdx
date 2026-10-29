@@ -34,7 +34,7 @@ NIDO is a condominium management platform. A resident gets notices from the admi
 
 It is a work project, not a personal one: it was built at Tres Astronautas for a client. The platform has an API, a web portal, a resident mobile app and a staff app, in Spanish and English with light and dark themes.
 
-There are six roles: resident, guard, condominium admin, platform admin, partner and provider. The mobile app is for residents only, and every other role works from the web portal.
+There are six roles: resident, guard, condominium admin, platform admin, partner and provider. Residents use the mobile app, guards use the staff app (or the web portal when their condominium allows it), and every other role works from the web portal.
 
 </SummarySection>
 
@@ -54,16 +54,17 @@ Two principles shaped the design. Conversations had to be private, so chat messa
 
 <PersonasSection title="User persona">
 
-Six roles use NIDO. The mobile app is for residents only, and every other role works from the web portal.
+Six roles use NIDO, plus visitors, who have no account. Residents use the mobile app, guards use the staff app (or the web portal when their condominium allows it), and every other role works from the web portal.
 
 <PersonaCards
   items={[
     { name: "Resident", does: "Gets notices, authorizes visitors, reserves common areas, joins events, chats with neighbors, pays fees and buys from local providers.", where: "Mobile app", tool: "bag", hair: "bun", skin: "#e8b48f", shirt: "#4b7bec", hairColor: "#3b2a22", },
-    { name: "Guard", does: "Checks visitors in and out and keeps the access history of the condominium.", where: "Web portal, guard access", tool: "magnifier", hair: "cap", skin: "#a8704d", shirt: "#3b4a6b", hairColor: "#222", },
-    { name: "Condominium administrator", does: "Publishes announcements, manages residents, units, vendors, reservations and fees.", where: "Web portal", tool: "tie", hair: "short", skin: "#e2ad88", shirt: "#2f3e5e", hairColor: "#555", glasses: true, },
-    { name: "Platform administrator", does: "Manages condominiums, plans, legal documents and the health of the platform.", where: "Web portal, platform area", tool: "headset", hair: "bob", skin: "#f0c8a0", shirt: "#8e5be0", hairColor: "#7a3b2a", },
-    { name: "Partner", does: "Offers benefits and deals to residents through the platform.", where: "Web portal, partner area", tool: "map", hair: "curly", skin: "#a8704d", shirt: "#27a36d", hairColor: "#1c1c1c", },
-    { name: "Provider", does: "A local business that publishes a catalog and receives orders from residents.", where: "Web portal, provider area", tool: "box", hair: "short", skin: "#cf9468", shirt: "#e6a23c", hairColor: "#2a2a2a", },
+    { name: "Visitor", does: "Has no account. Completes the pre-registration link a resident shares, then checks in with the guard at the gate.", where: "Web page from a link, no install", tool: "coat", hair: "long", skin: "#f0c8a0", shirt: "#6b7a8f", hairColor: "#5a3a22", },
+    { name: "Guard", does: "Registers arrivals and walk-ins, scans pass QR codes, checks pre-registrations and keeps the access history of the condominium.", where: "Staff app, or web portal if the condominium allows it", tool: "magnifier", hair: "cap", skin: "#a8704d", shirt: "#3b4a6b", hairColor: "#222", },
+    { name: "Condominium administrator", does: "Manages residents, units, guards, amenities and reservations, fees, announcements, events, vendors and access, and moderates chats.", where: "Web portal, condominium area", tool: "tie", hair: "short", skin: "#e2ad88", shirt: "#2f3e5e", hairColor: "#555", glasses: true, },
+    { name: "Platform administrator", does: "Creates and manages condominiums, global announcements and events, merchants and deals, providers and orders, the resource hub and the audit log.", where: "Web portal, platform area", tool: "headset", hair: "bob", skin: "#f0c8a0", shirt: "#8e5be0", hairColor: "#7a3b2a", },
+    { name: "Partner", does: "A business that publishes offers and coupons for residents, registers redemptions and follows its metrics.", where: "Web portal, partner area", tool: "map", hair: "curly", skin: "#a8704d", shirt: "#27a36d", hairColor: "#1c1c1c", },
+    { name: "Provider", does: "A local business that keeps a catalog, with CSV upload, and handles resident orders from acceptance to delivery and payment confirmation.", where: "Web portal, provider area", tool: "box", hair: "short", skin: "#cf9468", shirt: "#e6a23c", hairColor: "#2a2a2a", },
   ]}
 />
 
@@ -89,23 +90,59 @@ Six roles use NIDO. The mobile app is for residents only, and every other role w
 
 <ImplementationSection title="Implementation & final design">
 
+<DiagramRow item={{ src: "/diagrams/nido/architecture.svg", title: "Architecture", caption: "Clients, the API on Cloud Run with its REST and Socket.IO sides, the data stores and keys, and the outbound services.", width: 1200, height: 680 }}>
+
 ### Architecture
 
-The repository is a monorepo with yarn workspaces and Turborepo: the API, the web portal, the resident app, the staff app and two shared packages, one for contracts and one for a profanity filter. Each API module is hexagonal, with a domain layer free of frameworks, an application layer with handlers, use cases and services, and an infrastructure layer with controllers and repositories. Dependencies only point inwards, and the rules are written down for people and for AI agents.
+The repository is a monorepo with yarn workspaces and Turborepo: the API, the web portal, the resident app, the staff app and two shared packages, one for contracts and one for a profanity filter. The API has 37 modules. Each one is hexagonal, with a domain layer free of frameworks, an application layer with handlers, use cases and services, and an infrastructure layer with controllers and repositories. Dependencies only point inwards, and the rules are written down for people and for AI agents. Click a diagram to open it at full size.
 
-Data lives in two databases. PostgreSQL through Prisma holds the relational data, and MongoDB holds chat conversations, messages and read state. A Socket.IO gateway for chat runs in the same service as the REST API. The Next.js web portal is exported as static files, uses a locale segment in its routes and is served from Firebase Hosting.
+Data lives in two databases. PostgreSQL through Prisma holds the relational data, and MongoDB holds chat conversations, messages and read state. A Socket.IO gateway for chat runs in the same service as the REST API. The Next.js web portal is exported as static files, uses a locale segment in its routes and is served from Firebase Hosting. Both mobile apps are Expo apps built with EAS.
 
-### Security and privacy
+</DiagramRow>
 
-Each chat message is encrypted with AES-256-GCM, using envelope encryption with a key from a KMS provider that is chosen by configuration. Sessions are short-lived: a 15-minute access token and a refresh token that rotates only when it is close to expiry, with roles enforced through a decorator and a guard.
+<DiagramRow item={{ src: "/diagrams/nido/chat-security.svg", title: "Chat encryption and the WebSocket fix", caption: "A data key per conversation wrapped by the KMS, and how realtime recovers after the access token expires.", width: 1200, height: 780 }}>
 
-Audit logging is mandatory, and a single log table receives a record from every mutating or security-sensitive flow. Secrets are scanned in four layers: a history audit, a pre-commit hook, a pre-push hook and a CI job.
+### Chat encryption and realtime
+
+Each chat message is encrypted with AES-256-GCM, using a random IV and salt per message. Every conversation has its own data key, stored wrapped by a KMS (AWS KMS or a local key, chosen by configuration) and kept in memory for five minutes, so the KMS is only called on a cache miss. The database stores the ciphertext, IV, auth tag and salt, never the plain text.
+
+Realtime had a documented incident. Cloud Run's default request timeout of 300 seconds cut every WebSocket every five minutes, and a client that reconnected with an expired 15-minute token was disconnected by the gateway and never retried. The fix has two sides: the gateway now checks the token in a handshake middleware and rejects with a stable reason, and the client refreshes the token before each handshake and retries by itself with a capped backoff. The Cloud Run service settings are documented in the repo and changed by hand, not by the deploy workflow.
+
+</DiagramRow>
+
+### Sessions, audit and secrets
+
+Sessions are short-lived: a 15-minute access token and a refresh token that rotates on every refresh. Presenting a refresh token that was already used revokes the whole session family, and roles are enforced through a decorator and a guard.
+
+Audit logging is mandatory, and a single log table receives a record from every mutating or security-sensitive flow. Each row has the actor, the role at that moment, the condominium, a semantic event type and the context, and there are no anonymous logs. Revealing personal data, such as a visitor's document, is audited too. Secrets are scanned in four layers: a history audit, a pre-commit hook, a pre-push hook and a CI job.
+
+<DiagramRow item={{ src: "/diagrams/nido/visitor-arrival.svg", title: "Visitor pre-registration and arrival", caption: "From the shared link to the guard at the gate, with the approval request when a visitor needs one.", width: 1200, height: 700 }}>
+
+### Visitors and access
+
+A resident shares a link tied to their unit, valid for 24 hours. The visitor fills in a web form with no install, and the link is consumed. At the gate, a visitor who comes alone with a valid pass is checked in and the resident is only notified. A visitor with companions, or one with no pre-registration, needs approval: the resident gets a request, and whoever decides first, the resident or the guard, closes it.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/nido/order-lifecycle.svg", title: "Order life cycle", caption: "The states of a provider order, from the resident's request to a completed or closed order.", width: 1600, height: 680 }}>
+
+### Marketplace orders
+
+Orders to local providers follow a fixed set of states. The provider accepts or rejects, the resident can cancel until two hours before the slot, and payment is on delivery, confirmed by the provider. A payment problem closes the order with an incident.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/nido/clients.svg", title: "Web, staff and mobile", caption: "The clients of the platform, how each one signs in and what it opens, all on the same API.", width: 1400, height: 880 }}>
+
+### Web, staff and mobile
+
+Three clients share one API. The resident app is an Expo app with five tabs, and its Explore tab shows only the modules that the condominium has enabled. The staff app is a second Expo app for guards, with the same sign-in flow but a `STAFF` client flag that rejects residents. It lists visitors, shows the access history and verifies pass QR codes with the camera. The web portal is a static Next.js export with one area per role: condominium admin, platform admin, partner, provider and guard when the condominium allows it. A few public pages, such as visitor pre-registration and password setup, open from a link with no account.
+
+</DiagramRow>
 
 ### Delivery
 
-The API runs on Cloud Run with development, staging and production services, deployed by git tags. Every push runs dependency install, Prisma validation, linting, API and web tests with coverage, and SonarQube and Trivy scans.
-
-One real incident was documented. Cloud Run's default timeout cut the WebSocket connection every five minutes, and with a 15-minute token the chat died. The fix was a gateway check that rejects with stable reasons, plus token refresh with backoff in the client.
+The API runs on Cloud Run with development, staging and production services, deployed by git tags. The web portal goes to Firebase Hosting and the two mobile apps are built and submitted with EAS, each with its own tag pattern. Every push or pull request to main runs dependency install, Prisma validation, linting, API and web tests with coverage, and SonarQube, Trivy and gitleaks scans.
 
 ### Working with AI agents
 
@@ -123,7 +160,7 @@ These are the choices that shaped the platform, with the reason for each and wha
 | A single audit log table | One place to answer who did what. | Every mutation must remember to write to it. |
 | A static web export | Cheap, fast hosting with no server to run. | No server-side rendering for the portal. |
 | Receipt-based payments first | Fees can be collected now while the gateway is integrated gradually. | An admin validates receipts by hand. |
-| Permissive CSV import | Header matching ignores case and separators, and unknown headers are hints rather than errors. | Looser validation on import files. |
+| Tolerant CSV import | Header matching ignores case, spaces, hyphens and dots, and accepts synonyms. | Looser validation on import files. |
 
 </ImplementationSection>
 

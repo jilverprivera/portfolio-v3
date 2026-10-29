@@ -9,11 +9,11 @@ export function ProjectsMenu({ items }: { items: MenuItem[] }) {
     <FlowingMenu
       items={items as never[]}
       ariaLabel="Projects"
-      textColor="#ffffff"
-      bgColor="#000000"
-      marqueeBgColor="#E7F451"
-      marqueeTextColor="#000000"
-      borderColor="rgba(255, 255, 255, 0.18)"
+      textColor="#0a0a0a"
+      bgColor="#f5f5f2"
+      marqueeBgColor="#ff1a4d"
+      marqueeTextColor="#0a0a0a"
+      borderColor="#d4d4cf"
       showIndex
       showArrow
       activeIndex={undefined}

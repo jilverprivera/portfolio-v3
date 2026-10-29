@@ -24,7 +24,7 @@ highlights:
     label: "capabilities"
   - value: "~125"
     label: "API endpoints"
-  - value: "72"
+  - value: "63"
     label: "audit event types"
 ---
 
@@ -54,16 +54,17 @@ Several decisions followed from that. Permissions are stored in the database and
 
 <PersonasSection title="User persona">
 
-Six profiles use the platform. The first four are the HVAC community, and the last two work behind the scenes.
+Seven profiles use the platform. The first six work in the web portal and the last one works in the admin back-office. They match the system roles seeded in the database, and an admin edits what each role can do. Sales, installers and technicians also have an Admin variant, and a Super Admin role reaches both portals.
 
 <PersonaCards
   items={[
-    { name: "Installer", does: "Looks up products and manuals, sizes equipment with the calculator and requests a commissioning of the installation.", where: "Web portal", tool: "box", hair: "cap", skin: "#c68863", shirt: "#e8743b", hairColor: "#222", },
-    { name: "Technician", does: "Finds the documentation of each model, its compatibilities and its combinations.", where: "Web portal", tool: "chip", hair: "short", skin: "#e2ad88", shirt: "#4b7bec", hairColor: "#2a2a2a", glasses: true, },
-    { name: "Trainer", does: "Runs trainings and roadshows, manages participants and issues certificates.", where: "Web portal", tool: "chart", hair: "long", skin: "#d9a07c", shirt: "#27a36d", hairColor: "#2a1a14", glasses: true, },
-    { name: "Sales representative", does: "Uses the catalog and the calculator to propose the right equipment to a customer.", where: "Web portal", tool: "tie", hair: "curly", skin: "#a8704d", shirt: "#e0566b", hairColor: "#1c1c1c", },
-    { name: "Commissioner", does: "Accepts a commissioning request, performs it and certifies the installation with photo evidence.", where: "Web portal", tool: "magnifier", hair: "bob", skin: "#f0c8a0", shirt: "#7a7f8c", hairColor: "#7a3b2a", },
-    { name: "Back-office administrator", does: "Manages users, roles, products, documentation, training events and the audit log.", where: "Admin back-office", tool: "headset", hair: "bun", skin: "#f0c8a0", shirt: "#8e5be0", hairColor: "#5a3a22", },
+    { name: "Installer", does: "Looks up products and manuals, sizes equipment with the calculator, requests a commissioning of the installation and asks a trainer for training. It is the default role of a new user who arrives by single sign-on.", where: "Web portal", tool: "box", hair: "cap", skin: "#c68863", shirt: "#e8743b", hairColor: "#222", },
+    { name: "Technician", does: "Finds the documentation of each model, its compatibilities and its combinations, and subscribes to trainings and roadshows.", where: "Web portal", tool: "chip", hair: "short", skin: "#e2ad88", shirt: "#4b7bec", hairColor: "#2a2a2a", glasses: true, },
+    { name: "Trainer", does: "Creates and edits training events, answers training requests from installers, manages participants and issues certificates.", where: "Web portal", tool: "chart", hair: "long", skin: "#d9a07c", shirt: "#27a36d", hairColor: "#2a1a14", glasses: true, },
+    { name: "Sales team", does: "Uses the catalog and the calculator to propose the right equipment to a customer, and runs the roadshow agenda.", where: "Web portal", tool: "tie", hair: "curly", skin: "#a8704d", shirt: "#e0566b", hairColor: "#1c1c1c", },
+    { name: "Wholesaler", does: "Browses the catalog and reads the wholesaler manuals attached to each product.", where: "Web portal", tool: "bag", hair: "short", skin: "#cf9468", shirt: "#e6a23c", hairColor: "#2a2a2a", },
+    { name: "Commissioner", does: "Follows the commissioning agenda, accepts or denies each request, then certifies the installation with a photo or denies the certification.", where: "Web portal", tool: "magnifier", hair: "bob", skin: "#f0c8a0", shirt: "#7a7f8c", hairColor: "#7a3b2a", },
+    { name: "Back-office administrator", does: "Manages users, roles and their permissions, products, documentation, landing and legal settings, and reads the audit log.", where: "Admin back-office", tool: "headset", hair: "bun", skin: "#f0c8a0", shirt: "#8e5be0", hairColor: "#5a3a22", },
   ]}
 />
 
@@ -92,21 +93,55 @@ The calculation estimates the load of each room from its volume and from the peo
 
 <ImplementationSection title="Implementation & final design">
 
+<DiagramRow item={{ src: "/diagrams/midea-hvac/architecture.svg", title: "Architecture", caption: "The portal and the admin, the NestJS API with its ten modules, and the services behind it.", width: 1200, height: 710 }}>
+
 ### Architecture
 
-The repository is a monorepo with yarn workspaces and Turborepo: three apps (the API, the portal and the admin) and two shared packages, one with TypeScript contracts and one with the design system. Each API feature is a hexagonal module, with a domain layer that never imports Nest.js or Prisma, an application layer with handlers and use cases, and an infrastructure layer with controllers and repositories. Modules talk to each other only through exported handlers or ports.
+The repository is a monorepo with yarn workspaces and Turborepo: three apps (the API, the portal and the admin) and two shared packages, one with TypeScript contracts and one with the design system. The frontends talk to the API only over REST and JSON. They share no database and no session. Click a diagram to open it at full size.
+
+</DiagramRow>
+
+The API has ten business modules plus a logger module for auditing. Each one is a hexagon, with a domain layer that never imports Nest.js or Prisma, an application layer with handlers and use cases, and an infrastructure layer with controllers and repositories. Modules talk to each other only through exported handlers or ports, and there is no event bus. The data model has 41 Prisma models and 70 migrations.
 
 The types package mirrors the database enums and the JSON shapes, so the frontends never depend on the Prisma client. The portal and the admin share one UI package built with Atomic Design, shadcn components, rich text and data tables.
 
-### Authorization and security
+<DiagramRow item={{ src: "/diagrams/midea-hvac/access.svg", title: "Sign-in and permission check", caption: "Local login and single sign-on end in the same tokens, and every request passes two guards before it reaches a handler.", width: 1200, height: 800 }}>
 
-Permissions are decided on the server by a global guard that checks the role's module and action, using data stored in the database. The frontends only read permissions to hide what a user cannot use. The API also uses Helmet, throttling, an HTML sanitization pipe and strict validation that rejects unknown fields, and raw SQL is blocked by default in the database service. Secrets are scanned with gitleaks as a pre-commit hook, plus Trivy and SonarQube in CI.
+### Sign-in and permissions
+
+A user gets into the API by local login, with an optional one-time code sent by email, or by single sign-on with Midea's identity provider. Both end in the same pair of tokens: an access token of 15 minutes and a refresh token of 7 days. The single sign-on endpoints are in place, although the button is hidden in both login forms for now.
+
+</DiagramRow>
+
+Permissions are decided on the server by a global guard that checks the role's module and action, using data stored in the database. The frontends read the permissions from the current-user endpoint only to hide what a user cannot use. The settings module is the one exception: any authenticated role may reach it. The API also uses Helmet, throttling, an HTML sanitization pipe and strict validation that rejects unknown fields, and raw SQL is blocked by default in the database service. Business handlers write an audit event for each action, and a step that throws is stored as failed.
+
+<DiagramRow item={{ src: "/diagrams/midea-hvac/thermal-calculator.svg", title: "Thermal calculator", caption: "From room dimensions and people to a load, then to indoor units for a mini split or outdoor units for a multi split.", width: 1200, height: 540 }}>
+
+### The thermal calculator
+
+The calculation lives in the API, in a module with three use cases: the load of each room, the product suggestions and a preview of the combination matrix. The repository documents the method with worked examples.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/midea-hvac/lifecycles.svg", title: "Commissioning and training life cycles", caption: "The states of a commissioning and of a training or roadshow event, with who moves each one.", width: 1200, height: 790 }}>
+
+### Commissioning and training
+
+Both flows follow the same pattern: one person asks, another resolves, and every transition is audited. A commissioning moves through five states and the certification photo goes to Google Cloud Storage. Training events have four states, and two scheduled jobs move events forward without anyone touching them.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/midea-hvac/deploy.svg", title: "Tag-driven deploy", caption: "A tag such as v1.0.30-web-prod selects the workflow, the environment and the Cloud Run service.", width: 1200, height: 750 }}>
 
 ### Files, language and delivery
 
-Large files go directly to Google Cloud Storage with signed URLs, in resumable chunks, so they never pass through the API. When only one language is supplied for a piece of content, the API fills the other with Google Cloud Translation.
+Large manuals and product media go directly to Google Cloud Storage with signed URLs, in resumable chunks of 8 MB, so they never pass through the API. The commissioning certification photo is the exception: it is a single image of up to 10 MB and the API validates and stores it. When only one language is supplied for a piece of content, the API fills the other with Google Cloud Translation.
 
-Deployments are driven by tags: a tag names the app and the environment, and the pipeline builds a Docker image, pushes it and deploys to Cloud Run, with the two frontends behind Firebase Hosting. Work is spec-driven, so features start as written specs, and the repository carries rules and skills for AI coding agents.
+Deployments are driven by tags: a tag names the app and the environment, and a GitHub Actions workflow builds a Docker image, pushes it to Artifact Registry and deploys it to Cloud Run, with the two frontends behind Firebase Hosting.
+
+</DiagramRow>
+
+Secrets are scanned with gitleaks in a pre-commit hook, a pre-push hook and CI, and CI also runs Trivy and SonarQube. Work is spec-driven, so features start as written specs, and the repository carries rules and skills for AI coding agents.
 
 ### Decisions
 
@@ -114,12 +149,14 @@ These are the choices that shaped the platform, with the reason for each and wha
 
 | Decision | Why | Trade-off |
 |---|---|---|
-| Hexagonal modules per feature | Keeps the domain free of frameworks and easy to test. | More boilerplate, and very large repositories in the products module. |
+| Hexagonal modules per feature | Keeps the domain free of frameworks and easy to test. | More boilerplate, and a very large products module with more than 40 endpoints in one controller. |
 | Permissions stored in the database | Roles can be edited at runtime without a deploy. | One extra query on every guarded request. |
 | A shared types package | One source of truth for contracts across three apps. | It has to be built before the apps that use it. |
 | Separate portal and admin | Different audiences and navigation, one design system. | Two Next.js apps to deploy and maintain. |
 | Direct-to-storage uploads | Large manuals and media should not load the API. | The upload flow lives in the client. |
 | Bilingual content as data | Every piece of domain content exists in German and English. | Editors work with two fields, and automatic translation fills gaps. |
+| Modules call each other only through ports | Each module stays isolated and testable on its own. | Cross-module work needs an exported port or handler, and there is no event bus to decouple them. |
+| One audit log with dynamic priority | Every action is traceable, and a change to an admin role is marked critical. | Every handler has to write its own audit event. |
 
 </ImplementationSection>
 

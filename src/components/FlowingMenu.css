@@ -30,7 +30,7 @@
   right: 0;
   left: 0;
   height: 1px;
-  background: var(--flowing-menu-border, rgba(255, 255, 255, 0.14));
+  background: var(--flowing-menu-border, #d4d4cf);
   transform-origin: left center;
   pointer-events: none;
 }

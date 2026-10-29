@@ -33,7 +33,7 @@ export function ScrollBadge() {
       spinDuration={20}
       className="!m-0 shrink-0"
       onHover="slowDown"
-      color="#ffffff"
+      color="#0a0a0a"
     >
       <motion.svg
         viewBox="0 0 64 64"

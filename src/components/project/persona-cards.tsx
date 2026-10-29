@@ -16,7 +16,7 @@ export type Persona = {
 };
 
 const INK = "#15151b";
-const ACCENT = "#E7F451";
+const ACCENT = "#ff1a4d";
 const DEVICE = "#1d1f26";
 const DEVICE_EDGE = "#3a3d48";
 
@@ -245,15 +245,15 @@ export function PersonaCards({ items }: { items: Persona[] }): ReactNode {
       {items.map((persona, index) => (
         <article
           key={persona.name}
-          className="flex flex-col gap-6 rounded-[16px] border border-white/15 bg-white/[0.03] p-6"
+          className="flex flex-col gap-6 rounded-[16px] border border-line bg-surface p-6"
         >
           <div className="mx-auto h-48 w-48">
             <Character persona={persona} uid={String(index)} delay={index * 0.4} />
           </div>
           <div className="flex flex-col gap-2">
-            <h4 className="text-[20px] font-medium leading-tight text-white">{persona.name}</h4>
-            <p className="text-[15px] leading-[1.55] text-white/75">{persona.does}</p>
-            <p className="text-[14px] leading-[1.5] text-[#E7F451]">{persona.where}</p>
+            <h4 className="text-[20px] font-medium leading-tight text-ink">{persona.name}</h4>
+            <p className="text-[15px] leading-[1.55] text-ink-muted">{persona.does}</p>
+            <p className="text-[14px] leading-[1.5] text-accent-text">{persona.where}</p>
           </div>
         </article>
       ))}

@@ -18,9 +18,9 @@ const TONES: Record<Tone, string> = {
 export function PhoneFrame({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
     <div
-      className={`rounded-[2.4rem] border border-white/10 bg-[#1b1b1d] p-[6px] shadow-[0_18px_40px_-12px_rgba(0,0,0,0.55)] ${className}`}
+      className={`rounded-[2.4rem] border border-line bg-[#1b1b1d] p-[6px] shadow-[0_18px_40px_-12px_rgba(0,0,0,0.55)] ${className}`}
     >
-      <div className="h-full w-full overflow-hidden rounded-[2rem] bg-black">{children}</div>
+      <div className="h-full w-full overflow-hidden rounded-[2rem] bg-paper">{children}</div>
     </div>
   );
 }
@@ -32,7 +32,7 @@ export function DeviceScene({ phones, tone }: SceneProps) {
   const middle = phones.length === 3 ? 1 : -1;
   return (
     <div
-      className="flex w-full items-center justify-center gap-[4%] overflow-hidden rounded-[8px] border border-white/15 px-[4%]"
+      className="flex w-full items-center justify-center gap-[4%] overflow-hidden rounded-[8px] border border-line px-[4%]"
       style={{ background: TONES[tone], aspectRatio: phones.length === 3 ? "16 / 9" : "1 / 1" }}
     >
       {phones.map((phone, index) => (
@@ -68,8 +68,8 @@ export function PhoneGallery({ items }: { items: PhoneItem[] }) {
             />
           </PhoneFrame>
           <figcaption className="mx-auto flex w-full max-w-[340px] flex-col gap-1">
-            <span className="text-[18px] font-medium text-white">{item.title}</span>
-            {item.caption && <span className="text-[15px] leading-[1.5] text-white/55">{item.caption}</span>}
+            <span className="text-[18px] font-medium text-ink">{item.title}</span>
+            {item.caption && <span className="text-[15px] leading-[1.5] text-ink-muted">{item.caption}</span>}
           </figcaption>
         </figure>
       ))}
@@ -120,7 +120,7 @@ export function MotionGallery({ items }: { items: Clip[] }) {
       {items.map((item, index) => (
         <figure key={item.src} className="flex flex-col gap-4">
           <div
-            className="flex aspect-[4/5] w-full items-center justify-center overflow-hidden rounded-[8px] border border-white/15"
+            className="flex aspect-[4/5] w-full items-center justify-center overflow-hidden rounded-[8px] border border-line"
             style={{ background: TONES[CLIP_TONES[index % CLIP_TONES.length]] }}
           >
             <PhoneFrame className="h-[92%]">
@@ -128,8 +128,8 @@ export function MotionGallery({ items }: { items: Clip[] }) {
             </PhoneFrame>
           </div>
           <figcaption className="flex flex-col gap-1">
-            <span className="text-[18px] font-medium text-white">{item.title}</span>
-            {item.caption && <span className="text-[15px] leading-[1.5] text-white/55">{item.caption}</span>}
+            <span className="text-[18px] font-medium text-ink">{item.title}</span>
+            {item.caption && <span className="text-[15px] leading-[1.5] text-ink-muted">{item.caption}</span>}
           </figcaption>
         </figure>
       ))}

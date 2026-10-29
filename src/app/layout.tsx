@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Space_Grotesk } from "next/font/google";
+import { Anton, Space_Grotesk, Space_Mono } from "next/font/google";
 import GlowCursor from "@/components/GlowCursor";
 import { PageTransitions } from "@/components/page-transitions";
 import "./globals.css";
@@ -10,8 +10,20 @@ const spaceGrotesk = Space_Grotesk({
   weight: ["700"],
 });
 
+const anton = Anton({
+  variable: "--font-anton",
+  subsets: ["latin"],
+  weight: ["400"],
+});
+
+const spaceMono = Space_Mono({
+  variable: "--font-space-mono",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
 export const metadata: Metadata = {
-  title: "Portfolio",
+  title: "Jilver Pacheco | I create my own products and help design yours.",
   description: "Brand designer & art director portfolio",
 };
 
@@ -23,14 +35,15 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${spaceGrotesk.variable} dark h-full antialiased`}
+      className={`${spaceGrotesk.variable} ${anton.variable} ${spaceMono.variable} dark h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         {children}
         <GlowCursor
-          color="#ffffff"
-          secondaryColor="#7aa2ff"
-          blendMode="screen"
+          color="#ff1a4d"
+          secondaryColor="#4a38f5"
+          theme="light"
+          blendMode="normal"
           className="!fixed !inset-0 !h-dvh !w-screen z-50 pointer-events-none"
           style={{}}
         >

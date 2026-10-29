@@ -13,16 +13,38 @@ export function DiagramGallery({ items }: { items: Item[] }) {
         <figure key={item.src} className="flex flex-col gap-4">
           <ImageThumb
             image={item}
-            className="rounded-[8px] border border-white/15 bg-white/[0.03] p-4 hover:border-white/40"
+            className="rounded-[8px] border border-line bg-stage p-4 hover:border-line-strong"
             imgClassName="mx-auto h-auto max-h-[720px] w-auto max-w-full object-contain"
           />
           <figcaption className="flex flex-col gap-1">
-            <span className="text-[16px] font-medium text-white">{item.title}</span>
-            {item.caption && <span className="text-[15px] leading-[1.5] text-white/55">{item.caption}</span>}
+            <span className="text-[16px] font-medium text-ink">{item.title}</span>
+            {item.caption && <span className="text-[15px] leading-[1.5] text-ink-muted">{item.caption}</span>}
           </figcaption>
         </figure>
       ))}
     </div>
+  );
+}
+
+// One diagram next to the text that explains it: text on the left, the diagram on the right.
+// It stacks on small screens. Click the diagram to open it in the large viewer.
+export function DiagramRow({ item, children }: { item: Item; children: React.ReactNode }) {
+  return (
+    // The divider sits on the whole row, so it spans both columns instead of only the text.
+    <figure className="mt-6 grid items-start gap-8 border-t border-line pt-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-14 [&_h3]:mt-0! [&_h3]:border-t-0! [&_h3]:pt-0!">
+      <div className="flex flex-col gap-6">{children}</div>
+      <div className="flex flex-col gap-4">
+        <ImageThumb
+          image={item}
+          className="rounded-[8px] border border-line bg-stage p-4 hover:border-line-strong"
+          imgClassName="mx-auto h-auto max-h-[720px] w-auto max-w-full object-contain"
+        />
+        <figcaption className="flex flex-col gap-1">
+          <span className="text-[16px] font-medium text-ink">{item.title}</span>
+          {item.caption && <span className="text-[15px] leading-[1.5] text-ink-muted">{item.caption}</span>}
+        </figcaption>
+      </div>
+    </figure>
   );
 }
 
@@ -42,19 +64,19 @@ const CYCLE: Layout[] = ["top", "right", "left"];
 function Intro({ item }: { item: Screenshot }) {
   return (
     <div className="flex flex-col gap-3">
-      <span className="text-[24px] font-medium leading-tight text-white">{item.title}</span>
-      {item.caption && <span className="text-[17px] leading-[1.6] text-white/70">{item.caption}</span>}
+      <span className="text-[24px] font-medium leading-tight text-ink">{item.title}</span>
+      {item.caption && <span className="text-[17px] leading-[1.6] text-ink-muted">{item.caption}</span>}
     </div>
   );
 }
 
 function Features({ features }: { features: string[] }) {
   return (
-    <ul className="flex flex-col gap-3 text-[16px] leading-[1.55] text-white/85">
+    <ul className="flex flex-col gap-3 text-[16px] leading-[1.55] text-ink-soft">
       {features.map((feature) => (
         <li
           key={feature}
-          className="relative pl-5 before:absolute before:left-0 before:top-[0.65em] before:h-1.5 before:w-1.5 before:rounded-full before:bg-[#E7F451]"
+          className="relative pl-5 before:absolute before:left-0 before:top-[0.65em] before:h-1.5 before:w-1.5 before:rounded-full before:bg-accent"
         >
           {feature}
         </li>
@@ -83,7 +105,7 @@ export function ScreenshotGallery({ items }: { items: Screenshot[] }) {
         ) : (
           <ImageThumb
             image={item}
-            className="block w-full overflow-hidden rounded-[8px] border border-white/15 hover:border-white/40"
+            className="block w-full overflow-hidden rounded-[8px] border border-line hover:border-line-strong"
             imgClassName="block h-auto w-full"
           />
         );

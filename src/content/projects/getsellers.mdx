@@ -61,14 +61,14 @@ Operations got their own admin site, built from scratch, because the planned ref
 
 <PersonasSection title="User persona">
 
-Four profiles shape the product. One of them never opens the app: the homeowner is the reason the leads exist.
+Four profiles shape the product, but only two of them sign in. The homeowner is the reason the leads exist and never opens the app. The sales representative is a role that admins manage, not a user with screens of its own.
 
 <PersonaCards
   items={[
-    { name: "Real-estate investor", does: "Subscribes to counties, receives leads, works them in a pipeline from new lead to closed, and manages the wallet and refunds.", where: "Investor app", tool: "tie", hair: "short", skin: "#e2ad88", shirt: "#2f3e5e", hairColor: "#555", glasses: true, },
-    { name: "Homeowner", does: "Someone who wants to sell. Comes in through a marketing campaign and is registered as a lead, with their data masked for the investor.", where: "Marketing campaigns", tool: "map", hair: "curly", skin: "#a8704d", shirt: "#27a36d", hairColor: "#1c1c1c", },
-    { name: "Platform administrator", does: "Manages users, sources and prices, refunds, broadcasts, reports and webhooks from the internal admin site.", where: "Admin site", tool: "headset", hair: "bun", skin: "#f0c8a0", shirt: "#8e5be0", hairColor: "#7a3b2a", },
-    { name: "Sales representative", does: "Follows investors and referrals, with their commissions tracked by the referral program.", where: "Admin site", tool: "chart", hair: "cap", skin: "#c68863", shirt: "#e0566b", hairColor: "#222", },
+    { name: "Real-estate investor", does: "Signs in with email and an emailed one-time code, or with Google. Subscribes to counties, receives leads, works them through the pipeline from new lead to closed, and manages the wallet, payment methods, referral code and refunds.", where: "Investor app", tool: "tie", hair: "short", skin: "#e2ad88", shirt: "#2f3e5e", hairColor: "#555", glasses: true, },
+    { name: "Homeowner", does: "Someone who wants to sell. Fills in a form in a marketing campaign, and the campaign posts the data to the lead webhook with the TCPA consent. In the feed their last name, email, phone and address are masked.", where: "Marketing campaigns", tool: "map", hair: "curly", skin: "#a8704d", shirt: "#27a36d", hairColor: "#1c1c1c", },
+    { name: "Platform administrator", does: "Has a separate sign-in that only accepts the admin role. Manages users, partners, sources and prices, markets, refunds, broadcasts, reports and webhooks, and gets an alert when a lead cannot be assigned.", where: "Admin site", tool: "headset", hair: "bun", skin: "#f0c8a0", shirt: "#8e5be0", hairColor: "#7a3b2a", },
+    { name: "Sales representative", does: "A user with the sales_representative role, flagged by admins and listed under Users. The code gives it no flow of its own, and referral commissions belong to the referring investor instead.", where: "Admin site, as a record", tool: "chart", hair: "cap", skin: "#c68863", shirt: "#e0566b", hairColor: "#222", },
   ]}
 />
 
@@ -93,21 +93,57 @@ Four profiles shape the product. One of them never opens the app: the homeowner 
 
 <ImplementationSection title="Implementation & final design">
 
+<DiagramRow item={{ src: "/diagrams/getsellers/architecture.svg", title: "Architecture", caption: "The two web apps, the inbound webhooks, the layers of the API and the services behind it.", width: 1200, height: 680 }}>
+
 ### Architecture
 
-The repository is a monorepo with yarn workspaces and Turborepo, holding the API, the investor app, the admin site and shared packages for ESLint, TypeScript configuration and a logger. The backend is hexagonal. The flow goes from routes to controllers, handlers and then use cases with one operation each. The domain holds repository interfaces, types, validators and schemas, while infrastructure holds the repository implementations and services such as Stripe, the Mongo connection and Socket.IO. Dependencies are wired in a manual container, with path aliases per layer. C4 diagrams from level 1 to 3, sequence diagrams and a list of API routes live next to the code, along with one feature document per area.
+The repository is a monorepo with yarn workspaces and Turborepo, holding the API, the investor app, the admin site and shared packages for ESLint, TypeScript configuration and a logger. The backend is hexagonal. A request goes from routes to controllers, then handlers, then use cases with one operation each. The domain holds repository interfaces, types, validators and schemas, while infrastructure holds the repository implementations and services such as Stripe, the Mongo connection and Socket.IO. Dependencies are wired by hand in one file, with path aliases per layer, and the tests swap that file for a mock. Socket.IO and the scheduled jobs run inside the same process as the API. There are about 180 routes under /api. C4 diagrams from level 1 to 3, sequence diagrams and a list of API routes live next to the code, along with one feature document per area. Click a diagram to open it at full size.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/getsellers/lead-intake-assignment.svg", title: "Lead intake and assignment", caption: "From the webhook to one investor, with the checks, the fallback by scope and the delivery channels.", width: 1200, height: 1040 }}>
+
+### Lead intake and assignment
+
+Leads arrive at a public webhook, or an admin creates them by hand. One adapter, webhook-lead.adapter, maps the payload: it accepts several names for the same field and normalizes occupancy, motivation and time frame. It is one adapter for one webhook, not one per source. The create-lead use case then finds the market from the city or the zip, adds Batch Data, the source price and a Street View image, and marks the lead as rejected if a required field is missing. A lead with no TCPA consent or no matching market gets a 400 and an entry in the lead log. Leads from one vendor, Hesel Media, are stored and reported to the admins without being assigned.
+
+Assignment tries the county first, then the state, then the nationwide market. Inside a scope the subscribers are sorted by the oldest last assignment, and the lead goes to one investor, not to all of them. Each candidate must stay under the monthly budget and have enough balance. If the balance is short, that subscription becomes placed, the admins are notified and the next subscriber is tried. If nobody qualifies, the admins get an alert. When a lead is assigned, the wallet is debited and the investor gets an in-app notification, an email and an SMS, the last two only if their alert settings allow it. A referral commission is recorded when the investor was referred, and the outbound webhooks for leads and transactions are dispatched.
+
+</DiagramRow>
 
 ### Security and data
 
-The API is protected with Helmet, an allow-listed CORS policy, centralized rate limiting, input sanitization and ObjectId validation. Lead personal data is masked before it reaches the frontend. Terms and conditions are accepted with a signature and rendered to PDF with Puppeteer, and files are served through signed S3 URLs.
+The API runs Helmet, CORS, a content-type check, a payload size limit, input sanitization and ObjectId validation, and it has five rate limiters: general, auth, create, read and admin. The CORS code can enforce an allow-list of origins, but unless CORS_ALLOW_ANY_ORIGIN is set to false it accepts any origin, so the allow-list is a setting and not the default. Lead personal data is masked in the public feed: last name, email, phone, address and IP address. The endpoints for assigned leads return the full data. Terms and conditions are accepted with a signature and rendered to PDF with Puppeteer. The PDF and the signature are stored under a private S3 prefix and read through signed URLs, while the lead and refund images use public prefixes.
+
+<DiagramRow item={{ src: "/diagrams/getsellers/wallet-billing.svg", title: "Wallet and auto-recharge", caption: "The checks at each assignment, the recharge events and the monthly reset.", width: 1200, height: 1040 }}>
 
 ### Payments and scheduled work
 
-Payments moved from Braintree to Stripe in Sprint 3. Auto-recharge runs as an event pipeline plus a scheduled job, and other jobs clean expired one-time codes, process pending referral commissions and reset monthly billing.
+Payments moved from Braintree to Stripe in Sprint 3. The braintree package and a few migration scripts are still in the backend. Each investor has one billing document with the balance, the monthly budget, the amount spent this month and the auto-recharge settings. Adding a second payment method gives a one-time 3% discount on the next lead.
+
+Auto-recharge is an event pipeline. When an assignment leaves the balance under the reload threshold, the use case writes pending events, one for each reload amount needed. A cron job every two minutes charges them with a Stripe PaymentIntent, using an idempotency key per event and card, and it tries the investor's other saved cards when one is declined. If all of them fail, the event is marked failed and the investor gets an email. Stripe webhooks for attached and detached payment methods and for succeeded, failed and expired charges keep the local records in line.
+
+Four node-cron jobs run in the API: cleaning expired one-time codes every day at 00:00, processing auto-recharge events every two minutes, processing pending referral commissions every day at 06:00 New York time, and resetting the monthly billing on the first day of the month.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/getsellers/lifecycles.svg", title: "Lead status and refund", caption: "The statuses of an investor's lead and the states of a refund request.", width: 1200, height: 760 }}>
+
+### Life cycles
+
+An investor can set any status on a lead they own, and two of them also change the lead category. A refund starts in progress, an admin completes or rejects it, and either side can cancel it. Completing it credits the wallet with a refund transaction and unassigns the lead. A rejected refund can be requested again with the form prefilled, and only one refund can be open per lead.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/getsellers/deploy-pipeline.svg", title: "Tag-driven deploy", caption: "How a tag selects the pipeline and what each pipeline does.", width: 1200, height: 650 }}>
 
 ### Quality and delivery
 
-The backend has 289 test files (270 unit and 19 integration) written with Jest, supertest and an in-memory MongoDB, with a 60% global coverage threshold. The investor app has 55 test files with Vitest and Testing Library. Deployments are tag-driven with Azure Pipelines: a tag of the form prefix, semver and environment deploys a single app, and the API ships as a Docker image.
+The backend has 289 test files (270 unit and 19 integration) written with Jest, supertest and an in-memory MongoDB, with a 60% global coverage threshold on branches, functions, lines and statements. Cron jobs, sockets, utilities, configuration and validators are left out of that measure. The investor app has 55 test files with Vitest and Testing Library. The admin site has Vitest configured but no test files.
+
+Deployments are tag-driven with Azure Pipelines. A tag is a prefix, a semver and an environment, such as b2.0.0-dev. The prefix picks the pipeline: b for the API, f for the investor app and af for the admin site. The suffix picks the repository, bucket and secrets. The API pipeline builds a Docker image, pushes it to ECR and restarts the container on a VM over SSH. The two web apps are built with Vite using variables from AWS Secrets Manager, synced to S3, and the CloudFront cache is invalidated. The pipelines do not run the test suites. The deployment document lists only the test and dev environments, but the pipelines also accept -prod.
+
+</DiagramRow>
 
 ### Decisions
 
@@ -116,10 +152,11 @@ Each decision below was taken for a concrete reason and carried a cost, which th
 | Decision | Why | Trade-off |
 |---|---|---|
 | Layered to hexagonal backend | Each use case can be tested alone and with less coupling. | A large restructure up front, in exchange for the extensive unit test suite. |
-| Braintree to Stripe | One payment provider for the wallet and the investor app. | Some Braintree code and dependencies remain in the repository. |
-| Prepaid wallet with a backup payment method | Lead delivery should continue when the primary charge fails. | More billing states to model and test. |
+| Braintree to Stripe | One payment provider for the wallet and the investor app. | The braintree package and some migration scripts remain in the repository. |
+| Prepaid wallet with auto-recharge | A lead is paid from the balance at the moment of assignment, and the wallet is refilled later with retries on the other saved cards. | More billing states to model and test, and an investor with no funds is skipped until the wallet is recharged. |
+| Round robin inside each market | Leads are exclusive, and taking turns spreads them among the subscribers. | A lead can end up unassigned when nobody has funds. |
 | A new admin site built from scratch | The planned refund integration with the client's own backend could not be completed because of connectivity issues. | More surface to build and maintain. |
-| Webhook adapters for lead intake | Each external source sends a different payload, so each is normalized before it is stored. | One adapter to write per source. |
+| One adapter for the lead webhook | Sources name fields differently, so the adapter maps the aliases and normalizes the values before the lead is stored. | A source with a new shape means extending the adapter. |
 | Masking lead data in the API | Personal data should not leave the backend unless the investor needs it. | Extra mapping on every lead response. |
 | Tag-driven, per-app deployments | The API, investor app and admin site can ship independently. | Releases depend on tagging discipline. |
 

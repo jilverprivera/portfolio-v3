@@ -1,14 +1,15 @@
 import Link from "next/link";
 import ScrollReveal from "@/components/ScrollReveal";
+import { SectionLabel } from "@/components/section-label";
 
 const intro =
-  "I'm a Software Engineer and Electronic Engineer with nearly 5 years of experience designing, modernizing and scaling web and mobile platforms, from fintech, real estate and blockchain to enterprise SaaS.";
+  "I'm a Software Developer and Electronic Engineer with nearly 5 years of experience designing, modernizing and scaling web and mobile platforms, from fintech, real estate and blockchain to enterprise SaaS. Now, based in Floridablanca, CO, I've taken an independent path, working across the entire product lifecycle, from design and architecture to deployment, while building and operating four products of my own.";
 
 const expertise = [
   "Backend & distributed systems",
   "Fintech & digital payments products",
   "Software architecture & system design",
-  "Web & mobile (Next.js, React Native)",
+  "Modern web & mobile development",
   "Cloud, CI/CD & observability",
   "AI-powered solutions & automation",
   "Testing & TDD",
@@ -19,14 +20,11 @@ export function AboutContainer() {
   return (
     <section
       id="who-am-i"
-      className="font-space-grotesk relative flex min-h-dvh flex-col justify-center gap-12 bg-black px-8 py-32 text-white"
+      className="font-space-grotesk relative flex flex-col px-8 pb-16 pt-32 text-ink"
     >
-      <p className="text-sm font-bold uppercase tracking-[0.2em] text-[#E7F451]">
-        Who am I
-      </p>
-
       <div className="grid gap-16 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:gap-24">
         <div className="flex flex-col gap-12">
+          <SectionLabel marks="left">Who am I</SectionLabel>
           <ScrollReveal
             scrollContainerRef={undefined}
             baseOpacity={0.12}
@@ -41,14 +39,14 @@ export function AboutContainer() {
 
           <Link
             href="/experience"
-            className="w-fit text-lg font-bold uppercase tracking-wide text-[#E7F451] underline-offset-8 hover:underline"
+            className="w-fit text-lg font-bold uppercase tracking-wide text-accent-text underline-offset-8 hover:underline"
           >
             Explore my professional experience →
           </Link>
         </div>
 
-        <div className="flex flex-col gap-6 lg:pt-3">
-          <h3 className="text-base text-white/50">Expertise</h3>
+        <div className="flex flex-col gap-12">
+          <SectionLabel marks="none">Expertise</SectionLabel>
           <ul className="flex flex-col gap-4">
             {expertise.map((item) => (
               <li key={item}>

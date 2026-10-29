@@ -44,7 +44,7 @@ export function ImageModal({ image, onClose }: { image: ModalImage; onClose: () 
       role="dialog"
       aria-modal="true"
       aria-label={image.title}
-      className={`fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 transition-opacity ease-out sm:p-8 ${
+      className={`fixed inset-0 z-[100] flex items-center justify-center bg-stage/90 p-4 transition-opacity ease-out sm:p-8 ${
         visible ? "opacity-100" : "opacity-0"
       }`}
       style={{ transitionDuration: `${FADE_MS}ms` }}
@@ -55,7 +55,7 @@ export function ImageModal({ image, onClose }: { image: ModalImage; onClose: () 
         type="button"
         onClick={requestClose}
         aria-label="Close"
-        className="fixed right-4 top-4 z-[101] flex h-11 w-11 items-center justify-center rounded-full border border-white/30 bg-black text-[20px] leading-none text-white transition-colors hover:border-white sm:right-6 sm:top-6"
+        className="fixed right-4 top-4 z-[101] flex h-11 w-11 items-center justify-center rounded-full border border-line-strong bg-paper text-[20px] leading-none text-ink transition-colors hover:border-ink sm:right-6 sm:top-6"
       >
         ✕
       </button>
@@ -83,7 +83,7 @@ export function ImageModal({ image, onClose }: { image: ModalImage; onClose: () 
         />
       </div>
 
-      <p className="pointer-events-none fixed bottom-4 left-0 right-0 text-center text-[14px] text-white/70">
+      <p className="pointer-events-none fixed bottom-4 left-0 right-0 text-center text-[14px] text-ink-muted">
         {image.title}
       </p>
     </div>
