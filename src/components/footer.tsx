@@ -38,7 +38,7 @@ export function Footer() {
               </Reveal>
               <a
                 href={`mailto:${EMAIL}`}
-                className="underline decoration-1 underline-offset-[0.12em] transition-colors hover:text-accent-text"
+                className="border-b-[0.05em] border-current pb-[0.02em] transition-colors hover:text-accent-text"
               >
                 <Reveal as="span" textClassName={headline}>
                   connect.
