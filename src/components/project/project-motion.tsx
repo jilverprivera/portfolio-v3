@@ -51,8 +51,12 @@ export function ProjectMotion() {
           scrollTrigger: { trigger: cover, start: "top top", end: "bottom top", scrub: true },
         });
       }
-      intro.from(q("[data-motion=meta] > div"), { y: 28, autoAlpha: 0, stagger: 0.07, duration: 1.1 }, 0.5);
-      intro.from(q("aside nav li"), { x: -18, autoAlpha: 0, stagger: 0.04, duration: 0.9 }, 0.3);
+      const meta = q("[data-motion=meta] > div");
+      if (meta.length) intro.from(meta, { y: 28, autoAlpha: 0, stagger: 0.07, duration: 1.1 }, 0.5);
+      // The sidebar fills its list after mount, so on the first run the items may not exist yet: the nav enters as a whole.
+      const navItems = q("aside nav li");
+      const nav = navItems.length ? navItems : q("aside nav");
+      if (nav.length) intro.from(nav, { x: -18, autoAlpha: 0, stagger: 0.04, duration: 0.9 }, 0.3);
 
       // Section titles rise letter by letter from behind a mask.
       for (const title of q("section[id] > h2")) {
@@ -69,7 +73,7 @@ export function ProjectMotion() {
 
       // Content blocks enter in small groups as they reach the viewport. Persona grids animate per card instead.
       const blocks = q("section[id] > div > *").filter((el) => !el.querySelector("[data-motion=persona]"));
-      gsap.set(blocks, { y: 48, autoAlpha: 0 });
+      if (blocks.length) gsap.set(blocks, { y: 48, autoAlpha: 0 });
       ScrollTrigger.batch(blocks, {
         start: "top 90%",
         once: true,
@@ -96,7 +100,7 @@ export function ProjectMotion() {
 
       // Personas pop in one after another, with a slight tilt that straightens out.
       const personas = q("[data-motion=persona]");
-      gsap.set(personas, { y: 70, rotate: -4, autoAlpha: 0 });
+      if (personas.length) gsap.set(personas, { y: 70, rotate: -4, autoAlpha: 0 });
       ScrollTrigger.batch(personas, {
         start: "top 92%",
         once: true,
