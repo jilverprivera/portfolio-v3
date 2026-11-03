@@ -244,3 +244,25 @@ body {
     animation: none;
   }
 }
+
+/* Placeholder shown while a project image loads: a soft light sweeping across the space it will take. */
+@keyframes image-loader {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -50% 0;
+  }
+}
+
+.image-loader {
+  background: linear-gradient(100deg, var(--surface-2) 30%, var(--paper) 50%, var(--surface-2) 70%);
+  background-size: 200% 100%;
+  animation: image-loader 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image-loader {
+    animation: none;
+  }
+}

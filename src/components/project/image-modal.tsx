@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 export type ModalImage = { src: string; title: string; width: number; height: number };
 
@@ -39,7 +40,9 @@ export function ImageModal({ image, onClose }: { image: ModalImage; onClose: () 
     };
   }, [requestClose]);
 
-  return (
+  // Rendered on the body: an ancestor with a transform (the scroll animations use them) would otherwise
+  // trap a fixed element inside it instead of letting it cover the screen.
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
@@ -86,11 +89,13 @@ export function ImageModal({ image, onClose }: { image: ModalImage; onClose: () 
       <p className="pointer-events-none fixed bottom-4 left-0 right-0 text-center text-[14px] text-ink-muted">
         {image.title}
       </p>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
-// Thumbnail button that opens the modal.
+// Thumbnail button that opens the modal. Until its image loads it shows a loader in the space the image will take,
+// and it marks itself with data-loaded so the scroll animation can wait for the picture.
 export function ImageThumb({
   image,
   className = "",
@@ -101,6 +106,13 @@ export function ImageThumb({
   imgClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const img = useRef<HTMLImageElement>(null);
+
+  // An image already in the cache can finish before React attaches onLoad.
+  useEffect(() => {
+    if (img.current?.complete && img.current.naturalWidth > 0) setLoaded(true);
+  }, []);
 
   return (
     <>
@@ -108,18 +120,27 @@ export function ImageThumb({
         type="button"
         onClick={() => setOpen(true)}
         aria-label={`Open ${image.title} in a large viewer`}
+        aria-busy={!loaded}
         data-motion="image"
-        className={`cursor-zoom-in text-left transition-colors ${className}`}
+        data-loaded={loaded}
+        className={`relative cursor-zoom-in text-left transition-colors ${className}`}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
+          ref={img}
           src={image.src}
           alt={image.title}
           width={image.width}
           height={image.height}
           loading="lazy"
-          className={imgClassName}
+          onLoad={() => setLoaded(true)}
+          className={`${imgClassName} transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
         />
+        {!loaded && (
+          <span aria-hidden="true" className="image-loader absolute inset-0 flex items-center justify-center rounded-[inherit]">
+            <span className="h-7 w-7 animate-spin rounded-full border-2 border-line border-t-accent" />
+          </span>
+        )}
       </button>
       {open && <ImageModal image={image} onClose={() => setOpen(false)} />}
     </>

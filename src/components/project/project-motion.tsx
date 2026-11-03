@@ -73,15 +73,25 @@ export function ProjectMotion() {
       ScrollTrigger.batch(blocks, {
         start: "top 90%",
         once: true,
-        onEnter: (batch) => gsap.to(batch, { y: 0, autoAlpha: 1, duration: 1.1, ease: "power3.out", stagger: 0.09, overwrite: true }),
+        // The transform is cleared at the end so finished blocks do not stay as containing blocks for fixed elements.
+        onEnter: (batch) =>
+          gsap.to(batch, { y: 0, autoAlpha: 1, duration: 1.1, ease: "power3.out", stagger: 0.09, overwrite: true, clearProps: "transform" }),
       });
 
-      // Images open with a wipe while the picture settles inside its frame.
+      // Images open with a wipe while the picture settles inside its frame. The frame keeps showing its loader,
+      // and the wipe only plays once the image is in view and has loaded.
       for (const frame of q("[data-motion=image]")) {
         const img = frame.querySelector("img");
-        const tl = gsap.timeline({ scrollTrigger: { trigger: frame, start: "top 88%", once: true } });
-        tl.fromTo(frame, { clipPath: "inset(0% 0% 100% 0% round 8px)" }, { clipPath: "inset(0% 0% 0% 0% round 8px)", duration: 1.4, ease: "expo.inOut" });
-        if (img) tl.from(img, { scale: 1.18, duration: 1.8, ease: "expo.out" }, 0.2);
+        if (!img) continue;
+        const reveal = gsap.timeline({ paused: true, onComplete: () => gsap.set(img, { clearProps: "clipPath,transform" }) });
+        reveal
+          .fromTo(img, { clipPath: "inset(0% 0% 100% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 1.4, ease: "expo.inOut" })
+          .fromTo(img, { scale: 1.18 }, { scale: 1, duration: 1.8, ease: "expo.out" }, 0.2);
+        const play = () => {
+          if (img.complete && img.naturalWidth > 0) reveal.play();
+          else img.addEventListener("load", () => reveal.play(), { once: true });
+        };
+        ScrollTrigger.create({ trigger: frame, start: "top 88%", once: true, onEnter: play });
       }
 
       // Personas pop in one after another, with a slight tilt that straightens out.
