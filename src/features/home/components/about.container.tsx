@@ -3,7 +3,7 @@ import ScrollReveal from "@/components/ScrollReveal";
 import { SectionLabel } from "@/components/section-label";
 
 const intro =
-  "I'm a Software Developer and Electronic Engineer with nearly 5 years of experience designing, modernizing and scaling web and mobile platforms, from fintech, real estate and blockchain to enterprise SaaS. Now, based in Floridablanca, CO, I've taken an independent path, working across the entire product lifecycle, from design and architecture to deployment, while building and operating four products of my own.";
+  "I'm a Software Developer and Electronic Engineer with nearly 5 years of experience designing, modernizing and scaling web and mobile platforms, from fintech, real estate and blockchain to enterprise SaaS. Now, based in Floridablanca, CO, I've taken an independent path, working across the entire product lifecycle, from design and architecture to deployment, while building and operating three products of my own.";
 
 const expertise = [
   "Backend & distributed systems",

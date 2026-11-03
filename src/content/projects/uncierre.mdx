@@ -1,135 +1,309 @@
 ---
 title: "UnCierre"
 slug: "uncierre"
-summary: "A real-estate sales and rental platform for Conversion: property inventory, quotes, reservations with installments, rentals, payments, PDFs and notifications, built as event-sourced microservices with a dashboard and a mobile app. A client project delivered at Conversion."
+summary: "A sales and rental platform for real-estate developers: inventory, quotes, reservations with down-payment installments, rentals, payments, PDFs and notifications, built as event-sourced services with a commercial dashboard and a customer app. Built at Conversion."
 type: "Work project · Conversion"
 date: "2025-12"
 year: "2023–2025"
 status: "Engagement Apr 2024 – Dec 2025"
 featured: true
+hideCover: true
+url: "https://www.uncierre.com"
 stack:
   - "Node.js and TypeScript"
   - "Express"
-  - "Next.js 13 and React 18"
-  - "Expo 54 and React Native"
+  - "Next.js and React"
+  - "Expo and React Native"
   - "PostgreSQL"
   - "Hasura (GraphQL)"
   - "RabbitMQ"
   - "Knex and Prisma ORM"
   - "Jest and Playwright"
-  - "Docker Swarm and GitHub Actions"
   - "Turborepo"
 highlights:
-  - value: "10"
-    label: "apps in the monorepo"
-  - value: "7"
-    label: "shared packages"
   - value: "+40%"
     label: "sales growth"
   - value: "-30%"
     label: "release cycle time"
+  - value: "1,500+"
+    label: "of my commits in the platform"
 ---
 
 <SummarySection title="Summary">
 
-UnCierre is the platform behind Conversion's real-estate operation. It handles the whole path of a property deal: inventory of projects, towers and units, sales quotes, reservations with down-payment installments, customers, rentals with their own installments, payments, receipts and the notifications around them.
+UnCierre is the platform real-estate developers use to sell and rent their projects. It covers the whole commercial life of a building, from the inventory of units to the last payment of a sale or a rent.
 
-It is a work project, not a personal one: it was built at Conversion for a client. The repository is a monorepo with a commercial dashboard, a set of backend services, shared packages and a customer mobile app for rental payments.
+Developers load their projects and units, with parking spaces and storage as extras. Their sales team quotes a unit with a down-payment plan, can hold it for a customer for a few days, and turns the quote into a reservation with its installments and payments. Supervisors then take each deal through file review, contract signing, credit approval and delivery. Rentals live in the same platform, with escalations, variable rent based on the tenant's sales, extensions and endings, and customers follow their deals and pay from a mobile app.
 
-The platform unlocked new revenue streams through its quote and booking engines, and sales grew by 40%. Standardizing test-driven development also shortened production release cycles by 30%.
+The product is made of three parts:
 
-The core of the sales side is an event-sourced reservation service. Instead of overwriting state, every change is stored as an event and projected into the tables the rest of the system reads.
+- **A commercial dashboard** for admins, supervisors and sellers.
+- **A customer app** on the phone, where buyers and tenants follow their deals live and pay.
+- **A set of services** behind both, where every change to a sale is stored as an event.
+
+I worked on UnCierre at Conversion as a Mid-level Software Engineer, from April 2024 to December 2025. I wrote most of the reservation, rental and notification services, the quoting engines, a large part of the dashboard and the customer app. This case study shows the product through its flows and diagrams.
 
 </SummarySection>
 
-<ChallengeSection title="Challenge & strategy">
+<ContextSection title="Context & role">
 
-### Challenge
+- **Company:** Conversion
+- **Product:** A commercial dashboard, a customer app and the services behind them
+- **My role:** Mid-level Software Engineer
+- **What I built:** Most of the reservation, rental and notification services, the sales quoter, the reservation wizard and the rental quoter, the shared core library, a large part of the dashboard and the customer app
+- **Duration:** April 2024 to December 2025
 
-Selling and renting property involves long, money-heavy processes. A reservation can last months, with installments, discounts and changes along the way, and a system that only stores the current state makes it hard to answer what changed, when and by whom. The commercial team needed to quote and sell faster, with discounts, bonuses, extras, several sellers and installments, and rentals needed their own installments, extensions, contract endings and payments aware of the exchange rate.
+</ContextSection>
 
-There was also a legacy to deal with. The platform had to replace an earlier one whose data model dates from 2020, so the work included carrying that legacy forward while breaking the monolith into services that could change at their own pace. Around the deals, people needed to be kept informed by email, WhatsApp and webhooks, and customers needed a mobile way to pay and to report on their rentals.
+<ProblemSection title="Problem">
 
-### Strategy
+Selling and renting property involves long, money-heavy processes. A reservation can last months, with installments, discounts, extras and several sellers along the way, and a rental carries its own installments, escalations and endings. A system that only stores the current state cannot answer what changed, when and by whom, and that is exactly the question a sales team and a buyer ask when money is involved.
 
-The platform was designed around the history of each deal. The core of the sales side became an event-sourced reservation service: every reservation and customer change is stored as an event that can be replayed and audited, then projected into the tables the rest of the system reads. Writes follow business rules through CQRS, while the dashboard reads shaped projections through GraphQL served by Hasura, at the cost of two models to maintain.
+The scope of the platform shows where that hurts:
 
-Business rules were kept independent from frameworks, databases and messaging through a strict hexagonal architecture. RabbitMQ carries events between services so that notifications and inventory react without blocking a sale, and the event store, projections and rentals live in separate databases so they can evolve independently. Each service ships on its own on Docker Swarm with automatic rollback, a simple option with fewer tools than a larger orchestrator. Test-driven development was standardized across the services.
+- **Sellers** need to quote fast, hold a unit for a customer and turn the quote into a reservation without losing the conditions they agreed.
+- **Supervisors** need to confirm each payment and move each deal forward, with a record of every step.
+- **Buyers and tenants** need to see their installments and pay without calling the sales office.
+- **The platform itself** had to grow out of an earlier one, breaking a monolith into services that could change at their own pace.
 
-</ChallengeSection>
+The seller carries most of that weight. Every deal starts with them, and a unit quoted twice or a hold that never expires turns into a conversation with an upset customer, so most of the sales side was designed around keeping units, quotes and reservations consistent on their own.
 
-<PersonasSection title="User persona">
+</ProblemSection>
+
+<PersonasSection title="Users & context of use" nav="Users">
 
 Five profiles shape the platform, from the people who sell a unit to the tenants who pay their rent from a phone.
 
 <PersonaCards
   items={[
-    { name: "Sales advisor", does: "Quotes units with discounts, bonuses and extras, creates reservations with their down-payment installments and shares the sale with other sellers.", where: "Commercial dashboard", tool: "tie", hair: "short", skin: "#e2ad88", shirt: "#2f3e5e", hairColor: "#2a2a2a" },
-    { name: "Sales manager", does: "Follows commissions, sales reports and the view of the whole team.", where: "Commercial dashboard", tool: "chart", hair: "bob", glasses: true, skin: "#d9a07c", shirt: "#4b7bec", hairColor: "#2a1a14" },
-    { name: "Buyer", does: "An individual or a business that reserves a unit and pays it in installments, and receives quotes, statements and receipts.", where: "Email, WhatsApp and generated PDFs", tool: "bag", hair: "bun", skin: "#e8b48f", shirt: "#e8743b", hairColor: "#3b2a22" },
-    { name: "Rental administrator", does: "Manages rentals: installments, variable rent, extensions, contract endings and rental reports.", where: "Commercial dashboard", tool: "map", hair: "curly", skin: "#a8704d", shirt: "#27a36d", hairColor: "#1c1c1c" },
-    { name: "Tenant", does: "Pays rental installments and checks the payment detail and rental reports.", where: "Customer mobile app", tool: "register", hair: "cap", skin: "#c68863", shirt: "#8e5be0", hairColor: "#222" },
+    { name: "Seller", does: "Quotes units with discounts, bonuses and extras, holds them for a customer, creates reservations and registers payments.", where: "Commercial dashboard", tool: "tie", hair: "short", skin: "#e2ad88", shirt: "#2f3e5e", hairColor: "#2a2a2a" },
+    { name: "Supervisor", does: "Confirms, cancels or undoes payments and moves each reservation through its stages.", where: "Commercial dashboard", tool: "chart", hair: "bob", glasses: true, skin: "#d9a07c", shirt: "#4b7bec", hairColor: "#2a1a14" },
+    { name: "Admin", does: "Configures projects, imports units, sets discounts, bonuses and limits, and manages the commercial team and notifications.", where: "Commercial dashboard", tool: "headset", hair: "bun", skin: "#f0c8a0", shirt: "#8e5be0", hairColor: "#5a3a22" },
+    { name: "Buyer", does: "Reserves a unit, pays it in installments and receives quotes, statements and receipts.", where: "Customer app, email and WhatsApp", tool: "bag", hair: "bun", skin: "#e8b48f", shirt: "#e8743b", hairColor: "#3b2a22" },
+    { name: "Tenant", does: "Pays rental installments with proof, reports sales for a variable rent and follows the contract.", where: "Customer app", tool: "register", hair: "cap", skin: "#c68863", shirt: "#27a36d", hairColor: "#222" },
   ]}
 />
 
+### The moments that shaped the design
+
+- **A seller with a customer in front of them** quotes a unit and wants to hold it. Nobody else should be able to sell it meanwhile, and the hold has to end on its own if the customer walks away.
+- **A supervisor reviewing payments** needs to undo a mistake, but only the last one, so the history of a deal never gets rewritten.
+- **A tenant paying from the phone** uploads the proof and expects to see the installment updated, live.
+- **An admin answering a buyer's question** needs to know exactly what happened to a reservation, months later.
+
 </PersonasSection>
 
-<FeaturesSection title="Features">
+<ObjectivesSection title="Goals, success metrics & constraints" nav="Goals & constraints">
+
+### Goals
+
+1. Let the commercial team quote, hold and reserve units faster, without double-selling.
+2. Keep the full history of every deal, so any change can be explained.
+3. Let buyers and tenants follow and pay their deals on their own.
+4. Break the earlier monolith into services that can change independently.
+5. Ship changes to production faster, with tests the team trusts.
+
+### How success was measured
+
+Two results came out of the work: the quote and booking engines opened new revenue streams and **sales grew by 40%**, and standardizing test-driven development, together with the rest of the work, **shortened production release cycles by 30%**.
+
+### Constraints
+
+- **A legacy to carry forward.** The platform grew out of an earlier one, so data and some packages from it had to keep working while the services were split.
+- **Money in more than one currency.** Payments and rents carry an equivalent amount and an exchange rate.
+- **Many projects, each with its own rules.** Limits on quote and hold days, notification channels, webhooks and PDF templates are configured per project.
+
+</ObjectivesSection>
+
+<ProcessSection title="Process & prioritization" nav="Process">
+
+### From problem to scope
+
+The work started from the life of a deal: a unit is quoted, held, reserved, paid and delivered, or rented and paid month by month. Each step became a capability, and each capability got the place in the architecture its risk called for, with the money-critical reservation at the center.
+
+### What the platform covers
 
 | Area | What it enables |
 |---|---|
-| Inventory | Projects, towers and units, with a visual unit picker. |
-| Quotes | Sales quotes and rental quotes, including optioned quotes that expire. |
-| Reservations | Down-payment installments, payment confirmation and cancellation, bonuses, discounts, extras, several sellers and a status log. |
-| Customers | Individuals and businesses with their documents, and prospects. |
-| Rentals | Installments, variable rent, extensions, contract endings and rental reports, with amounts in more than one currency. |
-| Payments and documents | Payments, receipts and generated PDFs for quotes, reservation statements, receipts and rentals. |
-| Notifications | Template-based messages by role and channel: email, WhatsApp and webhooks. |
-| Commercial reports | Commissions, sales reports and a team view in the dashboard. |
-| Mobile app | Login, new payments, rental payment detail and rental reports. |
+| Inventory | Projects, towers and units with parking and storage as extras, imported from spreadsheets, and a tower view of units by status. |
+| Quotes | Down-payment plans with editable installments, extra paydowns, discounts, bonuses and an early-payment discount. |
+| Holds | A unit held for a customer for a limited number of days, released by a scheduled job. |
+| Reservations | A three-step wizard, installments, payments, sellers, extras, notes and a status stepper with a full history. |
+| Collections | Installments on time, partial, paid or delayed, by project. |
+| Rentals | Rental quotes, agreements with escalations, variable rent from sales reports, payments, extensions and endings. |
+| Notifications | Email and WhatsApp by role and event, and outbound webhooks per project. |
+| Documents | Quotes, receipts, statements and rental documents as PDFs, per project. |
+| Customer app | Reservations and rentals live, installments, payments with proof and sales reports. |
 
-</FeaturesSection>
+### What waited
 
-<ImplementationSection title="Implementation & final design">
+- **Two planned services**, for authentication and for clients, were not built.
+- **Part of the dashboard** still uses the older styling while it moves to the shared component library.
+
+</ProcessSection>
+
+<DesignDecisionsSection title="Design decisions">
+
+The decisions that most shaped the product, made by the team and designed by the company's product designer. Each one is shown as a flow or a diagram.
+
+<DiagramRow item={{ src: "/diagrams/uncierre/flow-sale.webp", title: "From a quote to a delivered unit", caption: "The seller, the platform and the supervisor, each with their part.", width: 3000, height: 1560, light: true }}>
+
+### A reservation that runs on its own steps
+
+**Problem.** A sale passes through quoting, reserving, paying and a long list of paperwork, and each step belongs to a different person.
+
+**Decision.** The seller quotes and reserves, the platform reacts to each step, and the supervisor confirms payments and moves the deal forward. The first payment opens the reservation by itself.
+
+**Trade-off.** More states to model, and some steps that only a supervisor can take.
+
+**In the product.** Creating a reservation reserves the quote and the unit and notifies everyone involved, and the supervisor sees exactly which stage comes next.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/uncierre/flow-option.webp", title: "A hold on a unit", caption: "Holding a unit for a customer, and what happens when the hold expires.", width: 3000, height: 1240, light: true }}>
+
+### A hold that ends on its own
+
+**Problem.** A seller who holds a unit for a customer blocks every other seller. If the customer never comes back, the unit stays blocked until someone remembers.
+
+**Decision.** Holding a unit marks every other quote for it as lost. A scheduled job releases the hold after the project's limit of days, and the lost quotes come back on their own.
+
+**Trade-off.** Quotes have more states, and a lost quote can come back to life.
+
+**In the product.** When a hold expires, the unit is available again and each lost quote goes back to open, or to expired if its own date has passed.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/uncierre/flow-rental.webp", title: "A rental", caption: "From the quote to the last installment, with the tenant paying from the app.", width: 3000, height: 1560, light: true }}>
+
+### Rentals that close themselves
+
+**Problem.** A rental is a long series of payments, sometimes tied to the tenant's sales, and its ending is easy to miss.
+
+**Decision.** The tenant pays and reports sales from the app, staff confirm each payment, and the platform warns when two installments remain and closes the rental when everything is paid.
+
+**Trade-off.** Variable rents recalculate installments whenever a report arrives.
+
+**In the product.** Closing an agreement marks the unit as rented and closes the other offers on it, and finishing the rental frees the unit again.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/uncierre/reservation-lifecycle.webp", title: "A reservation, step by step", caption: "From the first payment to delivery, and the two ways a deal can end early.", width: 3000, height: 1260, light: true }}>
+
+### Two ways to end a deal
+
+**Problem.** A customer who desists and a reservation created by mistake are very different, but both remove a deal from the pipeline.
+
+**Decision.** Desisting marks the reservation as lost and releases the unit. Deleting is final: the unit becomes available and its quotes come back.
+
+**Trade-off.** Two actions the team had to learn to tell apart.
+
+**In the product.** Each one notifies the right people and leaves its trace in the reservation's history.
+
+</DiagramRow>
+
+### The customer sees the deal live
+
+**Problem.** Buyers and tenants need to know how much they owe and whether their last payment arrived, without asking the sales office.
+
+**Decision.** The customer app subscribes to the same read models the dashboard uses, so a confirmed payment appears on the phone as soon as it is confirmed.
+
+**Trade-off.** Live subscriptions to keep open for every signed-in customer.
+
+**In the product.** Buyers and tenants see their installments, payments and documents, and tenants pay with a proof and report sales from the app.
+
+</DesignDecisionsSection>
+
+<DesignSystemSection title="Design system">
+
+The dashboard and the customer app share one visual language, created by the company's product designer, and the dashboard's components live in a shared library built on Tailwind and shadcn.
+
+<DiagramRow item={{ src: "/screenshots/uncierre/design-system-foundations.webp", title: "Foundations", caption: "Typography, color, status colors, radius and spacing of the dashboard and the customer app.", width: 3000, height: 1575, light: true }}>
+
+### Foundations
+
+- **Two typefaces.** Poppins for titles and Roboto for the interface, tables and amounts.
+- **A deep violet and a teal.** Violet for the brand and the main actions, navy for structure and two teals as accents.
+- **A customer app with two themes.** The app follows the phone's light or dark theme, with a palette for each.
+- **Status colors for money.** Paid and on time, partial and delayed always look the same, in collections and in the app.
+- **One radius scale.** A short scale of radius values shared by every component.
+
+</DiagramRow>
+
+### Built into the apps
+
+I built the customer app with its light and dark palettes, and worked on the dashboard as it moved onto the shared component library. A component added to the library is available to every screen, which is how the older parts of the dashboard move over one by one.
+
+</DesignSystemSection>
+
+<ImplementationSection title="From design to code" nav="Design to code">
+
+As a Mid-level Software Engineer, my work was turning the design and the business rules into a working platform. This section explains how it is organized, in terms of what each part does.
+
+<DiagramRow item={{ src: "/diagrams/uncierre/architecture.webp", title: "Architecture", caption: "The two apps, the GraphQL layer, the services and the data behind them.", width: 3000, height: 1560, light: true }}>
 
 ### Architecture
 
-The repository is a monorepo with yarn workspaces and Turborepo: the dashboard, services for reservations, rentals, inventory, notifications and PDFs, Hasura, and shared packages for domain types, a design system, the quoters, a table and the tower view. The reservation service uses event sourcing and CQRS. Commands arrive at an actions endpoint and are handled by command handlers (24 for reservations and 9 for customers). Events are written to an event store, a handler updates a projection database, and post-actions run side effects and publish to the message bus.
+The repository is a monorepo with the dashboard, the services and shared packages for the quoters, the reservation wizard, the tower view, the tables, the components and a core library. The apps talk to one GraphQL layer, which serves the read models with live subscriptions and forwards each change to the right service as an action.
 
-Reads go through GraphQL, with Hasura serving the projection and rental databases to the dashboard through 86 tracked tables. The services follow a strict hexagonal architecture, keeping the domain independent from the outside world, with application logic around it and adapters for repositories, messaging and HTTP at the edge. The event store, the projections, the rental data and the core data are separate Postgres databases.
+The services follow a strict hexagonal architecture: the domain stays independent from the framework, the databases and the messaging. They talk to each other through a message bus, so notifications and inventory react to a sale without slowing it down, and the event store, the read models and the rental data live in separate databases.
 
-### Messaging
+</DiagramRow>
 
-RabbitMQ carries events between services through a durable topic exchange. The notifications and inventory services consume them, and scheduled jobs expire optioned quotes and update rates.
+<DiagramRow item={{ src: "/diagrams/uncierre/event-sourcing.webp", title: "How a change is written", caption: "From a mutation to the event store, the read model, the side effects and the other services.", width: 3000, height: 1340, light: true }}>
 
-### Clients
+### Event sourcing for the money
 
-The dashboard is built in Next.js with Redux Toolkit, Zustand, Apollo Client with subscriptions, form libraries and a money library for amounts. The mobile app is built in Expo and React Native with file-based routing, for rental payments and reports.
+Reservations and customers are event-sourced. A command rebuilds the reservation from its events, applies the business rule and appends a new event. A trigger updates the read model, and a map of post-actions runs the side effects of each event, such as reserving the quote and the unit or calling a project's webhook.
+
+That history is why the platform can explain any deal months later, and why a supervisor can undo the last payment without rewriting what came before.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/uncierre/lifecycles.webp", title: "Life cycles", caption: "The states of a quote, a unit and a rental, and what moves each one.", width: 3000, height: 1560, light: true }}>
+
+### Inventory that follows the deal
+
+Quotes, units and rentals change state in step with the deals around them. Holding, reserving, desisting, deleting or renting cascades to the unit and its extras automatically, so the inventory never says a unit is free when it is not.
+
+</DiagramRow>
 
 ### Quality and delivery
 
-TDD was standardized across the services, with about 20 active Jest files and 7 Playwright end-to-end specs for the main flows: quotes, reservations, rentals, payments, login and inventory. Together with the rest of the work, this shortened production release cycles by 30%. For delivery, seven GitHub Actions workflows build a Docker image per service on a tag, push it to a registry and update a Docker Swarm service with automatic rollback on failure, with secrets managed outside the repository. On the data side there are 89 Knex migrations for the reservation and rental services, plus the legacy Hasura migrations.
+Test-driven development was standardized across the services, with unit tests in each service and end-to-end suites for the main flows: quotes, reservations, rentals, payments, sign-in and inventory. Each service ships on its own, so a change to rentals never waits for a change to sales.
 
-### Decisions
-
-Each decision below was taken for a concrete reason and carried a cost, which the table records next to it.
+### Technical decisions
 
 | Decision | Why | Trade-off |
 |---|---|---|
-| Hexagonal architecture | Business rules stay independent from frameworks, databases and messaging, so each can change without touching the domain. | More structure up front, with ports and adapters to write. |
-| Event sourcing for reservations and customers | Deals are long-lived and audit matters, so every change is kept as an event. | More moving parts: an event store, projections and handlers to keep in sync. |
-| CQRS with GraphQL reads | Writes follow business rules, and the dashboard reads shaped projections. | Two models to maintain. |
-| RabbitMQ between services | Notifications and inventory react to events without blocking a sale. | Operating a broker and designing routing keys. |
-| Hasura for reads | A GraphQL API over the projections with little code. | Metadata and migrations to manage. |
-| Separate databases per concern | The event store, projections and rentals evolve independently. | Cross-database consistency has to be designed. |
-| Docker Swarm with rollback | A simple way to ship each service on its own. | Fewer tools than a larger orchestrator. |
+| Hexagonal architecture | Business rules stay independent from frameworks, databases and messaging. | More structure up front, with ports and adapters to write. |
+| Event sourcing for reservations and customers | Deals are long-lived and every change must be explainable. | An event store, projections and handlers to keep in sync. |
+| CQRS with GraphQL reads | Writes follow business rules, and the apps read shaped projections. | Two models to maintain. |
+| A message bus between services | Notifications and inventory react without blocking a sale. | Routing to design and a broker to run. |
+| Separate databases per concern | Sales history, read models and rentals evolve independently. | Consistency across databases has to be designed. |
+| Post-actions as a map | Side effects of each event are declared in one place and logged. | One more place to look when an event misbehaves. |
 
 </ImplementationSection>
 
 <ResultsSection title="Results">
 
-The platform unlocked new revenue streams for the client through its quote and booking engines, and sales grew by 40%. Standardizing test-driven development, together with the rest of the work, also shortened production release cycles by 30%.
+The quote and booking engines opened new revenue streams, and sales grew by 40%. Standardizing test-driven development, together with the rest of the work, shortened production release cycles by 30%.
 
-Day to day, the team covers the whole path of a deal in one place: the inventory of projects and units, quotes, reservations with their installments, customers, rentals, payments, receipts and notifications. Tenants can pay their rental installments from the mobile app. Two planned services, authentication and clients, were not built, and the dashboard's login hardening is still pending.
+Day to day, the commercial team covers the whole life of a deal in one place: inventory, quotes, holds, reservations with their installments, collections, rentals, payments, receipts and notifications. Buyers and tenants follow their deals and pay from the customer app.
 
 </ResultsSection>
+
+<LearningsSection title="Learnings & next steps" nav="Learnings">
+
+### Next steps
+
+- Build the authentication and client services that were planned.
+- Finish moving the older parts of the dashboard onto the shared component library.
+
+### What I learned
+
+- **Event sourcing pays off where money is.** Keeping every change as an event added moving parts, but it made every question about a deal answerable, which is what a sales team needs most.
+- **Consistency is a design problem, not a database feature.** Holds, reservations and rentals all touch the same units, and keeping them consistent across services meant designing each cascade explicitly.
+- **Tests change how fast a team dares to ship.** Standardizing TDD felt slower at first, and it is what let releases get shorter.
+
+</LearningsSection>

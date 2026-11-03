@@ -1,14 +1,15 @@
 ---
 title: "Comfandi Digital Products"
 slug: "comfandi-digital"
-summary: "Web and mobile products for a Colombian family compensation fund: a health portal and app for appointments and lab results, an educational assessment platform, and the Nest.js services behind them. Work delivered at OL-Software."
+summary: "Web and mobile products for a Colombian family compensation fund: a health module to schedule appointments and download lab results, an assessment platform for schools, and the services behind them. Work delivered at OL-Software."
 type: "Work project · OL-Software"
-date: "2025-09"
+date: "2025-10"
 year: "2025"
-status: "Engagement Jun – Sep 2025"
+status: "Engagement Jun – Oct 2025"
 featured: true
+hideCover: true
 stack:
-  - "Next.js 13 and 14"
+  - "Next.js"
   - "Expo and React Native"
   - "Solito and NativeWind"
   - "Redux Toolkit"
@@ -18,96 +19,261 @@ stack:
   - "Turborepo"
 highlights:
   - value: "3"
-    label: "repositories worked in"
-  - value: "230+"
-    label: "commits in the health repo since June"
-  - value: "53"
-    label: "data models in the core service"
+    label: "products worked on"
+  - value: "~51%"
+    label: "of the health module's commits, its top contributor"
+  - value: "2"
+    label: "platforms from one codebase: web and phone"
 ---
 
 <SummarySection title="Summary">
 
-This engagement was at OL-Software, a software company, on digital products for Comfandi, a Colombian family compensation fund. It is a work project, not a personal one.
+Comfandi is a Colombian family compensation fund: it offers health, education, recreation, credit and other services to the workers of its member companies and their families. At OL-Software, a software company, I worked on three of its digital products.
 
-Three repositories were part of the work. The health app lets members schedule medical appointments and see lab results, on the web and on mobile. An educational platform lets teachers build and manage assessments. A Nest.js backend, split into services by business flow, supports the health and other products.
+- **A health module** that lets members schedule medical appointments at the fund's clinics, check and cancel them, pay them and download their lab results. It is written once and runs on the web and on the phone.
+- **An assessment platform for schools**, where teachers build question banks and assessments and students answer them as timed missions.
+- **The core services** behind the fund's mobile app, where features of an older monolith were being moved into services grouped by business flow.
 
-The main thread of the work was the health product, in particular the appointment scheduling flow. In parallel, core monolith features were migrated to scalable Nest.js microservices, as a separate project from the apps above.
+The main thread of my work was the health module, and in particular the appointment scheduling flow, which I built end to end. I worked on it as a Mid-level Software Engineer, from June to October 2025. This case study shows the products through their flows and diagrams.
 
 </SummarySection>
 
-<ChallengeSection title="Challenge & strategy">
+<ContextSection title="Context & role">
 
-### Challenge
+- **Client:** Comfandi, a Colombian family compensation fund
+- **Company:** OL-Software
+- **Products:** A health module for the web and the phone, an assessment platform for schools, and the core services behind the fund's app
+- **My role:** Mid-level Software Engineer
+- **What I built:** The appointment scheduling flow of the health module end to end, the consult, cancel and pay flows and changes to lab results; question detail, editing, the true or false type and date filters in the assessment platform; and the same-day availability rule in the health service
+- **Duration:** June to October 2025
 
-Members of a compensation fund use many services, and each digital product used to be built in its own way. Every new screen cost more than it should, the experience was not consistent from one product to the next, and the backend made it hard for one business flow to change without affecting the rest.
+</ContextSection>
 
-### Strategy
+<ProblemSection title="Problem">
 
-The plan was built around four goals. The first was one codebase for web and mobile, sharing screens, components and logic between a Next.js app and an Expo app, so that a shared base reduces the cost of each new screen and keeps the experience consistent. The second was to make scheduling a medical appointment simple: search available slots, pick a patient, confirm and be sent to pay when needed. The third was to support teachers with assessments, with several question types and a way to manage and review them. The fourth was to keep the backend modular, with services grouped by business flow, so each flow can evolve at its own pace.
+A member of a compensation fund uses many of its services, and each digital product tends to be built in its own way. For health, booking an appointment depends on the patient's coverage, the clinic, the specialty and the available slots, and a booking flow that gets any of those wrong sends the member to the phone line instead.
 
-Those goals shaped the main decisions. One shared package means screens and logic are written once, at the price of an abstraction such as the navigation hook for platform differences. Clean architecture with atomic design gives a clear place for each kind of code, with more folders for small features. Services grouped by business flow can change on their own, with shared concerns moved into a common library, and an explicit time zone for appointments keeps slots matching local time regardless of the server.
+The scope of the work shows where that hurts:
 
-</ChallengeSection>
+- **Members** need to book for themselves or a relative, see what they already have scheduled, cancel it, pay it and get their lab results, on whatever device they have at hand.
+- **The fund** needs the rules of booking, such as how far ahead to search or how close to now a slot can be, to change without a release.
+- **Teachers** need to build and maintain a bank of questions of several types, tagged by competency, and turn them into assessments.
 
-<PersonasSection title="User persona">
+The member booking an appointment carries most of that weight. It is the flow with the most rules and the most ways to go wrong, so most of my work was designed around getting them to a confirmed appointment in as few steps as possible.
 
-Three profiles shape the products: the fund members who book care, and the teachers and students of the assessment platform.
+</ProblemSection>
+
+<PersonasSection title="Users & context of use" nav="Users">
+
+Four profiles shape the products: the fund members who book care, and the teachers, directors and students of the assessment platform.
 
 <PersonaCards
   items={[
-    { name: "Fund member", does: "Searches available appointments, picks the patient, confirms and is sent to pay when needed, then checks lab results.", where: "Health app on web and mobile", tool: "coat", hair: "bun", skin: "#e8b48f", shirt: "#4b7bec", hairColor: "#3b2a22" },
-    { name: "Teacher", does: "Builds assessments with several question types, manages them and reviews the answers.", where: "Assessment platform on the web", tool: "chart", hair: "short", glasses: true, skin: "#d9a07c", shirt: "#e6a23c", hairColor: "#555" },
-    { name: "Student", does: "Belongs to an academic group and answers the assessments a teacher prepares.", where: "Assessment platform on the web", tool: "magnifier", hair: "curly", skin: "#c68863", shirt: "#27a36d", hairColor: "#1c1c1c" },
+    { name: "Fund member", does: "Books appointments for themselves or a relative, checks, cancels and pays them, and downloads lab results.", where: "Health module on the web and the phone", tool: "coat", hair: "bun", skin: "#e8b48f", shirt: "#4b7bec", hairColor: "#3b2a22" },
+    { name: "Teacher", does: "Builds questions of several types, tags them, composes assessments and reads the results.", where: "Assessment platform, teachers' app", tool: "chart", hair: "short", glasses: true, skin: "#d9a07c", shirt: "#e6a23c", hairColor: "#555" },
+    { name: "Director", does: "Manages the teachers of the school and configures assessments.", where: "Assessment platform, teachers' app", tool: "tie", hair: "long", skin: "#f0c8a0", shirt: "#2f3e5e", hairColor: "#2a1a14" },
+    { name: "Student", does: "Follows a map of subjects and answers assessments as timed missions.", where: "Assessment platform, students' app", tool: "magnifier", hair: "curly", skin: "#c68863", shirt: "#27a36d", hairColor: "#1c1c1c" },
   ]}
 />
 
+### The moments that shaped the design
+
+- **A member booking for a relative** picks the patient first, because coverage, clinics and rules depend on who the appointment is for.
+- **A member searching on a busy day** may find no slots. The search has to move forward on its own instead of returning an empty screen.
+- **A member who already has an appointment** for the same service should be told before booking a second one.
+- **A student in a mission** answers one question at a time with a timer, so every question type has to work with a tap or a drag.
+
 </PersonasSection>
 
-<FeaturesSection title="Features">
+<ObjectivesSection title="Goals, success metrics & constraints" nav="Goals & constraints">
+
+### Goals
+
+1. Let members book a medical appointment in a few guided steps, on the web and on the phone.
+2. Write each screen and rule once for both platforms.
+3. Let the fund tune booking rules without a release.
+4. Give teachers a question bank they can filter, edit and keep clean.
+
+### How success would be measured
+
+No success metrics were shared for this engagement. These are the ones I would propose:
+
+| Goal | Metric | What it tells us |
+|---|---|---|
+| Guided booking | Share of searches that end in a confirmed appointment | Whether members get to a booking without calling. |
+| Searches that find something | Searches that needed a retry, and how many | Whether moving to the next Monday saves the search. |
+| One codebase | Screens shared between web and phone | How much of the module is really written once. |
+| A clean question bank | Questions edited or deactivated per month | Whether teachers maintain the bank instead of duplicating it. |
+
+### Constraints
+
+- **The clinics' systems decide.** Slots, patients and appointments live in the clinics' scheduling system, so every step validates against it.
+- **Local time.** Appointments are in Colombia, and the server's clock cannot decide what "today" means.
+- **Three repositories, each with its own history.** The health module, the assessment platform and the core services were already in progress, with their own conventions.
+
+</ObjectivesSection>
+
+<ProcessSection title="Process & prioritization" nav="Process">
+
+### From problem to scope
+
+The work started from the appointment flow, the most used and the most fragile. Each step of the booking became a screen of a stepper, each rule became a validation against the clinics' system or a setting, and the rest of the health module, consulting, cancelling, paying and lab results, was built around it.
+
+### What the work covered
 
 | Area | What it enables |
 |---|---|
-| Appointment scheduling | A stepper that searches available appointments with retries, patient selection and registration, confirmation and a redirect to pay a scheduled appointment. |
-| Lab results | A patient selection step and a list of results with a detail modal. |
-| Shared interface | Toasts, loading modals and responsive layouts that behave the same on web and mobile. |
-| Assessments | Questions with extra input fields, a new true or false type, a detail view and an update flow, with filtering by creation and update dates. |
-| Backend services | Services for sales, subsidies and credit, health, and core adjustments with identity and external integrations. |
+| Appointment scheduling | A stepper with patient and coverage, service, place and date, a slot search with retries, a slot picker and a confirmation. |
+| Duplicate guard | A warning when the patient already has an appointment for the same service. |
+| Consult and cancel | Scheduled appointments by patient, a detail view and a cancellation with confirmation. |
+| Payment | A scheduled appointment with a payment reference opens the payment portal. |
+| Lab results | Orders by patient, and a PDF that previews on the web and saves on the phone. |
+| Shared interface | Toasts, loading modals and a navigation hook that work the same on the web and the phone. |
+| Question bank | Question detail and editing, a true or false type, and filters by creation and update dates. |
+| Availability rule | A same-day margin and the Bogotá time zone in the health service. |
 
-</FeaturesSection>
+</ProcessSection>
 
-<ImplementationSection title="Implementation & final design">
+<DesignDecisionsSection title="Design decisions">
 
-### The health product
+The decisions that most shaped the products, made by the team and designed by the company's product designer. Each one is shown as a flow or a diagram.
 
-The health product is a monorepo with an Expo app, a Next.js app and a shared package, built with yarn and Turborepo, and its README describes it as a cross-platform base. Solito and NativeWind let both apps share routes and styling, and a small hook switches between the web router and native navigation according to the platform.
+<DiagramRow item={{ src: "/diagrams/comfandi-digital/flow-appointment.webp", title: "Scheduling a medical appointment", caption: "The member's steps, and what the platform checks between them.", width: 3000, height: 1520, light: true }}>
 
-The shared package follows clean architecture with atomic design: it separates domain, infrastructure and presentation, and holds the atoms, molecules and the scheduling and lab-result features. The apps depend on the company UI kit, and the component SDK was updated during the work so both platforms could use the newer components.
+### A booking in guided steps
 
-### The assessment platform
+**Problem.** Booking depends on who the patient is, their coverage, the service, the city, the clinic and the date. One long form would be overwhelming, and a mistake in any field means starting over.
 
-The backend is a Nest.js app with 13 modules, including assessments, questions, answers, students and academic groups, on Prisma with 20 models and 7 migrations. The frontends are two Next.js apps that follow the same layered structure, with a shared UI package.
+**Decision.** A stepper asks for one thing at a time, validates each step against the clinics' system, and clears what depends on a step when the member goes back to change it.
 
-### The core services and the monolith migration
+**Trade-off.** More screens, and more calls to the clinics' system.
 
-The migration of core monolith features to scalable Nest.js microservices ran as its own project, apart from the apps above. It is a Nest.js monorepo with four services named after business flows, a shared library for authentication, mail, SMS and exceptions, 53 Prisma models and 64 migrations. The work here was on the appointment service, which only offers available slots inside a configurable time window and now uses the Bogotá time zone.
+**In the product.** A patient who is not registered is sent to register first, and one without coverage can still book as a private patient.
 
-### Decisions
+</DiagramRow>
 
-Each decision below came with a trade-off that the team accepted.
+<DiagramRow item={{ src: "/diagrams/comfandi-digital/availability.webp", title: "Booking rules as configuration", caption: "The same-day margin and the retries, read from settings.", width: 3000, height: 1060, light: true }}>
+
+### Rules the fund can tune
+
+**Problem.** How close to now a same-day slot can be, and how many times a search should move forward, are business decisions that change. In code, each change needed a release.
+
+**Decision.** Both are settings: the same-day margin, two hours by default, and the number of retries per specialty. Dates are compared in Bogotá time, not on the server's clock.
+
+**Trade-off.** Dates need care everywhere they are built.
+
+**In the product.** An empty search moves to the next Monday on its own, as many times as configured, and today's slots that are too close are never offered.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/comfandi-digital/flow-scheduled.webp", title: "Checking, cancelling and downloading results", caption: "The appointments a member already has, and their lab results.", width: 3000, height: 1340, light: true }}>
+
+### One place for what is already booked
+
+**Problem.** A member who already has an appointment needs to see it, cancel it or pay it, and that used to mean a call.
+
+**Decision.** Scheduled appointments live next to the booking flow, by patient, with a detail view where cancelling asks for confirmation and paying opens the payment portal.
+
+**Trade-off.** The payment happens outside the module, so the module only knows whether there is something to pay.
+
+**In the product.** Lab results follow the same pattern: pick the patient, see the orders and download a PDF, which previews on the web and saves on the phone.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/comfandi-digital/flow-assessment.webp", title: "From a question bank to a mission", caption: "The teacher builds and composes, the student answers in time.", width: 3000, height: 1480, light: true }}>
+
+### A question bank teachers can maintain
+
+**Problem.** Teachers build questions over months. Without a way to find and edit them, the bank fills with duplicates.
+
+**Decision.** Questions can be filtered by grade, subject, competency, type and dates, opened in a detail view, edited or deactivated, and true or false joined the question types.
+
+**Trade-off.** Editing a question with answers and sub-questions has to update all of them together.
+
+**In the product.** Saving an edit updates the question, its answers and its sub-questions in one transaction, and students see true or false questions in their missions.
+
+</DiagramRow>
+
+</DesignDecisionsSection>
+
+<DesignSystemSection title="Design system">
+
+The health module and the assessment platform follow the fund's visual identity, designed by the company's product designer, and both are built on the company's own component kits.
+
+<DiagramRow item={{ src: "/screenshots/comfandi-digital/design-system-foundations.webp", title: "Foundations", caption: "Typography, color, status colors, radius and spacing of the health module.", width: 3000, height: 1575, light: true }}>
+
+### Foundations
+
+- **One typeface.** Outfit for titles, interface and data, on the web and on the phone.
+- **The fund's blue and green.** A deep blue for the brand and the main actions, with green, cyan, yellow and orange as accents.
+- **Grays for structure.** A gray scale for borders, inputs and text, with a dark gray for body copy.
+- **A company kit.** Buttons, cards, accordions, date pickers and modals come from the company's component kit, which I updated during the work so both platforms could use the newer components.
+
+</DiagramRow>
+
+</DesignSystemSection>
+
+<ImplementationSection title="From design to code" nav="Design to code">
+
+As a Mid-level Software Engineer, my work was turning the design into working flows. This section explains how the products are organized, in terms of what each part does.
+
+<DiagramRow item={{ src: "/diagrams/comfandi-digital/architecture-health.webp", title: "The health module", caption: "Two thin apps, one shared package, and the services and systems behind them.", width: 3000, height: 1460, light: true }}>
+
+### One codebase, two platforms
+
+The health module is a monorepo with a web app, a mobile app and a shared package. The two apps are thin shells: every screen, rule and piece of state lives in the shared package, organized in clean architecture with atomic design, and a route table maps each route to a web address and a native screen.
+
+Behind it, the core services are grouped by business flow: health, core settings, sales, and subsidy and credit, each with its own schema. The health service talks to the clinics' scheduling system and to an integration layer that registers new patients.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/comfandi-digital/architecture-assessments.webp", title: "The assessment platform", caption: "Two web apps and an API with one module per concept.", width: 3000, height: 1260, light: true }}>
+
+### A school model behind every question
+
+The assessment platform has a web app for teachers and directors, one for students, and an API with a module for each concept: questions, answers, assessments, results, students, groups and subjects. The data model follows the school, from the city to the group and its students, and the pedagogy, from competencies to evidence.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/comfandi-digital/lifecycles.webp", title: "Life cycles", caption: "Appointments, questions and assessments.", width: 3000, height: 1120, light: true }}>
+
+### Simple states, strict rules
+
+None of these entities has a long state machine. The rules sit around the states instead: one scheduled appointment per service, a question that can be deactivated without being deleted, and an assessment that counts as completed for a student once their result is saved.
+
+</DiagramRow>
+
+### Technical decisions
 
 | Decision | Why | Trade-off |
 |---|---|---|
-| One shared package for web and mobile | Screens and logic are written once. | Platform differences need an abstraction, such as the navigation hook. |
+| One shared package for web and phone | Screens and logic are written once. | Platform differences need an abstraction, such as the navigation hook. |
 | Clean architecture with atomic design | A clear place for each kind of code. | More folders for small features. |
+| Booking rules as settings | The fund tunes them without a release. | Defaults and formats to keep valid. |
+| An explicit time zone | Slots match local time regardless of the server. | Dates need care everywhere they are built. |
 | Services grouped by business flow | Each flow can change on its own. | Shared concerns move into a common library. |
-| Explicit time zone for appointments | Slots must match local time regardless of the server. | Dates need care everywhere they are built. |
 
 </ImplementationSection>
 
 <ResultsSection title="Results">
 
-Between June and September 2025, the work gave the fund's members and educators concrete tools. Members can schedule medical appointments and see their lab results, on the web and on mobile, and the appointment scheduling flow was the main focus. Teachers can build and manage assessments on the educational platform. In parallel, core features of the fund's monolith were migrated to scalable Nest.js microservices, as a separate project.
+Members can book medical appointments in a guided flow, check, cancel and pay them, and download their lab results, on the web and on the phone, from one codebase. The fund can tune how searches and same-day slots behave without a release. Teachers can find, edit and keep their question bank clean, and true or false questions reach students' missions.
 
-No usage figures are reported for this engagement. This page covers three repositories only; other repositories in the same folder were not part of this work.
+No usage figures were shared for this engagement.
 
 </ResultsSection>
+
+<LearningsSection title="Learnings & next steps" nav="Learnings">
+
+### Next steps
+
+- Measure how many searches end in a confirmed appointment, and how many needed a retry.
+- Move more of the booking rules into settings as the fund asks for them.
+
+### What I learned
+
+- **A stepper is a contract with the user.** Clearing what depends on a step when the member goes back felt strict at first, and it is what kept every booking consistent.
+- **Time zones are product decisions.** "Today" meant the server's day until it was pinned to Bogotá, and a rule as simple as "not too close to now" depends entirely on that.
+- **One codebase needs one place for differences.** Sharing screens between web and phone worked because the few real differences, such as navigation and file downloads, had a single home.
+
+</LearningsSection>

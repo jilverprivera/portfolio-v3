@@ -1,171 +1,320 @@
 ---
 title: "GetSellers"
 slug: "getsellers"
-summary: "A marketplace that routes US real-estate seller leads to investors by county, with a prepaid wallet, refunds, referrals and an internal admin site. A client project delivered at Tres Astronautas as a handover and modernization of an existing product."
+summary: "A marketplace that routes US real-estate seller leads to investors by county, with a prepaid wallet that refills itself, refunds, referrals and an internal admin site. A client project at Tres Astronautas: the handover and modernization of a live product."
 type: "Work project · Tres Astronautas"
 date: "2026-03"
 year: "2025–2026"
-status: "Handover and modernization"
+status: "In production"
 featured: true
+hideCover: true
+url: "https://www.getsellers.io"
 stack:
-  - "Node.js 22"
-  - "Express 5"
+  - "Node.js"
+  - "Express"
   - "TypeScript"
   - "MongoDB and Mongoose"
-  - "React 18 and Vite"
+  - "React and Vite"
   - "TanStack Query"
   - "Zustand"
   - "Tailwind CSS and Radix UI"
   - "Stripe"
   - "Socket.IO"
   - "Twilio"
-  - "AWS S3"
   - "Turborepo"
-  - "Azure Pipelines and Docker"
 highlights:
   - value: "17"
     label: "capabilities"
   - value: "45"
     label: "features"
-  - value: "~180"
-    label: "HTTP routes"
+  - value: "289"
+    label: "backend test files"
 ---
 
 <SummarySection title="Summary">
 
-GetSellers is a marketplace for US real-estate investor leads. Homeowners who want to sell enter through marketing campaigns, their data is registered as leads, and each lead is routed automatically to the investors subscribed to that county, which the product calls a market.
+GetSellers is a marketplace for US real-estate investors. Homeowners who want to sell fill in a form in a marketing campaign, their data arrives as a lead, and each lead goes automatically to one investor subscribed to that county, which the product calls a market.
 
-This is a work project, not a personal one: it was built at Tres Astronautas for a client. The engagement was a handover and modernization of a live product, covering an investor web app, an internal admin site and the API behind both.
+Investors pick their markets, load a prepaid wallet and receive leads in the app, by email and by SMS. They work each lead through a pipeline, from new lead to closed or cold, and can ask for a refund on a bad one. The company's own team runs everything else from an admin site: users, markets, sources and prices, refunds, broadcasts and reports.
 
-Investors sign up, pick markets, add a payment method and receive leads by in-app notification, email or SMS. From there they manage each lead in a pipeline (New Lead, Following Up, Under Contract, Closed, Cold) and can request a refund on a bad lead.
+The product is made of three parts:
+
+- **An investor app** for the people who buy leads.
+- **An admin site** for the team that runs the marketplace, built from scratch during the project.
+- **An API** behind both, which also receives the leads from the campaigns.
+
+The engagement was the handover and modernization of a product that was already live. I worked on it at Tres Astronautas for a client, as a Senior Software Engineer, in charge of the whole backend. This case study shows the product through its flows and diagrams.
 
 </SummarySection>
 
-<ChallengeSection title="Challenge & strategy">
+<ContextSection title="Context & role">
 
-### Challenge
+- **Client:** A US real-estate lead marketplace
+- **Company:** Tres Astronautas
+- **Product:** An investor app, an admin site and the API behind both
+- **My role:** Senior Software Engineer
+- **Team:** 1 product owner, 2 software engineers, 1 product designer and 1 QA
+- **What I built:** The whole backend: the restructure of the API, lead intake and assignment, the wallet and its payments, refunds, referrals and the scheduled work
+- **Engagement:** Handover and modernization of a live product, from 2025 to 2026
 
-The work began as a handover of a live product. A marketplace that routes homeowner leads to investors was already running, and the outgoing team had left a technical document behind. Taking it over safely meant not touching anything until its state was understood. The first sprint, called Sprint 0, was spent reviewing that document, running a gap analysis and measuring a performance baseline of the live product, and it named the critical areas: the lead feed, counties, billing and the setup wizard.
+</ContextSection>
 
-The pains were of two kinds. The backend followed a layered structure that made each use case hard to test on its own. And lead delivery was exposed to billing problems, while operations had no tools of their own for refunds, broadcasts, reports, source prices or referrals. On top of that, lead data carried sensitive and duplicate information that should not reach the frontend.
+<ProblemSection title="Problem">
 
-### Strategy
+The marketplace was already running when the project started, and the outgoing team had left a technical document behind. Taking it over safely meant changing nothing until its state was understood, so the first sprint was spent reviewing that document, running a gap analysis and measuring how the live product performed. That review named the critical areas: the lead feed, the counties, billing and the setup wizard.
 
-The plan was organized in sprints 0 to 6. After the Sprint 0 review, Sprint 1 restructured the backend and set up the monorepo, and later sprints migrated payments, built the admin site and reworked the product language. The backend moved from layered to hexagonal so that each use case could be tested alone and with less coupling, a large restructure up front in exchange for an extensive unit test suite.
+The pains it found were of three kinds:
 
-Billing was reworked so that it would never block a lead. A prepaid wallet with auto-recharge, a monthly budget cap and a backup payment method let delivery continue when the primary charge fails, at the cost of more billing states to model and test. Payments moved from Braintree to Stripe so that the wallet and the investor app shared one provider. Lead data was protected by removing sensitive and duplicate data from the schemas and masking personal information in the API before a lead reaches the frontend.
+- **For investors,** lead delivery depended on billing. A failed charge could stop leads from arriving, even for an investor with another card saved.
+- **For the team that runs the marketplace,** there were no tools of their own for refunds, broadcasts, reports, source prices or referrals.
+- **For the product itself,** the backend's structure made each use case hard to test on its own, and lead data carried sensitive and duplicated information that should never reach the browser.
 
-Operations got their own admin site, built from scratch, because the planned refund integration with the client's own backend could not be completed due to connectivity issues. Lead intake relied on webhook adapters that normalize each source's payload, and releases became tag-driven and per app, so the API, the investor app and the admin site can ship independently.
+The investor carries most of that weight. Leads are what they pay for, and every problem in billing or delivery reaches them as a lead that did not arrive, so most of the backend work was designed around keeping leads flowing.
 
-</ChallengeSection>
+</ProblemSection>
 
-<PersonasSection title="User persona">
+<PersonasSection title="Users & context of use" nav="Users">
 
 Four profiles shape the product, but only two of them sign in. The homeowner is the reason the leads exist and never opens the app. The sales representative is a role that admins manage, not a user with screens of its own.
 
 <PersonaCards
   items={[
-    { name: "Real-estate investor", does: "Signs in with email and an emailed one-time code, or with Google. Subscribes to counties, receives leads, works them through the pipeline from new lead to closed, and manages the wallet, payment methods, referral code and refunds.", where: "Investor app", tool: "tie", hair: "short", skin: "#e2ad88", shirt: "#2f3e5e", hairColor: "#555", glasses: true, },
-    { name: "Homeowner", does: "Someone who wants to sell. Fills in a form in a marketing campaign, and the campaign posts the data to the lead webhook with the TCPA consent. In the feed their last name, email, phone and address are masked.", where: "Marketing campaigns", tool: "map", hair: "curly", skin: "#a8704d", shirt: "#27a36d", hairColor: "#1c1c1c", },
-    { name: "Platform administrator", does: "Has a separate sign-in that only accepts the admin role. Manages users, partners, sources and prices, markets, refunds, broadcasts, reports and webhooks, and gets an alert when a lead cannot be assigned.", where: "Admin site", tool: "headset", hair: "bun", skin: "#f0c8a0", shirt: "#8e5be0", hairColor: "#7a3b2a", },
-    { name: "Sales representative", does: "A user with the sales_representative role, flagged by admins and listed under Users. The code gives it no flow of its own, and referral commissions belong to the referring investor instead.", where: "Admin site, as a record", tool: "chart", hair: "cap", skin: "#c68863", shirt: "#e0566b", hairColor: "#222", },
+    { name: "Real-estate investor", does: "Subscribes to counties, receives leads, works them through the pipeline and manages the wallet, the cards, the referral code and refunds.", where: "Investor app", tool: "tie", hair: "short", skin: "#e2ad88", shirt: "#2f3e5e", hairColor: "#555", glasses: true, },
+    { name: "Homeowner", does: "Someone who wants to sell. Fills in a form in a marketing campaign, with their consent. Their personal data stays hidden until the lead belongs to an investor.", where: "Marketing campaigns", tool: "map", hair: "curly", skin: "#a8704d", shirt: "#27a36d", hairColor: "#1c1c1c", },
+    { name: "Platform administrator", does: "Manages users, partners, sources and prices, markets, refunds, broadcasts, reports and webhooks, and gets an alert when a lead cannot be assigned.", where: "Admin site", tool: "headset", hair: "bun", skin: "#f0c8a0", shirt: "#8e5be0", hairColor: "#7a3b2a", },
+    { name: "Sales representative", does: "A role that admins assign and list under users. Referral commissions belong to the investor who referred, not to this role.", where: "Admin site, as a record", tool: "chart", hair: "cap", skin: "#c68863", shirt: "#e0566b", hairColor: "#222", },
   ]}
 />
 
+### The moments that shaped the design
+
+- **A lead arrives** from a campaign at any hour. It has to reach the right investor in seconds, without anyone on the team stepping in.
+- **An investor's card is declined** in the middle of the night. Their leads should keep coming if another card can pay.
+- **An investor opens the feed** and sees leads that are not theirs yet. They should see enough to decide, but never the homeowner's personal data.
+- **An admin reviews a refund** and needs to know that completing it credits the wallet and sends the lead to someone else, in one step.
+
 </PersonasSection>
 
-<FeaturesSection title="Features">
+<ObjectivesSection title="Goals, success metrics & constraints" nav="Goals & constraints">
+
+### Goals
+
+1. Keep the live product working while it is modernized.
+2. Never let billing block the delivery of a lead.
+3. Give the team that runs the marketplace its own tools.
+4. Keep personal data inside the backend until an investor owns the lead.
+5. Make each use case testable on its own.
+
+### How success would be measured
+
+No success metrics were agreed with the client during the engagement. These are the ones I would propose, each tied to one of the goals:
+
+| Goal | Metric | What it tells us |
+|---|---|---|
+| Delivery never blocked by billing | Leads left unassigned for lack of funds, and recharges saved by a backup card | Whether the wallet keeps leads flowing. |
+| Fast routing | Time from the webhook to an assigned lead | Whether a lead reaches an investor while it is still fresh. |
+| Tools for operations | Refunds resolved per week, and time to resolve one | Whether the admin site replaced the manual work. |
+| Fair distribution | Spread of leads among the subscribers of each market | Whether taking turns works as intended. |
+| Testable backend | Coverage of the use cases, and defects found after release | Whether the restructure paid off. |
+
+### Constraints
+
+- **A live product.** Every change had to land without stopping lead delivery for the investors already using it.
+- **Two engineers.** I owned the backend and a teammate owned the web apps, so the API contract between us had to stay clear and stable.
+- **An integration that never closed.** The refund flow was planned against the client's own backend, but it could not be completed because of connectivity issues, which is why operations got an admin site of their own.
+- **Many lead sources.** Each campaign names the same fields differently, and the intake had to accept all of them.
+
+</ObjectivesSection>
+
+<ProcessSection title="Process & prioritization" nav="Process">
+
+### From problem to scope
+
+The work was organized in sprints 0 to 6. Sprint 0 was the review of the live product, Sprint 1 restructured the backend and set up the monorepo, and the following sprints moved payments to a new provider, built the admin site and reworked the language of the product. The whole scope was consolidated into 17 capabilities and 45 features.
+
+### How the team worked
+
+The two engineers split the product along the API: I owned the backend, and my teammate owned the investor app and the admin site.
+
+### What the platform covers
 
 | Area | What it enables |
 |---|---|
-| Lead feed and pipeline | A live feed of new leads, a pipeline from New Lead to Closed or Cold, lead detail, closed-lead traceability and approximate map locations by design. |
-| Markets (counties) | Subscribe to US counties, with statuses Open, Secured, Held and Released. |
-| Billing and wallet | Stripe payment methods, a primary and a backup method with a 3% discount on the backup, auto-recharge, a monthly spend cap with monthly reset, receipts and billing history. |
-| Refunds | Request a refund on a bad lead, with at most two per lead and one active at a time, and states Pending, Approved, Rejected and Completed. |
-| Notifications | In-app notifications over Socket.IO, transactional email with Handlebars templates, and SMS through Twilio. |
-| Lead intake | Webhook adapters that normalize external payloads into the internal lead model, configurable outbound webhooks and sharing a lead by email. |
-| Referral program | Referral codes, settings and commissions, with a scheduled job that processes pending commissions. |
-| Integrations | Calendly for appointments, Intercom chat, GoHighLevel CRM and Google Maps. |
-| Authentication | Email and password, then an emailed one-time code, then a JWT. Google sign-in is also available. |
-| Admin site | Broadcasts, reports, source prices, sales representatives, user groups, partners, refunds, webhooks and reload events. |
+| Lead intake | A webhook for every campaign, one adapter that normalizes the fields, and enrichment with property data and a price. |
+| Assignment | County, then state, then nationwide, taking turns inside each market, with budget and balance checks. |
+| Lead feed and pipeline | A live feed, lead detail and a pipeline from new lead to closed or cold, with personal data masked until the lead is assigned. |
+| Markets | Subscriptions to US counties, each one open, secured, held, full or released. |
+| Wallet and payments | Saved cards, a backup card, auto-recharge, a monthly budget with a monthly reset, receipts and history. |
+| Refunds | Up to two requests per lead, one open at a time, with the lead reassigned when a refund is completed. |
+| Notifications | In the app in real time, by email and by SMS, according to each investor's settings. |
+| Referrals | Referral codes, settings and commissions, processed every day. |
+| Admin site | Users, partners, sources and prices, markets, refunds, broadcasts, reports and webhooks. |
 
-</FeaturesSection>
+### What waited
 
-<ImplementationSection title="Implementation & final design">
+- **The refund integration with the client's own backend** was never completed, so refunds live in the admin site instead.
+- **Part of the old payment provider** is still in the repository, from the migration.
 
-<DiagramRow item={{ src: "/diagrams/getsellers/architecture.svg", title: "Architecture", caption: "The two web apps, the inbound webhooks, the layers of the API and the services behind it.", width: 1200, height: 680 }}>
+</ProcessSection>
+
+<DesignDecisionsSection title="Design decisions">
+
+The decisions that most shaped the product, made by the team and designed by the product designer of the project, part of the Tres Astronautas team. Each one is shown as a flow or a diagram.
+
+<DiagramRow item={{ src: "/diagrams/getsellers/flow-onboarding.webp", title: "From sign-up to the first lead", caption: "The investor's path, and the two moments where the platform acts.", width: 3000, height: 1480, light: true }}>
+
+### Ready to receive leads in one sitting
+
+**Problem.** An investor who signs up but never adds a card or a budget is an investor who never receives a lead.
+
+**Decision.** A setup wizard asks for the three things a lead needs: the markets, a card to pay with and a budget.
+
+**Trade-off.** A longer first session.
+
+**In the product.** Each sign-in is confirmed with a one-time code by email, and a second card is encouraged with a one-time discount on the next lead.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/getsellers/lead-intake.webp", title: "From a homeowner's form to one investor", caption: "Intake, scope, turns and the checks before a lead is assigned.", width: 3000, height: 1500, light: true }}>
+
+### One lead, one investor, taking turns
+
+**Problem.** Leads are exclusive. Sending each one to every subscriber would make it worthless, and always picking the same investor would be unfair.
+
+**Decision.** A lead looks for subscribers in its county, then its state, then nationwide. Inside each scope, the investor who waited longest gets it, as long as they are under their monthly budget and have the balance to pay.
+
+**Trade-off.** A lead can end up unassigned when nobody in its scope can pay.
+
+**In the product.** An investor short on balance has their subscription held and the next one is tried, and when nobody qualifies the admins get an alert right away.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/getsellers/wallet.webp", title: "A wallet that refills itself", caption: "Recharge events, retries with other cards and the monthly cap.", width: 3000, height: 1440, light: true }}>
+
+### Billing never blocks a lead
+
+**Problem.** Charging a card at the moment of each assignment meant that a declined card stopped the lead, even when the investor had another card saved.
+
+**Decision.** Leads are paid from a prepaid balance. When the balance drops under the investor's threshold, recharge events are created and charged in the background, trying the other saved cards when one is declined.
+
+**Trade-off.** More billing states to model and test, and an investor with no funds is skipped until the wallet is recharged.
+
+**In the product.** Each charge has its own key, so a retry never charges twice, and the investor gets an email only when every card has failed.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/getsellers/flow-refund.webp", title: "A refund on a bad lead", caption: "The investor asks, an admin decides, and the lead moves on.", width: 3000, height: 1480, light: true }}>
+
+### A refund that puts the lead back to work
+
+**Problem.** A refund that only returns money leaves the lead idle, even though another investor in the market could still use it.
+
+**Decision.** Completing a refund credits the wallet, unassigns the lead and offers it to the next investor in the same market, in one step.
+
+**Trade-off.** Refunds touch billing, assignment and notifications at once.
+
+**In the product.** Each lead allows two requests at most and only one open at a time, a rejected request can be sent again with the form already filled in, and either side can cancel while it is in progress.
+
+</DiagramRow>
+
+### Personal data stays in the backend
+
+**Problem.** The feed shows leads to investors before they own them. Sending the homeowner's full data to the browser and hiding it there would leave it one inspection away.
+
+**Decision.** The API masks the last name, email, phone, address and location of every lead in the feed, and returns the full data only for leads the investor owns.
+
+**Trade-off.** An extra mapping on every lead response.
+
+**In the product.** The map shows an approximate location by design, and sensitive or duplicated fields were removed from the data model altogether.
+
+</DesignDecisionsSection>
+
+<DesignSystemSection title="Design system">
+
+The investor app and the admin site share one design system, created by the product designer assigned to the project at Tres Astronautas.
+
+<DiagramRow item={{ src: "/screenshots/getsellers/design-system-foundations.webp", title: "Foundations", caption: "Typography, color, status colors, radius and spacing of the investor app.", width: 3000, height: 1575, light: true }}>
+
+### Foundations
+
+- **Two typefaces.** Poppins for titles and Mona Sans for the interface, tables and data.
+- **A dark interface.** A deep navy page with darker cards, and soft blue-gray tones for text and icons.
+- **One violet for action.** A violet ramp where one tone marks the main action, with fixed tones for hover, selected and disabled.
+- **Status colors with fixed meanings.** Success, danger and warning, each with its own ramp.
+- **Radius and spacing as tokens.** A short scale of radius and spacing values shared by every component.
+
+</DiagramRow>
+
+</DesignSystemSection>
+
+<ImplementationSection title="From design to code" nav="Design to code">
+
+As a Senior Software Engineer, I owned the backend: its restructure, its use cases and everything that runs behind the two web apps. This section explains how it is organized, in terms of what each part does.
+
+<DiagramRow item={{ src: "/diagrams/getsellers/architecture.webp", title: "Architecture", caption: "Who calls the API, its hexagonal layers, and the data and services behind it.", width: 3000, height: 1560, light: true }}>
 
 ### Architecture
 
-The repository is a monorepo with yarn workspaces and Turborepo, holding the API, the investor app, the admin site and shared packages for ESLint, TypeScript configuration and a logger. The backend is hexagonal. A request goes from routes to controllers, then handlers, then use cases with one operation each. The domain holds repository interfaces, types, validators and schemas, while infrastructure holds the repository implementations and services such as Stripe, the Mongo connection and Socket.IO. Dependencies are wired by hand in one file, with path aliases per layer, and the tests swap that file for a mock. Socket.IO and the scheduled jobs run inside the same process as the API. There are about 180 routes under /api. C4 diagrams from level 1 to 3, sequence diagrams and a list of API routes live next to the code, along with one feature document per area. Click a diagram to open it at full size.
+The repository is a monorepo with the API, the investor app, the admin site and shared packages. I moved the backend from a layered structure to a hexagonal one: a request goes from a thin route and controller to a use case that does one thing, the domain holds the interfaces and rules, and the adapters talk to the database and the outside services.
+
+The dependencies are wired in one place, so the tests replace them with mocks and each use case can be tested on its own. Scheduled jobs and the real-time notifications run in the same process as the API.
 
 </DiagramRow>
 
-<DiagramRow item={{ src: "/diagrams/getsellers/lead-intake-assignment.svg", title: "Lead intake and assignment", caption: "From the webhook to one investor, with the checks, the fallback by scope and the delivery channels.", width: 1200, height: 1040 }}>
+<DiagramRow item={{ src: "/diagrams/getsellers/lifecycles.webp", title: "Life cycles", caption: "The pipeline of a lead, the states of a refund and a market as one investor sees it.", width: 3000, height: 1560, light: true }}>
 
-### Lead intake and assignment
+### Leads, refunds and markets
 
-Leads arrive at a public webhook, or an admin creates them by hand. One adapter, webhook-lead.adapter, maps the payload: it accepts several names for the same field and normalizes occupancy, motivation and time frame. It is one adapter for one webhook, not one per source. The create-lead use case then finds the market from the city or the zip, adds Batch Data, the source price and a Street View image, and marks the lead as rejected if a required field is missing. A lead with no TCPA consent or no matching market gets a 400 and an entry in the lead log. Leads from one vendor, Hesel Media, are stored and reported to the admins without being assigned.
-
-Assignment tries the county first, then the state, then the nationwide market. Inside a scope the subscribers are sorted by the oldest last assignment, and the lead goes to one investor, not to all of them. Each candidate must stay under the monthly budget and have enough balance. If the balance is short, that subscription becomes placed, the admins are notified and the next subscriber is tried. If nobody qualifies, the admins get an alert. When a lead is assigned, the wallet is debited and the investor gets an in-app notification, an email and an SMS, the last two only if their alert settings allow it. A referral commission is recorded when the investor was referred, and the outbound webhooks for leads and transactions are dispatched.
+A lead in the investor's pipeline can move to any status, from new lead to closed or cold. A refund starts in progress and ends completed, rejected or cancelled. A market shows each investor where they stand: open, secured, held when the balance runs short, full, or released.
 
 </DiagramRow>
 
-### Security and data
+### Scheduled work
 
-The API runs Helmet, CORS, a content-type check, a payload size limit, input sanitization and ObjectId validation, and it has five rate limiters: general, auth, create, read and admin. The CORS code can enforce an allow-list of origins, but unless CORS_ALLOW_ANY_ORIGIN is set to false it accepts any origin, so the allow-list is a setting and not the default. Lead personal data is masked in the public feed: last name, email, phone, address and IP address. The endpoints for assigned leads return the full data. Terms and conditions are accepted with a signature and rendered to PDF with Puppeteer. The PDF and the signature are stored under a private S3 prefix and read through signed URLs, while the lead and refund images use public prefixes.
+Four jobs run in the background: one cleans expired one-time codes every day, one charges the pending recharge events every two minutes, one processes referral commissions every morning, and one resets the monthly budgets on the first day of the month.
 
-<DiagramRow item={{ src: "/diagrams/getsellers/wallet-billing.svg", title: "Wallet and auto-recharge", caption: "The checks at each assignment, the recharge events and the monthly reset.", width: 1200, height: 1040 }}>
+### Quality
 
-### Payments and scheduled work
+The backend has 289 test files, 270 unit and 19 integration, with an in-memory database and a coverage threshold of 60%. Because each use case can be tested on its own, most of that suite is unit tests.
 
-Payments moved from Braintree to Stripe in Sprint 3. The braintree package and a few migration scripts are still in the backend. Each investor has one billing document with the balance, the monthly budget, the amount spent this month and the auto-recharge settings. Adding a second payment method gives a one-time 3% discount on the next lead.
+### Delivery
 
-Auto-recharge is an event pipeline. When an assignment leaves the balance under the reload threshold, the use case writes pending events, one for each reload amount needed. A cron job every two minutes charges them with a Stripe PaymentIntent, using an idempotency key per event and card, and it tries the investor's other saved cards when one is declined. If all of them fail, the event is marked failed and the investor gets an email. Stripe webhooks for attached and detached payment methods and for succeeded, failed and expired charges keep the local records in line.
+Releases are tag-driven and per app: the tag says which part ships and to which environment, so the API, the investor app and the admin site can be released on their own.
 
-Four node-cron jobs run in the API: cleaning expired one-time codes every day at 00:00, processing auto-recharge events every two minutes, processing pending referral commissions every day at 06:00 New York time, and resetting the monthly billing on the first day of the month.
-
-</DiagramRow>
-
-<DiagramRow item={{ src: "/diagrams/getsellers/lifecycles.svg", title: "Lead status and refund", caption: "The statuses of an investor's lead and the states of a refund request.", width: 1200, height: 760 }}>
-
-### Life cycles
-
-An investor can set any status on a lead they own, and two of them also change the lead category. A refund starts in progress, an admin completes or rejects it, and either side can cancel it. Completing it credits the wallet with a refund transaction and unassigns the lead. A rejected refund can be requested again with the form prefilled, and only one refund can be open per lead.
-
-</DiagramRow>
-
-<DiagramRow item={{ src: "/diagrams/getsellers/deploy-pipeline.svg", title: "Tag-driven deploy", caption: "How a tag selects the pipeline and what each pipeline does.", width: 1200, height: 650 }}>
-
-### Quality and delivery
-
-The backend has 289 test files (270 unit and 19 integration) written with Jest, supertest and an in-memory MongoDB, with a 60% global coverage threshold on branches, functions, lines and statements. Cron jobs, sockets, utilities, configuration and validators are left out of that measure. The investor app has 55 test files with Vitest and Testing Library. The admin site has Vitest configured but no test files.
-
-Deployments are tag-driven with Azure Pipelines. A tag is a prefix, a semver and an environment, such as b2.0.0-dev. The prefix picks the pipeline: b for the API, f for the investor app and af for the admin site. The suffix picks the repository, bucket and secrets. The API pipeline builds a Docker image, pushes it to ECR and restarts the container on a VM over SSH. The two web apps are built with Vite using variables from AWS Secrets Manager, synced to S3, and the CloudFront cache is invalidated. The pipelines do not run the test suites. The deployment document lists only the test and dev environments, but the pipelines also accept -prod.
-
-</DiagramRow>
-
-### Decisions
-
-Each decision below was taken for a concrete reason and carried a cost, which the table records next to it.
+### Technical decisions
 
 | Decision | Why | Trade-off |
 |---|---|---|
-| Layered to hexagonal backend | Each use case can be tested alone and with less coupling. | A large restructure up front, in exchange for the extensive unit test suite. |
-| Braintree to Stripe | One payment provider for the wallet and the investor app. | The braintree package and some migration scripts remain in the repository. |
-| Prepaid wallet with auto-recharge | A lead is paid from the balance at the moment of assignment, and the wallet is refilled later with retries on the other saved cards. | More billing states to model and test, and an investor with no funds is skipped until the wallet is recharged. |
-| Round robin inside each market | Leads are exclusive, and taking turns spreads them among the subscribers. | A lead can end up unassigned when nobody has funds. |
-| A new admin site built from scratch | The planned refund integration with the client's own backend could not be completed because of connectivity issues. | More surface to build and maintain. |
-| One adapter for the lead webhook | Sources name fields differently, so the adapter maps the aliases and normalizes the values before the lead is stored. | A source with a new shape means extending the adapter. |
-| Masking lead data in the API | Personal data should not leave the backend unless the investor needs it. | Extra mapping on every lead response. |
-| Tag-driven, per-app deployments | The API, investor app and admin site can ship independently. | Releases depend on tagging discipline. |
+| Layered to hexagonal backend | Each use case can be tested alone, with less coupling. | A large restructure up front, paid back by the test suite. |
+| One payment provider | The wallet and the investor app share one provider and one model of cards and charges. | A migration, with part of the old provider still in the repository. |
+| Prepaid wallet with auto-recharge | A lead is paid from the balance, and the wallet is refilled later with retries. | More billing states to model and test. |
+| Taking turns inside each market | Leads are exclusive, and turns spread them fairly. | A lead can stay unassigned when nobody can pay. |
+| One adapter for the lead webhook | Sources name fields differently, so one adapter maps them all. | A source with a new shape means extending the adapter. |
+| Masking lead data in the API | Personal data does not leave the backend until it is needed. | Extra mapping on every lead response. |
+| Tag-driven, per-app releases | Each part of the product ships on its own. | Releases depend on tagging discipline. |
 
 </ImplementationSection>
 
 <ResultsSection title="Results">
 
-The client kept a live product and gained a modernized one. Investors can sign up, pick their markets, add a payment method and receive leads by in-app notification, email or SMS, then work each lead through the pipeline, from New Lead to Closed, and request a refund on a bad lead. The internal team handles refunds, broadcasts, reports, source prices and referrals from the admin site.
+The modernized product is in production, and the client kept a live marketplace the whole way through. Investors sign up, pick their markets, load a wallet that refills itself and receive leads in the app, by email and by SMS, then work each lead through the pipeline and ask for a refund on a bad one. The team that runs the marketplace handles refunds, broadcasts, reports, source prices and referrals from its own admin site.
 
-The refund integration with the client's own backend was never completed, so that part still has to be closed. No revenue or conversion figures are reported for this engagement.
+The refund integration with the client's own backend was never completed, so that part still has to be closed. No revenue or conversion figures were shared for this engagement.
 
 </ResultsSection>
+
+<LearningsSection title="Learnings & next steps" nav="Learnings">
+
+### Next steps
+
+- Close the refund integration with the client's own backend once the connection is possible.
+- Remove what is left of the old payment provider.
+- Measure the time from webhook to assignment, and the leads saved by backup cards, as the first baseline.
+
+### What I learned
+
+- **Read before you touch.** Spending the first sprint only reviewing a live product felt slow. It is what let the rest of the project change billing and assignment without breaking delivery for the investors already using it.
+- **Money flows deserve their own states.** Moving from "charge now" to a wallet with recharge events added states, but each one made a failure visible and recoverable instead of silent.
+- **The API is where a two-person team meets.** With one engineer on each side of it, keeping the API stable and predictable mattered more than any shared code.
+
+</LearningsSection>
