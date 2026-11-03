@@ -1,177 +1,313 @@
 ---
 title: "Mottika"
 slug: "mottika"
-summary: "The transactional engine of a two-part platform: a multi-tenant switch that validates, routes, prices and reconciles card transactions between merchants, funds and processors through configurable rules. A client project at Tres Astronautas."
+summary: "The transactional engine of a two-part platform: a multi-tenant switch that checks, routes, prices and reconciles card transactions through configurable rules, with a cash desk for merchants on top. A client project at Tres Astronautas."
 type: "Work project · Tres Astronautas"
 date: "2026-10"
 year: "2026"
 status: "In development"
 featured: true
+hideCover: true
 stack:
   - "Go"
   - "PostgreSQL"
   - "RabbitMQ"
   - "Redis"
   - "gRPC and OpenAPI"
-  - "Keycloak (OIDC)"
   - "Next.js and React"
-  - "Docker and Kubernetes"
-  - "Terraform and AWS"
+  - "Tailwind CSS 4"
+  - "Turborepo"
 highlights:
   - value: "16"
     label: "capabilities"
   - value: "42"
     label: "features"
-  - value: "186"
-    label: "API operations"
+  - value: "38"
+    label: "user flows designed"
 ---
 
 <SummarySection title="Summary">
 
-Mottika is a multi-tenant transactional ecosystem for a financial-services company. It connects merchants and employee funds with card processors and card-management systems, and it governs how every transaction is validated, routed and processed. It also enables what happens after: pricing, reconciliation, disbursement and cash collection.
+Mottika is a multi-tenant transactional switch for a financial-services company. It sits between the systems where card transactions start and the card-management systems that make the financial decision, and it governs how every transaction is checked, routed and recorded.
 
-It is a work project, not a personal one: it is being built at Tres Astronautas for a client. Mottika is the technical half of a two-part product. This half is everything behind the scenes, and Emisys, documented as its own project, is the visual layer and the channel of communication with the funds.
+For each transaction, Mottika confirms that the request is authentic and not a duplicate, works out which client the card belongs to, sends it to the right destination, applies that client's own rules and spending quotas, adapts the message when needed and returns the verdict. After that, it prices the transaction, reconciles it and releases the money. On top of the switch, merchants get a cash desk: sales, shift close, cash count and the handover of collected cash.
 
-It is designed with PCI-DSS and ISO 27001 in mind, so that the platform can be certified.
+Mottika does not issue cards, does not make the authorization decision and does not move money. Each of those jobs belongs to another party, and keeping that line clear shaped most of the design.
+
+The product is made of two consoles on one platform:
+
+- **An admin console** for the platform team, working across every client.
+- **A merchant console** for each client's team: administrators, cashiers, supervisors and cash receivers, with tablet-first screens for the cash desk.
+
+Mottika is one half of a two-part product. Emisys, documented as its own project, is the visual layer and the channel to the employee funds.
+
+I work on Mottika at Tres Astronautas for a client, on the architecture and the design of the platform. The project is confidential and still in development, so this case study shows flows and diagrams instead of screens.
 
 </SummarySection>
 
-<ChallengeSection title="Challenge & strategy">
+<ContextSection title="Context & role">
 
-### Challenge
+- **Client:** A financial-services company. The name is kept private.
+- **Company:** Tres Astronautas
+- **Product:** A transactional switch with an admin console, a merchant console and a cash desk
+- **My role:** Senior Software Engineer, on architecture and design
+- **What I did:** Took part in designing the architecture and writing it down: the system model, the decision records and the flows the build follows
+- **Status:** In development
 
-The story starts with a simple observation: operating cards at scale means connecting many parties that each speak a different dialect. Processors, card-management systems, acquirers and accounting all have their own way of talking, and each connection built as custom code was slow to change and hard to audit.
+</ContextSection>
 
-That left a platform where adding a route or a business rule meant writing code and releasing it, where cash handling at the counter was hard to trace, and where onboarding a new client threatened to mean building yet another system.
+<ProblemSection title="Problem">
 
-### Strategy
+Operating cards at scale means connecting many parties that each speak a different dialect. Processors, card-management systems, acquirers and accounting all have their own formats and rules. When each connection is custom code, adding a route or a business rule means writing code and releasing it, and onboarding a new client threatens to mean building yet another system.
 
-The planning work started from an impact map that tied business goals to the people and systems that use the platform. The answer it pointed to was a single, configurable switch placed in the middle. Rules decide where a transaction goes and how it is priced, and the same platform carries it through to reconciliation and cash collection, with each client isolated from the others.
+The scope of the platform shows where that hurts:
 
-Several goals shaped that proposal. Routing and business rules would be configured, not coded and released, so that traffic could be spread across several processors without deployments. Transactions would be processed securely, fast and exactly once, with idempotency and resilience when a third party was slow or down. Financial integrity would be kept from end to end, from pricing to reconciliation and disbursement, and cash-desk operations would be digitized so that cash handling became auditable. Everything would be governed in one place, with security and a trace of each operation, on a multi-tenant platform where a new client does not mean a new system.
+- **The platform team** needs to change routes, rules and quotas while traffic keeps flowing, without a release for each change.
+- **Each client** needs to manage its own users, keys and rules without waiting for the platform team.
+- **Cashiers and supervisors** need a cash desk where every sale, close and handover can be traced, and where a slow answer never charges a customer twice.
+- **Merchant administrators** need to review reconciliation and approve it before money is released.
 
-The main technical choices followed from those goals. API-first and contract-first design kept every integration away from the database. RabbitMQ was chosen over Kafka because the workload is task queues with retries, not a log to replay. A schema per tenant with row-level security gave strong isolation, the outbox pattern tied each state change to its event, and a separate tokenizer kept sensitive card data in the smallest possible scope. Pricing was kept from ever blocking an authorization, and accounting was left outside Mottika so that each product owns one job.
+The platform team carries most of that weight. It governs every client from one place, and a wrong rule or a broken route affects every transaction behind it, so most of the admin console is designed around changing things safely.
 
-</ChallengeSection>
+</ProblemSection>
 
-<PersonasSection title="User persona">
+<PersonasSection title="Users & context of use" nav="Users">
 
-Five personas use Mottika, from the team that operates the platform to the people at a merchant counter. The automated actors, such as the switch itself, are not personas.
+Five profiles use Mottika, from the team that operates the platform to the people at a merchant's counter. The automated actors, such as the switch itself or a merchant's ERP, are not personas.
 
 <PersonaCards
   items={[
-    { name: "Merchant administrator", does: "Manages the merchant users and keys, projects and rules, reconciliation, point-of-sale setup and catalog of one tenant.", where: "Merchant console", tool: "tie", hair: "short", skin: "#e2ad88", shirt: "#2f3e5e", hairColor: "#555", glasses: true, },
-    { name: "Cashier or field agent", does: "Registers sales, takes payments, closes the shift and delivers the cash. Works with large touch targets, one task per screen.", where: "Merchant console, tablet first", tool: "register", hair: "cap", skin: "#c68863", shirt: "#e0566b", hairColor: "#222", },
-    { name: "Supervisor", does: "Validates the closing of each shift, as the second signature of the dual validation.", where: "Merchant console", tool: "chart", hair: "bob", skin: "#d9a07c", shirt: "#4b7bec", hairColor: "#2a1a14", glasses: true, },
-    { name: "Collection receiver", does: "Accepts or rejects the physical delivery of cash and signs for it.", where: "Merchant console", tool: "box", hair: "short", skin: "#a8704d", shirt: "#e6a23c", hairColor: "#1c1c1c", },
-    { name: "Platform super-admin", does: "Onboards clients, configures routing, rules and tariffs, and watches health, incidents and the audit log across every tenant.", where: "Admin console", tool: "headset", hair: "bun", skin: "#f0c8a0", shirt: "#8e5be0", hairColor: "#7a3b2a", },
+    { name: "Platform administrator", does: "Onboards clients, configures routes, rules, quotas and fees, and watches health, incidents and the audit log across every client.", where: "Admin console", tool: "headset", hair: "bun", skin: "#f0c8a0", shirt: "#8e5be0", hairColor: "#7a3b2a", },
+    { name: "Merchant administrator", does: "Manages the users, keys, projects and rules of one client, sets up points of sale and approves reconciliation.", where: "Merchant console", tool: "tie", hair: "short", skin: "#e2ad88", shirt: "#2f3e5e", hairColor: "#555", glasses: true, },
+    { name: "Cashier", does: "Opens the shift, charges sales, closes the till and hands over the cash. One task per screen, with large targets.", where: "Merchant console, tablet first", tool: "register", hair: "cap", skin: "#c68863", shirt: "#e0566b", hairColor: "#222", },
+    { name: "Supervisor", does: "Approves adjustments and refunds above the cashier's limit, and the closing of each shift.", where: "Merchant console", tool: "chart", hair: "bob", skin: "#d9a07c", shirt: "#4b7bec", hairColor: "#2a1a14", glasses: true, },
+    { name: "Collection receiver", does: "Accepts or rejects the handover of cash, which settles the shift.", where: "Merchant console", tool: "box", hair: "short", skin: "#a8704d", shirt: "#e6a23c", hairColor: "#1c1c1c", },
   ]}
 />
 
+### The moments that shaped the design
+
+- **The cashier at the counter** works on a tablet with a customer waiting. A sale with no answer in three seconds had to become a clear "failed" that can be retried, never a charge made twice.
+- **The supervisor called to approve** has two minutes to decide on an adjustment. After that, the answer is no.
+- **The platform administrator changing a rule** does it while real traffic flows. The rule had to be testable before going live, and its activation had to reach every switch without a release.
+- **The merchant administrator approving a reconciliation** needs every difference resolved and explained before money moves.
+
+These moments come from the user flows and the UX blueprint of the project, and they worked as a check for every flow.
+
 </PersonasSection>
 
-<FeaturesSection title="Features">
+<ObjectivesSection title="Goals, success metrics & constraints" nav="Goals & constraints">
 
-The impact map describes eight actors, among them merchant administrators, cashiers, a platform super-admin and four automated actors: the switch, pricing, point of sale and the transversal services. Their needs were consolidated in the functional backlog into 16 capabilities and 42 features.
+### Goals
+
+1. Configure routing and business rules instead of coding and releasing them.
+2. Process each transaction securely, fast and exactly once, even when a third party is slow or down.
+3. Keep financial integrity from pricing to reconciliation and disbursement.
+4. Make cash at the counter traceable, from the sale to the handover.
+5. Onboard a new client without building a new system, with each client isolated from the others.
+
+### How success would be measured
+
+No success metrics were agreed with the client yet. These are the ones I would propose, each tied to one of the goals:
+
+| Goal | Metric | What it tells us |
+|---|---|---|
+| Configured, not coded | Rule and route changes made without a release, and time from draft to active | Whether the platform team really stopped depending on deployments. |
+| Fast and exactly once | Latency at the 99th percentile, and duplicate charges detected | Whether the switch keeps its promise under load. |
+| Financial integrity | Reconciliation runs approved without open differences | Whether pricing and reconciliation agree. |
+| Traceable cash | Shifts closed with a justified difference, and handovers rejected | Where cash still gets lost between the till and the receiver. |
+| New clients | Time to onboard a client end to end | Whether a new client is a setting or a project. |
+
+### Constraints
+
+- **A tight time budget.** The switch is designed for 500 transactions per second with a p99 of 500 ms end to end, so everything on the authorization path had to stay in memory but one outbound call.
+- **Third parties still being defined.** Processor test environments, the reconciliation file format and several providers were pending while the design moved forward.
+- **Choices that changed on the way.** Some components, such as the access layer and the identity provider, were changed at the client's request, and the decision records kept those changes cheap to explain.
+- **Validation still pending.** The design deliverables were documented, and the joint validation session with the client's stakeholders was still being scheduled.
+
+</ObjectivesSection>
+
+<ProcessSection title="Process & prioritization" nav="Process">
+
+### From problem to scope
+
+The planning started from an impact map that tied business goals to the people and the systems that use the platform. Their needs were consolidated into 16 capabilities and 42 features, each with its acceptance criteria, and then into 7 build chunks.
+
+The design followed the same trail: 20 console modules, 38 user flows and 38 wireframes, all traced back to a capability. Any screen can be followed back to the need it answers.
+
+### What the platform covers
 
 | Area | What it enables |
 |---|---|
-| Switch | The authorization path: signature and idempotency checks, identification of the card, per-client routing rules, business rules, quotas with alerts, payload transformation per system, a write-ahead journal, retries, circuit breakers and reliable callbacks. |
-| Pricing and tariffs | Tariff sheets and price lines, reconciliation against acquirer files with traffic-light differences and approval, billing and disbursement that depend on approved reconciliation, and a ledger per client. |
-| Point of sale | Cash-register opening, sales, closing and cash-up, signed closing reports, cash handover and e-invoicing through an external provider. |
-| Transversal services | Users and roles, API keys with scope and expiry, notifications across channels, an immutable audit log, threat detection, analytics and customer-service ticketing. |
-| Control plane | Registry of gateways and engines with heartbeat, hot configuration reload, and tenant lifecycle: onboard, suspend and reactivate. |
+| Clients | Onboard a client and its first administrator in one step, suspend it and reactivate it. |
+| Switch | Check, identify, route, apply rules and quotas, adapt the message and record each transaction. |
+| Rules and routes | Routing per company, versioned business rules with a sandbox, quotas with alerts and message profiles, all applied without a release. |
+| Merchant self-service | Users with roles per module, keys for the merchant's systems, and the merchant's own projects and rules. |
+| Pricing and settlement | Fee sheets, reconciliation with traffic-light differences, approval and disbursement. |
+| Operations | A live board, incidents, an audit log that cannot be edited and support tickets. |
+| Cash desk | Points of sale, catalog, sales, e-invoices, shift close with dual control and cash handover. |
 
-### How a transaction flows
+### Built in chunks
 
-Mottika sits between a card processor or a merchant's point of sale and the card-management systems that own the balance and the financial decision. The switch never decides the money: it authenticates, identifies, applies rules, routes and records.
+- **Built:** client onboarding and suspension, infrastructure registry, projects and routing, merchant users and keys, sign-in with one-time codes, dashboards, and most of the switch path with rules, quotas and message profiles.
+- **Next:** pricing, reconciliation and disbursement, monitoring, incidents, support and the whole cash desk, which are designed and waiting for their chunks.
 
-1. **Entry.** Requests arrive through an edge gateway as signed messages with an idempotency key. Other protocols, such as ISO 8583, end in their own gateways.
-2. **Card protection.** A dedicated gateway is the only component that ever sees a card number. It tokenizes the card, and everything downstream works on tokens.
-3. **Identity and route.** The token resolves to a company, a project and a tenant, and the company's routing rule gives the destination. Unknown tokens and suspended tenants are rejected.
-4. **Rules and quota.** Compiled business rules run in order, and the first rejection stops the flow. The fund's quota is checked and reserved.
-5. **Transform and journal.** The request is forwarded as is or mapped to the target's format, and the transaction is written to a journal before the outbound call.
-6. **One synchronous call.** A single call goes to the target system, with bounded retries and a circuit breaker per destination. A failed or unsigned response becomes a technical decline and releases the quota. It is never an approval.
-7. **The asynchronous tail.** The result is stored together with an outbox record, and a worker delivers signed callbacks, domain events and notifications with retries and a dead-letter queue.
-8. **Downstream.** Billing, reconciliation, disbursement and the accounting hand-off happen afterwards and never slow the authorization.
+</ProcessSection>
 
-</FeaturesSection>
+<DesignDecisionsSection title="Design decisions">
 
-<ImplementationSection title="Implementation & final design">
+The decisions that most shaped the platform, made by the team and designed by the product designer of the project, part of the Tres Astronautas team. The project is confidential, so each one is shown as a flow or a diagram instead of a screen.
+
+<DiagramRow item={{ src: "/diagrams/mottika/transaction.webp", title: "The life of a transaction", caption: "Eight steps in a fixed order, and the states a transaction can end in.", width: 3000, height: 1560, light: true }}>
+
+### One path, in a fixed order
+
+**Problem.** A transaction that can take different paths depending on who configured what is impossible to explain later.
+
+**Decision.** Every transaction follows the same eight steps in the same order, and the first rejection stops it. Only one step leaves the switch: a single call to the system that makes the financial decision.
+
+**Trade-off.** Some checks that could run in parallel run one after the other.
+
+**In the product.** A repeated request gets the stored answer, an adjustment is a new transaction linked to the original, and a switch with no configuration loaded denies everything instead of guessing.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/mottika/flow-rules.webp", title: "A rule, from draft to every switch", caption: "Write, test, activate, publish and reload, without a release.", width: 3000, height: 1480, light: true }}>
+
+### Rules change without a release
+
+**Problem.** If changing a business rule means writing code and deploying it, the platform team becomes the bottleneck of every client.
+
+**Decision.** Rules are written as expressions, tested in a sandbox against sample transactions and activated by hand. Each switch reloads the whole configuration as one fixed snapshot.
+
+**Trade-off.** Configuration needs its own versions, its own tests and a way to know which switch has which version.
+
+**In the product.** Editing an active rule creates a new version, and nothing is deleted. If a switch does not confirm the reload, the admin sees which one, and a merchant's own rule goes back to draft if no switch confirms it in 30 seconds.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/mottika/flow-cash.webp", title: "A shift at the cash desk", caption: "Three profiles, two signatures and a signed close.", width: 3000, height: 1480, light: true }}>
+
+### Two signatures for cash
+
+**Problem.** Cash is where money is easiest to lose and hardest to trace.
+
+**Decision.** Closing a till needs the cashier and the supervisor, and a handover needs the cashier and the receiver. Every difference needs a reason, and the close report is signed.
+
+**Trade-off.** More steps at the end of every shift.
+
+**In the product.** A sale without a verdict in three seconds is marked failed and retried with the same key, so the customer is never charged twice, and an open or failed sale blocks the close.
+
+</DiagramRow>
+
+### The client is never a choice
+
+**Problem.** In a platform shared by many clients, a single wrong filter can show one client's data to another.
+
+**Decision.** The client always comes from the session or the credential, never from what a person types or selects. In the merchant console, it is always visible.
+
+**Trade-off.** The platform team needs its own console to work across clients.
+
+**In the product.** Another client's resource looks as if it does not exist, and suspending a client cuts every user, key and route on its next request, without deleting any history.
+
+### Four kinds of message
+
+**Problem.** "Something went wrong" does not tell a cashier whether to retry, call someone or tell the customer the card was declined.
+
+**Decision.** Every message is one of four kinds: success, a business rejection, a technical failure or pending. Irreversible actions show their impact before they are confirmed.
+
+**Trade-off.** Every flow had to name its own failures.
+
+**In the product.** A declined card and a timeout look different, and each one offers only the actions that make sense.
+
+</DesignDecisionsSection>
+
+<DesignSystemSection title="Design system">
+
+The two consoles share one design system, created in Figma by the product designer assigned to the project at Tres Astronautas and documented as a manual of foundations, components and screen templates. The front end reuses the standard already proven in Emisys, so both products feel related without looking the same.
+
+<DiagramRow item={{ src: "/screenshots/mottika/design-system-foundations.webp", title: "Foundations", caption: "Typography, color, status colors, radius and spacing shared by both consoles.", width: 3000, height: 1575, light: true }}>
+
+### Foundations
+
+- **One typeface.** Inter for titles, interface, tables and data, with hierarchy from size and weight.
+- **A teal for action.** A five-step teal ramp, with one tone reserved for actions and a soft tint for selection.
+- **Quiet neutrals.** A short gray scale for surfaces, borders and text, so dense tables and rule editors stay readable.
+- **Status colors with fixed meanings.** Success, error and warning each have a background, a fill and a text tone.
+- **Only tokens.** The framework's default palette and radius were removed, so only the system's values can be used, and the dark theme reverses each ramp.
+
+</DiagramRow>
+
+### Cash desk on a tablet
+
+The cash-desk views drop the sidebar and use larger controls, one task per screen. The rest of the merchant console and the admin console use a collapsible grouped sidebar and a top bar with the breadcrumb, the theme switch, notifications and the profile.
+
+</DesignSystemSection>
+
+<ImplementationSection title="From design to code" nav="Design to code">
+
+My work on Mottika is on the architecture: designing it with the team and an external architecture partner, writing it down and keeping the build aligned with it. This section explains how the platform is organized, in terms of what each part does.
+
+<DiagramRow item={{ src: "/diagrams/mottika/architecture.webp", title: "Architecture", caption: "The consoles and the channels, the two zones of Mottika and the parties around it.", width: 3000, height: 1440, light: true }}>
 
 ### Architecture
 
-The system is built as event-driven microservices in one Go workspace: seven services and four shared libraries, in 11 modules, with three autonomous areas on top of a shared transversal layer. Those areas are the switch, pricing and point of sale.
+Mottika has two zones. The management zone, behind a single access layer, is where people and their systems configure the platform: clients, projects, rules, quotas, users, keys and points of sale. The transactional zone, behind one gateway per inbound channel, is where the switch processes each transaction with the configuration the control plane publishes.
 
-A language-neutral contract layer sits apart from the code, holding OpenAPI specs, event schemas and gRPC definitions. Synchronous services use gRPC between them and REST towards clients, and pricing and rule compilation run as queue workers. The transversal concerns, such as roles, audit, key management and observability, are a library linked in-process, so the hot path has no extra network hop. A separate tokenizer is the only component in PCI scope, which keeps that scope small. On the front end, the web apps live in a Turborepo: a merchant self-service panel and an admin panel, with a UI package and an SDK generated from the control-plane contract.
+Pricing, reconciliation and disbursement run off the critical path, driven by events, so a missing fee never blocks a payment. The cash desk sends each sale through the switch like any other channel, and dashboards read from a copy of the data so they never slow down a transaction.
+
+</DiagramRow>
 
 ### Domain model
 
-The domain is split into eleven bounded contexts, each owned by one service and connected to the others only through identifiers, APIs and events. The core ideas:
+The domain is split into eleven contexts, each owned by one part of the system and connected to the others only through identifiers, contracts and events. A client is the unit of isolation. A client has projects, projects group companies, and each card belongs to exactly one company. Configuration, made of routes, rules, quotas and message profiles, is published to the switches as a versioned snapshot that never changes once published.
 
-- **Client (tenant)** is the unit of isolation: a merchant, a fund or an integrating platform.
-- **Project and company.** A client has projects, projects group companies, and companies own cards. Each card belongs to exactly one company.
-- **Configuration** is made of routing rules, transformation profiles, business rules and quotas, published to the switch as a versioned, immutable snapshot.
-- **Transaction** records the tenant, the rule and transformation versions applied, the destination, the idempotency key, a trace identifier and the outcome.
-- **Point of sale and cash.** Registers, terminals, shifts, sales, corrections, cash closings and collection deliveries.
-- **Billing and settlement.** Tariff sheets with adjusters, charges per transaction, period invoices, reconciliation runs and disbursements.
-- **Operations.** Audit entries, incidents, dead-letter messages and support cases.
-
-Some invariants hold everywhere: the tenant always comes from the credential and never from a request parameter, another tenant's resource looks like it does not exist, a request is processed once per idempotency key, and amounts are integers in minor units, never floats. A sale only exists inside an open shift, and one without a verdict in time is marked failed and never flips to approved on its own.
-
-### Data and messaging
-
-Data lives in PostgreSQL, with a schema per tenant and row-level security, typed queries and versioned migrations. Messaging runs on RabbitMQ with quorum queues, a retry ladder, dead-letter queues and the outbox pattern, so a state change and its event are committed together. Redis serves the token and rule caches, and audit records go to append-only storage so they cannot be rewritten.
-
-### Edge, identity and security
-
-At the edge, an API gateway keeps separate channels for machine-to-machine traffic, PCI traffic and the portals, and a dedicated gateway handles ISO 8583 messages. Identity relies on OpenID Connect with the tenant carried as a claim. Requests between systems are signed, mutual TLS is used where cards are involved, rate limits are layered and secrets are kept outside the repository.
+A few rules hold everywhere: a request is processed once per key, amounts are whole numbers in the smallest unit, a sale only exists inside an open shift, and a transaction without a verdict in time is marked failed and never turns into approved on its own.
 
 ### Quality attributes
 
-Eight quality attributes were defined, each with measurable acceptance criteria. Latency is handled by keeping everything on the authorization path in memory with a single network call: configuration is preloaded and hot-reloaded, slow operations return "accepted" and finish later, and billing runs after the response. For scalability, instances are stateless behind a balancer, queues absorb backlog, and limits per credential and per fund keep one tenant's spike from hurting the others.
+Eight quality attributes were defined, each with measurable acceptance criteria. Latency is protected by keeping everything on the authorization path in memory with a single outbound call. Availability comes from a transactional zone that keeps working when the management zone is down. Resilience means transient errors are retried and definitive ones are not, and auditability rests on two records that cannot be edited, one of who did what and one of what happened to each transaction.
 
-Availability comes from a transactional zone that keeps running when the admin zone is down, failures detected by heartbeat, deploys with no downtime and infrastructure that can be rebuilt from code. Resilience means transient errors are retried with backoff and definitive ones are not, each destination has a timeout and a circuit breaker, and nothing is dropped silently. Security and isolation rest on zero trust between every hop, a second factor for every person, a minimal card-data perimeter, and tenant isolation in layers: the credential, scoped queries and row-level security, with isolation tests running on every pull request.
+### Working with AI agents
 
-Auditability relies on two append-only records, an audit log of who did what and a journal of what happened to each transaction, correlated by a trace identifier, so any critical transaction can be reconstructed. Interoperability comes from versioned, contract-first APIs with an owner, linted in CI, with invalid messages rejected at the edge. Finally, maintainability and observability are supported by architecture rules enforced in CI, structured logs, metrics and traces, and a monitoring dashboard for transactions, latency, breakers and quotas.
+The repository carries a harness for people and AI agents working on one codebase: session boards, claims on shared paths and reviewer approval before work is accepted. People make every commit.
 
-### UX design
+### Technical decisions
 
-The blueprint defines two web consoles. The admin console is for the platform team, working across tenants on desktop. The merchant console is strictly one tenant and serves four personas: the merchant admin, the cashier, the supervisor and the collection receiver. The cashier screens are tablet-first, with one task per screen.
-
-The key journeys cover onboarding a client and enabling its admin, configuring routing, rules and quotas published as a versioned snapshot, and setting up tariffs and assigning them to a client. They also include making a sale and seeing the verdict, with the receipt and invoice arriving afterwards, closing a shift with a dual validation by cashier and supervisor, and delivering collection and approving reconciliation.
-
-The principles behind them are a single design system, a permanently visible tenant, four kinds of message (success, business rejection, technical failure and "pending") and confirmation with impact before irreversible actions. Offline mode is read-only, and no card data is ever displayed or captured.
-
-### Delivery
-
-The plan spans twenty weeks in seven chunks, from a transversal foundation, through the switch core, integrations, pricing and settlement, observability and support, to point-of-sale operation and cash collection. Each module has its own CI with formatting, vetting, linting and race-detector tests, plus contract linting, secret scanning, static analysis and vulnerability scans, and there is a deploy workflow per service.
-
-Quality is risk-based and starts at definition, not at the end. The deepest testing goes to the switch and its payment seam, integrations, point of sale and billing. Third-party dependencies are treated as a quality risk, and a release-readiness review looks at coverage, defects, regressions, risks and evidence. An architecture decision trail of ten written decisions records why choices were made, and an external architecture partner reviews the work at fixed checkpoints.
-
-### Decisions
-
-The main choices are summarized below, each with the reason behind it and what it costs.
+Written decision records explain why each choice was made. The main ones:
 
 | Decision | Why | Trade-off |
 |---|---|---|
-| API-first and contract-first | No interface or integration touches the database directly. | Contracts must be written before building. |
-| RabbitMQ instead of Kafka | The workload is task queues with retries, not a log to replay. | Audit lives in its own store instead of the broker. |
-| Schema per tenant plus row-level security | Strong isolation between clients. | More work to manage migrations across schemas. |
-| Outbox pattern | A state change and its event are committed in the same transaction. | Events are delivered at least once, so receivers must be idempotent. |
-| A separate tokenizer | Keeps sensitive card data in the smallest possible scope. | One more service to deploy and secure. |
-| Pricing never blocks authorization | A missing tariff must not fail a payment. | Pricing runs on a best-effort basis alongside the transaction. |
-| Accounting stays outside Mottika | Each product owns one job and hands over a clean boundary. | An integration to maintain between the two. |
-| Lean, self-managed data tier | A cost-driven choice for the early stages. | Revised so that no control promised to the client was dropped. |
-
-Some choices, such as the API gateway and the identity provider, were changed after feedback from the client. The written decision trail made those changes cheap to explain and to apply.
+| Contract-first APIs | No interface or integration touches the database directly. | Contracts must be written before building. |
+| A single outbound call per transaction | Latency stays predictable. | Everything else on the path must live in memory. |
+| Fail closed | A switch with no configuration denies instead of guessing. | Availability is traded for never approving by mistake. |
+| A queue broker instead of a log | The work is tasks with retries, not a history to replay. | The audit lives in its own store. |
+| Configuration as a fixed snapshot | A transaction never sees a rule change halfway. | Changes reach the switches in a moment, not instantly. |
+| Pricing never blocks authorization | A missing fee must not fail a payment. | Pricing runs after the verdict. |
+| Accounting stays outside Mottika | Each product owns one job. | An integration to maintain between the two. |
 
 </ImplementationSection>
 
 <ResultsSection title="Results">
 
-Today the client has the foundation of the platform in place: the control plane and the merchant administration are built, so the operation can be set up and governed per client, each isolated from the others. The part that moves the money, the switch core, pricing, point of sale and the tokenizer, is designed and scheduled for later chunks.
+The foundation of the platform is in place: clients can be onboarded, suspended and governed, each isolated from the others, and most of the switch path is built, with rules, quotas and message profiles applied without a release. The cash desk, pricing and settlement are designed and scheduled for later chunks.
 
-This means there are no production traffic figures, latency results or certification to report yet. Several dependencies on third parties, such as processor sandboxes, the reconciliation file format and an e-signature provider, are still to be confirmed.
+The project is still in development, so there are no production figures yet, and several third parties are still to be confirmed. The written architecture is what lets the build move forward without them: every open dependency has its place in the model and its contract waiting.
 
 </ResultsSection>
+
+<LearningsSection title="Learnings & next steps" nav="Learnings">
+
+### Next steps
+
+- Validate the design with the client's stakeholders and adjust the flows with what comes out of it.
+- Build pricing, reconciliation and the cash desk on the flows that are already designed.
+- Connect the real processors as their test environments become available.
+
+### What I learned
+
+- **Writing decisions down pays off when they change.** Some choices changed at the client's request. Because each one had a written reason and a trade-off, changing it was a conversation about the trade-off, not a debate about memory.
+- **A switch is mostly about what it refuses to do.** The clearest decisions were the boundaries: no money moved, no authorization made, no configuration guessed. Each "no" made the rest of the design simpler.
+- **Flows show what diagrams hide.** An architecture diagram says where the cash desk lives. Only the flow, step by step and with who signs what, makes rules like the two-minute approval window visible to everyone.
+
+</LearningsSection>

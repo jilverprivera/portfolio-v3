@@ -16,6 +16,8 @@ export type ProjectMeta = {
   stack: string[];
   highlights: ProjectHighlight[];
   cover?: string;
+  // Confidential projects have no screens to show, so the hero skips the cover entirely.
+  hideCover?: boolean;
   // Public site of the product, when it has one.
   url?: string;
 };

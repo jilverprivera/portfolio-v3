@@ -1,12 +1,13 @@
 ---
 title: "Emisys"
 slug: "emisys"
-summary: "The visual layer of a two-part platform for employee funds: back-office, fund and associate portals to administer and control the lifecycle of credit-card products, communicating with Mottika and third parties only through versioned contracts. A client project at Tres Astronautas."
+summary: "A platform that lets employee funds offer a credit card to their members: a back-office, a fund portal, a member app and a governance portal to run the whole life of the card program, connected to Mottika and to third parties only through contracts. A client project at Tres Astronautas."
 type: "Work project · Tres Astronautas"
 date: "2026-10"
 year: "2026"
 status: "In development"
 featured: true
+hideCover: true
 stack:
   - "Go"
   - "PostgreSQL"
@@ -15,149 +16,325 @@ stack:
   - "Tailwind CSS 4"
   - "shadcn/ui"
   - "gRPC and OpenAPI"
-  - "Keycloak (OIDC)"
   - "Turborepo and pnpm"
   - "PWA"
 highlights:
   - value: "26"
     label: "capabilities"
-  - value: "113"
+  - value: "115"
     label: "features"
-  - value: "912"
-    label: "API operations"
+  - value: "4"
+    label: "web apps: back-office, fund portal, member app and governance portal"
 ---
 
 <SummarySection title="Summary">
 
-Emisys is a digital platform for employee funds, the savings and credit cooperatives common in Colombia. It lets a fund administer, operate and control the full lifecycle of the credit-card products it offers to its members, in a way that is secure, traceable and open to third parties.
+Emisys lets employee funds, the savings and credit cooperatives many companies offer their staff, give their members a credit card without building their own issuing, authorization, reconciliation and control systems.
 
-It is a work project, not a personal one: it is being built at Tres Astronautas for a client. Emisys is one half of a two-part product. This half is the visual layer and the channel of communication with the funds, while Mottika, documented as its own project, is the transactional engine behind it.
+It acts as the record and the orchestrator of the card program. It onboards each fund, configures products and rules, manages members and the full life of each card, adds context to every purchase, records transactions and their corrections, and controls the money each fund must put up front. What it does not do matters as much: Emisys never moves money, never makes the credit decision and never sees a card's PIN. The fund keeps its authority, and each third party keeps its own job.
 
-The platform has three web apps: a back-office for the operator, a portal for each fund and an app for each fund's members, called associates.
+The product is made of four web apps on one platform:
+
+- **A back-office** for the team that operates the program.
+- **A fund portal** for each fund's administrators and users, under the fund's own brand.
+- **A member app** on the phone, also under the fund's brand, the only channel members use.
+- **A governance portal** where reviewers approve settlement and collateral.
+
+Emisys is one half of a two-part product. Mottika, documented as its own project, is the transactional switch behind it.
+
+I work on Emisys at Tres Astronautas for a client, as a Senior Software Engineer, building most of the API and the web apps. The project is confidential and still in development, so this case study shows flows and diagrams instead of screens.
 
 </SummarySection>
 
-<ChallengeSection title="Challenge & strategy">
+<ContextSection title="Context & role">
 
-### Challenge
+- **Client:** A financial-services company. The name is kept private.
+- **Company:** Tres Astronautas
+- **Product:** A back-office, a fund portal, a member app and a governance portal on one platform
+- **Languages:** Spanish and English
+- **My role:** Senior Software Engineer
+- **What I built:** Most of the API and the web apps
+- **Status:** In development
 
-Card operations at employee funds often ran on scattered manual processes: emails, loose files and data typed twice. They were slow, opaque and prone to error, and they made reconciliation and audits harder than they should have been. Each connection with a processor, a manufacturer or an accounting system added more hand-offs where something could be lost.
+</ContextSection>
 
-### Strategy
+<ProblemSection title="Problem">
 
-The planning work started from an impact map that linked business goals to the people who use the system and to what they need. Five objectives came out of it: faster onboarding and card administration, with less time from registering a member to having an active card and fewer requests needing rework; continuity and reliability, so operations keep flowing when a third party fails, with safe retries and recovery; financial control and reconciliation, shortening reconciliation and resolving differences inside the cycle; governed interoperability, connecting with third parties through stable, versioned contracts; and service, compliance and auditability, leaving a trace of every relevant operation.
+A card program for an employee fund depends on many parties at once: the processor that issues and authorizes cards, the fund's own systems that make the credit decision, a reconciliation platform, an accounting core and the members themselves. Without one platform in the middle, every step between them becomes a hand-off by email, file or phone, and each hand-off is a place where something gets lost, typed twice or left without a trace.
 
-The answer was a single platform where each actor has the tools for their part of the lifecycle, and where the connections with processors, manufacturers and accounting systems are explicit and governed. Several reasons shaped it. External parties are treated as integration points, so Emisys stays independent of each third party's internals. APIs are contract-first, so teams can work in parallel against stable interfaces. Authentication and authorization are separate, so identity can change without touching business rules. An outbox with idempotency and at-least-once delivery means a failure never loses or duplicates an operation, and the interface never shows invented data, so users can trust what they see in a financial product. Targets for the goals were deliberately left open until a baseline can be measured after go-live.
+The scope of the platform shows where that hurts:
 
-</ChallengeSection>
+- **Fund administrators** need to register members, request and assign cards and set their own rules, without depending on someone else for each step.
+- **Members** need one place to see their card, activate it, set the PIN and block it when something goes wrong.
+- **The operating team** needs to onboard funds, define products and watch every integration from one place.
+- **Reconciliation analysts** need each period's figures to be explainable later, with approvals that leave evidence.
 
-<PersonasSection title="User persona">
+The fund administrator carries most of that weight. It is the profile that crosses the most flows, from onboarding its own fund to the card in a member's hand, and most of the fund portal is designed around making each of those steps clear and safe to repeat.
 
-Five personas work with Emisys. The external parties, such as the card processor, are modeled as integration points and not as people.
+</ProblemSection>
+
+<PersonasSection title="Users & context of use" nav="Users">
+
+Five profiles work with Emisys. The external parties, such as the card processor or the fund's authorizer, are modeled as integration points and not as people.
 
 <PersonaCards
   items={[
-    { name: "Fund administrator", does: "Registers associates, links them to card products, assigns cards from batches and follows claims, for their own fund only.", where: "Fund portal", tool: "tie", hair: "long", skin: "#d9a07c", shirt: "#2f3e5e", hairColor: "#2a1a14", glasses: true, },
-    { name: "Associate", does: "A member of the fund who sees their card, balance and movements, blocks the card or sets the PIN, and opens claims.", where: "Associate app, phone first", tool: "bag", hair: "curly", skin: "#a8704d", shirt: "#27a36d", hairColor: "#1c1c1c", },
-    { name: "Back-office operator", does: "Configures funds, limits and the product catalog, manages card batches and watches the operations dashboard.", where: "Back-office", tool: "headset", hair: "short", skin: "#e2ad88", shirt: "#8e5be0", hairColor: "#5a3a22", },
-    { name: "Reconciliation analyst", does: "Reconciles periods, manages differences, validates charges and sends accounting movements.", where: "Back-office", tool: "chart", hair: "bob", skin: "#f0c8a0", shirt: "#4b7bec", hairColor: "#7a3b2a", glasses: true, },
-    { name: "Governance approver", does: "Reviews settlement and collateral with their evidence and approves with four-eyes control.", where: "Governance portal", tool: "magnifier", hair: "short", skin: "#c68863", shirt: "#7a7f8c", hairColor: "#2a2a2a", glasses: true, },
+    { name: "Fund administrator", does: "Registers members, requests and assigns cards, sets the fund's transaction rules and follows claims, for their own fund only.", where: "Fund portal", tool: "tie", hair: "long", skin: "#d9a07c", shirt: "#2f3e5e", hairColor: "#2a1a14", glasses: true, },
+    { name: "Member", does: "A member of the fund who sees their card, balance and movements, activates the card, sets the PIN and blocks it.", where: "Member app, phone first", tool: "bag", hair: "curly", skin: "#a8704d", shirt: "#27a36d", hairColor: "#1c1c1c", },
+    { name: "Platform operator", does: "Onboards funds, configures products and rules, forms card batches and watches every integration.", where: "Back-office", tool: "headset", hair: "short", skin: "#e2ad88", shirt: "#8e5be0", hairColor: "#5a3a22", },
+    { name: "Reconciliation analyst", does: "Reconciles each period, manages differences and controls what goes to accounting.", where: "Back-office", tool: "chart", hair: "bob", skin: "#f0c8a0", shirt: "#4b7bec", hairColor: "#7a3b2a", glasses: true, },
+    { name: "Governance reviewer", does: "Reviews settlement and collateral with their evidence and approves them through a configurable flow.", where: "Governance portal", tool: "magnifier", hair: "short", skin: "#c68863", shirt: "#7a7f8c", hairColor: "#2a2a2a", glasses: true, },
   ]}
 />
 
+### The moments that shaped the design
+
+- **The member activating a card** is on the phone, often for the first time. The app had to be one task per screen, and the PIN had to go straight to the processor without passing through Emisys.
+- **The fund administrator registering members in bulk** uploads a file and needs a result for each row, not a single "failed" for the whole batch.
+- **The operator facing a slow third party** needs to see what is pending and act only through the recovery actions that are allowed.
+- **The analyst closing a period** needs every figure to be traceable, with a second approval where money is involved.
+
+These moments come from the functional backlog and the UX blueprint of the project, and they worked as a check for every flow.
+
 </PersonasSection>
 
-<FeaturesSection title="Features">
+<ObjectivesSection title="Goals, success metrics & constraints" nav="Goals & constraints">
 
-The impact map describes five business actors and seven external parties. The external parties, such as a card processor or an accounting system, are modeled only as integration points and never as internal domains.
+### Goals
 
-| Actor | What they can do |
+1. Shorten the time from registering a member to an active card, with fewer requests that need rework.
+2. Keep operations flowing when a third party fails, with safe retries and recovery.
+3. Keep financial control from end to end, and resolve differences inside each period.
+4. Connect every third party through stable, versioned contracts.
+5. Leave a trace of every relevant operation.
+
+### How success would be measured
+
+The targets for each goal were left open on purpose, until a baseline can be measured after go-live. These are the metrics I would propose, each tied to one of them:
+
+| Goal | Metric | What it tells us |
+|---|---|---|
+| Faster cards | Days from member registration to an active card, and share of requests that need rework | Whether the flow from request to activation actually got shorter. |
+| Continuity | Operations left indeterminate, and time to resolve them | How often a third party slows the program, and how fast it recovers. |
+| Financial control | Differences per period, and share resolved before the close | Whether reconciliation happens inside the cycle. |
+| Governed integrations | Contract changes per release, and messages rejected at the edge | How stable the connections with third parties are. |
+| Traceability | Share of critical operations that can be rebuilt end to end | Whether an audit can follow any transaction. |
+
+### Constraints
+
+- **Many parties, few of them ready.** The processor, the fund's authorizer and other integrations were not available during the first chunks, so the platform was built against contracts and stand-ins that answer "pending".
+- **Clear boundaries.** Emisys never moves money, never makes the credit decision and never sees a PIN, and every screen had to respect that.
+- **Isolation between funds.** No fund can see another's data, and fund users never choose a fund: the context comes from who they are.
+- **Two languages and two themes** from the start, with the fund portal and the member app under each fund's brand.
+- **Open business decisions,** such as how a fund confirms its integration channel or whether a bulk upload is all-or-nothing, were still being made while the build moved forward.
+
+</ObjectivesSection>
+
+<ProcessSection title="Process & prioritization" nav="Process">
+
+### From problem to scope
+
+The work started from an impact map that tied the business goals to the people and the systems involved. That map became a functional backlog of 26 capabilities and 115 features, each one written as a user story with its trigger, preconditions, flow, business rules and acceptance criteria.
+
+A single catalog of identifiers runs through the backlog, the architecture, the domain model and the UX blueprint, so a feature can be followed from the story to the contract, the screen and the test.
+
+### What the platform covers
+
+| Area | What it enables |
 |---|---|
-| Fund administrator | Register and update associates, link them to card products, assign cards from batches, activate, block and replace cards, and follow claims on transactions. |
-| Associate | See their card, balance and movements, block the card or manage the PIN with stronger identity checks, and open a claim from a specific transaction. |
-| Operator in the back-office | Configure funds, limits and a versioned product catalog with approval, manage card batches, and watch an operations dashboard with retries. |
-| Reconciliation and accounting analyst | Reconcile periods, manage differences, validate charges and send accounting movements, with period close blocked while exceptions remain. |
+| Identity and access | Users, custom roles with granular permissions and a scope per fund, decided by one authority. |
+| Fund onboarding | A wizard, an invitation for the first administrator, a checklist with evidence and activation. |
+| Products and rules | A versioned product catalog with approval, platform rules and each fund's own transaction rules. |
+| Members | Registration one by one, in bulk or through an integration, with changes that cascade to cards. |
+| Card supply and lifecycle | Batches, stock per fund, assignment, delivery, activation, PIN, blocks, cancellation and reissue. |
+| Authorizations and transactions | Context for each purchase, and transactions with their voids, refunds and reversals kept apart. |
+| Statements and reports | The member's view of the card, and reports and dashboards for each fund. |
+| Money control | Prefunding, collateral, reconciliation, invoicing, accounting entries and cashback. |
+| Service | Claims, chargebacks, notifications and a link with the help desk. |
 
-### How it works
+### Built in chunks
 
-Emisys is the orchestrator and system of record of a card program run by an employee fund. It is not the switch, the credit authorizer, the reconciliation engine or the ledger, and it never moves money: it calculates, requests, records, evidences and controls. The life of a card goes like this:
+Delivery is split into a cross-cutting chunk and five chunks of business, each one reviewed before the next starts. The contracts for each chunk are written before its code.
 
-1. **Onboarding the fund.** An operator sets up a fund through a checklist with evidence, and the fund goes live only when every mandatory item is met. Products are defined once and then enabled per fund, with overrides.
-2. **Registering members.** Associates arrive from the fund's own systems or in bulk, into one canonical model. The fund remains the authority on credit decisions.
-3. **Supply.** The fund requests cards, which are grouped into batches and sent to the card processor and manufacturer. Cards return as inventory.
-4. **Assignment and delivery.** The fund assigns an available card to a member, which consumes inventory exactly once, and records the physical delivery.
-5. **Activation.** The member activates the card in their own app: confirm they hold it, pass a second factor and set the PIN in a secure keypad owned by the processor. Emisys never sees or stores the PIN.
-6. **Authorization.** When a purchase arrives, the switch applies its first filter, and Emisys adds context and routes the request to the fund's authorizer within a tight deadline. A timeout is recorded as indeterminate, never as approve or reject.
-7. **Transactions and corrections.** Every card operation is one record that accumulates facts: authorization, capture, settlement. Reversals, voids, refunds and chargebacks stay separate and are never merged.
-8. **Money control and close.** For each fund and period, Emisys computes the funding and collateral required and records evidence and approvals. It then sends the period's sources to an external reconciliation engine, rates consumption, validates charges, issues the invoice and maps the result to accounting movements.
+- **Built:** identity and access, fund onboarding, products, rules and members, with the four apps, sign-in, password recovery, two languages, two themes and installable apps.
+- **Next:** card batches and lifecycle, authorizations and transactions, statements, and then reconciliation and invoicing.
+- **Waiting on others:** the real integrations with the switch, the fund's authorizer and the processor. Until they exist, stand-ins answer "pending" instead of inventing a result.
 
-### How it communicates
+</ProcessSection>
 
-Emisys talks to Mottika and to third parties only through versioned, contract-first REST APIs and events. It never reads another system's database. Events are published with an outbox and delivered at least once, and receivers are idempotent. Every operation carries a correlation identifier and a controlled state, and the interface never shows data it does not have: when information from a third party is not available, it says so.
+<DesignDecisionsSection title="Design decisions">
 
-</FeaturesSection>
+The decisions that most shaped the experience, made by the team and designed by the product designer of the project, part of the Tres Astronautas team. The project is confidential, so each one is shown as a flow or a diagram instead of a screen.
 
-<ImplementationSection title="Implementation & final design">
+<DiagramRow item={{ src: "/diagrams/emisys/flow-onboarding.webp", title: "Onboarding a fund", caption: "From the operator's wizard to a fund with its rules in force, across two profiles.", width: 3000, height: 1480, light: true }}>
+
+### A fund goes live through a checklist
+
+**Problem.** A fund that starts operating with missing documents, an unpaid fee or an unclear integration creates problems that are hard to undo later.
+
+**Decision.** The operator creates the fund with exactly one first administrator, who then builds the team and uploads evidence. The operator validates each item, and the fund goes live only when every mandatory item is met.
+
+**Trade-off.** Activation takes longer than a single "create and go" form.
+
+**In the product.** Each fund has two separate states, one for onboarding and one for operation, and the first activation moves both in a single step. A repeated request never creates a second fund or a second invitation.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/emisys/flow-cards.webp", title: "From a request to an active card", caption: "Four profiles take part, and each step has one owner.", width: 3000, height: 1700, light: true }}>
+
+### Each step of a card has one owner
+
+**Problem.** A physical card passes through the fund, the operator, the processor and the member. If any of them can skip a step, nobody knows where a card really is.
+
+**Decision.** The fund requests, the operator forms the batch, the processor makes it and the fund confirms receipt. Stock grows only on that confirmation, and only the member can activate the card.
+
+**Trade-off.** More confirmations, and a card that is delivered but not yet usable until the member acts.
+
+**In the product.** Assigning a card takes exactly one from stock, even if the request is repeated, and an answer that never arrives is shown as indeterminate, never as done.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/emisys/card-lifecycle.webp", title: "A card's life cycle", caption: "The states of a card, and the rules that protect each transition.", width: 3000, height: 1340, light: true }}>
+
+### Every block remembers who set it
+
+**Problem.** A card can be blocked by the fund, by the member, for fraud or because the member left the company. If any block could lift any other, one action could undo a decision someone else made for a good reason.
+
+**Decision.** Each restriction keeps its origin. A fund lifts only the blocks it set, and the card goes back to active only when the last one is lifted.
+
+**Trade-off.** A more complex model behind a simple "blocked" label.
+
+**In the product.** When a fund reports a change in a member, the cards follow a fixed policy: suspended blocks them, withdrawn cancels them, and reactivated lifts only the block that status caused.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/emisys/authorization.webp", title: "One purchase, four parties", caption: "Who decides what in an authorization, and what happens on a timeout.", width: 3000, height: 1080, light: true }}>
+
+### "Indeterminate" is a state, not an error
+
+**Problem.** In a financial product, showing "approved" or "rejected" when the real answer never arrived is worse than showing nothing.
+
+**Decision.** Every operation has an explicit state, and a timeout is recorded as indeterminate until the real result is known. The interface never shows data it does not have.
+
+**Trade-off.** Some screens say "pending confirmation" or "unavailable" for a while, and the platform needs queues to resolve those cases later.
+
+**In the product.** The same rule runs through the whole platform: accepted but not yet confirmed, indeterminate, unconfirmed and pending intervention are states people can see, with the actions each one allows.
+
+</DiagramRow>
+
+### The fund's brand, not the provider's
+
+**Problem.** The card program belongs to the fund. Members should feel they are dealing with their fund, not with a platform they never chose.
+
+**Decision.** The fund portal and the member app are white-label: each fund's logo and brand color load after sign-in. The back-office keeps its own brand.
+
+**Trade-off.** Every component has to work with colors it does not know in advance.
+
+**In the product.** The brand color derives a primary, a soft tint and a darker text shade, and the design system checks the contrast of each pair in both themes.
+
+### The fund comes from the session
+
+**Problem.** A fund user who has to choose "their" fund can choose the wrong one, and a list of funds already tells them more than they should know.
+
+**Decision.** Fund users never see a fund selector. The fund comes from who is signed in, and every query is scoped on the server.
+
+**Trade-off.** Every screen depends on the server resolving the context correctly, so isolation is tested on its own.
+
+**In the product.** Another fund's data looks as if it does not exist, and the active context is always visible in the header.
+
+</DesignDecisionsSection>
+
+<DesignSystemSection title="Design system">
+
+The four apps share one design system, created in Figma by the product designer assigned to the project at Tres Astronautas and documented as a manual of foundations, components and page templates. A person who moves from the back-office to a fund's portal recognizes every piece, even under another brand.
+
+<DiagramRow item={{ src: "/screenshots/emisys/design-system-foundations.webp", title: "Foundations", caption: "Typography, color, status colors, radius and spacing shared by the four apps.", width: 3000, height: 1575, light: true }}>
+
+### Foundations
+
+- **Two typefaces with clear roles.** Space Grotesk, a geometric sans serif, for titles. Satoshi for the interface, forms, tables and data.
+- **A brand with a dark base.** A deep navy for structure, magenta for the main action, orange as a secondary action and yellow as an accent, with a gradient reserved for sign-in.
+- **A dark theme that comes for free.** Each color ramp is simply reversed for the dark theme, so every semantic token is declared once and works in both.
+- **Status colors with fixed meanings.** Success, error, warning and info always mean the same thing, and every pair was checked for contrast in both themes.
+- **A closed radius scale and a dense type scale.** The default sizes of the framework were removed, so only the system's values can be used.
+
+</DiagramRow>
+
+### Built into the apps
+
+I brought the design system into code as a shared component package used by the four apps. The colors, typography and radius became theme tokens with a light and a dark version, and the brand tokens can be replaced at runtime, which is how each fund's color reaches its portal and its member app. New primitives can only be added to the package, never inside an app, so the four apps stay consistent as they grow.
+
+</DesignSystemSection>
+
+<ImplementationSection title="From design to code" nav="Design to code">
+
+As a Senior Software Engineer, my work is turning the design and the architecture into a working product. This section explains how the platform is organized, in terms of what each part does.
+
+<DiagramRow item={{ src: "/diagrams/emisys/architecture.webp", title: "Architecture", caption: "The four apps, the core with its authorization service, and the third parties behind contracts.", width: 3000, height: 1560, light: true }}>
 
 ### Architecture
 
-The project lives in one monorepo with two halves, a Go backend and a web workspace. The architecture follows a C4 design reviewed by an external architecture partner at fixed checkpoints, and changes to it are requested rather than made unilaterally. The backend is hexagonal and sliced by feature: services hold modules per feature and share an internal platform library for configuration, HTTP and gRPC servers, logging, security and safe SQL.
+The four apps talk to the platform through a single gateway, always from their own server side. Behind it, one modular application holds the business: funds, products, rules, members, cards, audit and integrations. A separate service answers every "can this person do this, on this fund?" and denies by default.
 
-Authentication and authorization are kept apart. Identity is delegated to an OpenID Connect provider, and a separate authorization service answers every permission check over gRPC. If it is unreachable, the answer is a service error and never a silent denial. An API gateway routes requests by path prefix to the right service.
+Work that does not need an immediate answer goes through queues, kept in order per card, per fund or per period where order matters. Every third party, Mottika included, sits behind a versioned contract, and Emisys never reads another system's database.
 
-### Domain model
+</DiagramRow>
 
-The domain is large, and the core of it can be read in a few ideas. The fund is the root of isolation: nothing is visible across funds, and a fund moves from draft to active and can be suspended and reactivated. An associate belongs to one fund and links to the products enabled for it. A product is versioned, going from editable to authorized, published and suspended, with immutable codes and a change history.
+<DiagramRow item={{ src: "/diagrams/emisys/lifecycles.webp", title: "Life cycles", caption: "The states of a fund, a product and a card request.", width: 3000, height: 1560, light: true }}>
 
-A card stores only a masked number. Its states are assigned, delivered, active and temporarily blocked, with cancelled as a permanent end, and each block has its own origin, so lifting one never lifts another. The authorization operation and the transaction are separate: the first is the request-response moment, the second accumulates the facts of the purchase over time. Settlement, reconciliation and billing are periods and runs with versioned results, so each figure can be explained later. Custom roles by scope, audit records, documents as evidence and integration events cut across all of it.
+### States people can trust
 
-A few invariants hold everywhere: every critical operation is idempotent, a technical state is never shown as a business state, and no fund can see another's data.
+The domain model describes every entity with a life cycle, its states and who can move each one. A product, for example, goes from editable to validated, authorized and published, and can be suspended or retired, with existing cards following the policy chosen.
 
-### Quality attributes
+These states are what the screens show. Because each transition is explicit, a button appears only when the action is allowed, and an operation that is still waiting for a third party says so.
 
-The quality attributes were derived from principles and traced to their sources. For availability, the authorization path gets the highest tier, with active-passive cores, multi-zone data, zero-downtime deploys and rebuild drills. For latency, authorization is synchronous with a tight budget and no queues on that path, while long jobs are asynchronous with visible progress. Rate limits per fund keep a noisy fund from hurting the others.
-
-On security, every person uses a second factor, access is deny-by-default, the fund context is resolved on the server, data is encrypted in transit and at rest, and no card number, security code or PIN is stored or logged. For resilience, each third party has timeouts and circuit breakers, retries happen only for transient faults, and an unreachable authority always means access is denied. Every effect, and every denial, is logged so that a critical transaction can be rebuilt end to end, and for interoperability contracts are versioned in one catalog, invalid messages are rejected at the edge and idempotency holds at every boundary.
-
-### UX design
-
-The blueprint defines four surfaces: the back-office, the fund portal, the member app and a governance portal where approvers review settlement and collateral. The member app is phone-first, with one task per screen. The key journeys cover a member activating a card and setting a PIN, a fund onboarding members in bulk and getting a result per row, and a fund requesting a batch, receiving it and assigning cards. They also include a member or fund blocking, cancelling or reissuing a card, an operator handling degraded authorizations with only the permitted recovery actions, and an analyst reconciling a period and approving billing, with four-eyes approval where it matters.
-
-Its principles are one shared design system, the fund context always visible, four kinds of message (success, business rejection, technical failure and "pending confirmation") and sensitive data shown only through short-lived protected components.
+</DiagramRow>
 
 ### Contracts first
 
-OpenAPI is the specification, linted automatically, with one contract per capability. Contracts are delivered ahead of each build chunk, and a test fails when a contract operation has no handler.
-
-### The web apps
-
-There are three apps by audience, back-office, funds and associates, sharing a design system of shadcn-based primitives with theme tokens. The funds and associates apps are white-label by fund and load each fund's branding after login. The interface uses Space Grotesk and Satoshi, light and dark themes, Spanish and English, and installable PWAs with an offline route. Server-side auth routes in each app handle login, callback, logout, password reset and one-time codes.
+Each capability has its own OpenAPI contract, written and reviewed before its code and checked automatically. A test fails when a contract operation has no implementation, and the API documentation and the request collections are generated from the contracts, so they never go out of date.
 
 ### Delivery
 
-Delivery was planned as twenty weeks in five chunks, from operational foundation to reconciliation and billing, with a short refinement and design phase up front and a stabilization phase at the end. Security runs in CI: secret scanning over the full history, static analysis with coverage, and vulnerability scans of the source and of every container image, plus separate deploy workflows for each service and app.
+Every change runs automated quality and security checks before it is merged, and each service and app has its own deployment workflow. Testing goes deepest where the risk is highest: authorizations and their corrections, isolation between funds, duplicated accounting and the PIN never being stored.
 
-The quality strategy reviews specs before they are built, and testing goes deepest where risk is highest: authorization and its corrections, accounting duplication, isolation between funds and the PIN never being persisted. Integrations are tested at the contract level, and each defect links back to its spec. The repository also includes maps and rules for AI coding agents, with session folders and reviewer checklists, while people keep control of git.
+### Working with AI agents
 
-### Decisions
+The work is spec-driven, and the repository carries maps and rules for AI coding agents, with session boards, claims on shared paths and reviewer checklists, so several sessions can work in parallel without colliding. People keep control of every commit.
 
-The main decisions, and what each one costs, are summarized below.
+### Technical decisions
 
 | Decision | Why | Trade-off |
 |---|---|---|
-| External parties as integration points | Emisys stays independent of each third party's internals. | Every integration needs a contract and an adapter. |
-| Contract-first APIs | Teams can work in parallel against stable interfaces. | Contracts must be ready before building starts. |
-| Separate authentication and authorization | Identity can change without touching business rules. | One more service to run and call. |
-| Outbox, idempotency and at-least-once delivery | A failure never loses or duplicates an operation. | Receivers must be written to tolerate repeats. |
-| Never show invented data | Users can trust what they see in a financial product. | Some screens show "unavailable" until a third party answers. |
-| Three apps by audience | Each audience gets a focused experience and its own release. | Shared pieces live in a design system, and each app keeps its own types on purpose. |
+| Third parties as integration points | Emisys stays independent of each third party's internals. | Every integration needs a contract and an adapter. |
+| One contract per capability, before code | Teams and parties can work in parallel against stable interfaces. | Slower first delivery. |
+| A separate authorization service | Permissions are decided in one place, the same way for every app. | One more call for each protected action. |
+| Idempotent critical operations | A retry never duplicates a fund, a card or a payment. | Every write needs an operation key. |
+| Indeterminate as its own state | A timeout is never shown as approved or rejected. | Queues and manual states to resolve it later. |
+| Four apps by audience | Each audience gets a focused experience and its own release. | Shared pieces must live in the design system. |
 
 </ImplementationSection>
 
 <ResultsSection title="Results">
 
-Funds and their operators already have the base of the platform: identity and access, funds, products, associates and rules are built, together with the web apps for the back-office, the funds and the associates, with login, password reset, themes, languages and installable PWAs. The next chunks bring card batches and lifecycle, transactions, statements, reconciliation and billing.
+The foundation of the platform is built: identity and access, fund onboarding, products, rules and members, with the four apps, sign-in, password recovery, two languages, light and dark themes and installable apps. Funds can be onboarded and governed end to end, each isolated from the others.
 
-The results the client expects are still to be measured: the business targets stay open until a baseline is taken after go-live. The card-processor integration does not exist yet, and legal sign-off and reconciliation formats are among the dependencies on other parties.
+The project is still in development, so there are no usage figures yet. The next chunks bring the card lifecycle, transactions, statements, reconciliation and invoicing, and the real integrations with the switch, the fund's authorizer and the processor depend on other parties.
 
 </ResultsSection>
+
+<LearningsSection title="Learnings & next steps" nav="Learnings">
+
+### Next steps
+
+- Connect the real switch, authorizer and processor in place of the stand-ins.
+- Build the card lifecycle and transactions on the contracts that are already written.
+- Take the first measurements after go-live as the baseline for the targets.
+
+### What I learned
+
+- **An honest state is a design decision.** Showing "pending confirmation" instead of a guess felt like a worse experience at first. In a financial product it is the opposite: people trust the screens because the screens never pretend.
+- **Contracts let you build before the other side exists.** With the processor and the authorizer not yet available, the contracts and their stand-ins let the apps and the flows move forward, and they made the remaining work easy to see.
+- **White-label is a constraint on every component.** Designing for colors you do not know in advance pushed the design system to rely on tokens everywhere, and it made the dark theme almost free.
+
+</LearningsSection>

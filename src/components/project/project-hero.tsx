@@ -34,19 +34,21 @@ export function ProjectHero({ meta }: { meta: ProjectMeta }) {
         )}
       </div>
 
-      <div className="mt-10 w-full px-6 md:px-12">
-        {meta.cover ? (
-          <CoverImage src={meta.cover} title={`Cover of ${meta.title}`} />
-        ) : (
-          <div
-            role="img"
-            aria-label={`Cover of ${meta.title}`}
-            className="flex aspect-video w-full items-center justify-center rounded-[8px] bg-surface-2 text-[14px] text-ink-faint"
-          >
-            Cover image
-          </div>
-        )}
-      </div>
+      {!meta.hideCover && (
+        <div className="mt-10 w-full px-6 md:px-12">
+          {meta.cover ? (
+            <CoverImage src={meta.cover} title={`Cover of ${meta.title}`} />
+          ) : (
+            <div
+              role="img"
+              aria-label={`Cover of ${meta.title}`}
+              className="flex aspect-video w-full items-center justify-center rounded-[8px] bg-surface-2 text-[14px] text-ink-faint"
+            >
+              Cover image
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="mt-16 w-full px-6 md:px-12">
         <dl data-motion="meta" className="grid grid-cols-2 gap-x-6 gap-y-8 border-y border-line py-8 md:grid-cols-[1fr_1fr_1fr_2fr]">
