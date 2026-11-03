@@ -1,6 +1,6 @@
 import type { MDXComponents } from "mdx/types";
 import { ProjectTable } from "@/components/project/project-table";
-import { DiagramGallery, DiagramRow, ScreenshotGallery } from "@/components/project/diagram-gallery";
+import { DiagramGallery, DiagramRow, ImageGrid, ScreenshotGallery } from "@/components/project/diagram-gallery";
 import { PhoneGallery, MotionGallery } from "@/components/project/phone-gallery";
 import { PersonaCards } from "@/components/project/persona-cards";
 import {
@@ -14,6 +14,14 @@ import {
   ImplementationSection,
   DecisionsSection,
   LimitationsSection,
+  ContextSection,
+  ProblemSection,
+  ProcessSection,
+  DesignDecisionsSection,
+  DesignSystemSection,
+  LearningsSection,
+  FinalProductSection,
+  Pending,
 } from "@/components/project/sections";
 
 // Tipografía y elementos del Markdown dentro de los proyectos (tema claro, columna de lectura).
@@ -30,7 +38,7 @@ const typography: MDXComponents = {
     </ul>
   ),
   ol: ({ children }) => (
-    <ol className="flex list-decimal flex-col gap-3 pl-6 text-[18px] leading-[1.6] text-ink-soft marker:text-ink-muted">
+    <ol className="flex list-decimal flex-col gap-3 pl-6 text-[18px] leading-[1.6] text-ink-soft marker:text-ink-muted [&>li]:pl-1 [&>li]:before:hidden">
       {children}
     </ol>
   ),
@@ -75,6 +83,7 @@ export function useMDXComponents(): MDXComponents {
     ...typography,
     DiagramGallery,
     DiagramRow,
+    ImageGrid,
     ScreenshotGallery,
     PhoneGallery,
     MotionGallery,
@@ -89,5 +98,13 @@ export function useMDXComponents(): MDXComponents {
     ImplementationSection,
     DecisionsSection,
     LimitationsSection,
+    ContextSection,
+    ProblemSection,
+    ProcessSection,
+    DesignDecisionsSection,
+    DesignSystemSection,
+    LearningsSection,
+    FinalProductSection,
+    Pending,
   };
 }

@@ -16,6 +16,8 @@ export type ProjectMeta = {
   stack: string[];
   highlights: ProjectHighlight[];
   cover?: string;
+  // Public site of the product, when it has one.
+  url?: string;
 };
 
 type ProjectModule = { default: ComponentType<{ components?: MDXComponents }>; frontmatter: Record<string, unknown> };

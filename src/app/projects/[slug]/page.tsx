@@ -5,6 +5,7 @@ import { ProjectHero } from "@/components/project/project-hero";
 import { SummarySection } from "@/components/project/sections";
 import { ProjectNav } from "@/components/project/project-nav";
 import { ProjectSidebar } from "@/components/project/project-sidebar";
+import { ProjectMotion } from "@/components/project/project-motion";
 
 export const dynamicParams = false;
 
@@ -34,6 +35,7 @@ export default async function ProjectPage({ params }: PageProps) {
 
   return (
     <article className="lg:pl-64">
+      <ProjectMotion key={meta.slug} />
       <ProjectSidebar />
       <ProjectHero meta={meta} />
       <div className="pb-8">

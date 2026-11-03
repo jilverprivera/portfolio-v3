@@ -3,7 +3,10 @@
 import { ImageThumb, type ModalImage } from "@/components/project/image-modal";
 import { DeviceScene, type Tone } from "@/components/project/phone-gallery";
 
-type Item = ModalImage & { caption?: string };
+// `light` is for diagrams drawn for a light background: they sit on the page color instead of the dark stage.
+type Item = ModalImage & { caption?: string; light?: boolean };
+
+const stage = (item: Item) => (item.light ? "bg-paper" : "bg-stage");
 
 // Diagrams exported from the architecture docs, one per row. Click one to open it in the large viewer.
 export function DiagramGallery({ items }: { items: Item[] }) {
@@ -13,7 +16,7 @@ export function DiagramGallery({ items }: { items: Item[] }) {
         <figure key={item.src} className="flex flex-col gap-4">
           <ImageThumb
             image={item}
-            className="rounded-[8px] border border-line bg-stage p-4 hover:border-line-strong"
+            className={`rounded-[8px] border border-line ${stage(item)} p-4 hover:border-line-strong`}
             imgClassName="mx-auto h-auto max-h-[720px] w-auto max-w-full object-contain"
           />
           <figcaption className="flex flex-col gap-1">
@@ -36,7 +39,7 @@ export function DiagramRow({ item, children }: { item: Item; children: React.Rea
       <div className="flex flex-col gap-4">
         <ImageThumb
           image={item}
-          className="rounded-[8px] border border-line bg-stage p-4 hover:border-line-strong"
+          className={`rounded-[8px] border border-line ${stage(item)} p-4 hover:border-line-strong`}
           imgClassName="mx-auto h-auto max-h-[720px] w-auto max-w-full object-contain"
         />
         <figcaption className="flex flex-col gap-1">
@@ -138,6 +141,28 @@ export function ScreenshotGallery({ items }: { items: Screenshot[] }) {
           </figure>
         );
       })}
+    </div>
+  );
+}
+
+// A grid of images, two per row from medium screens up, each with a short title and caption.
+// Click one to open it in the large viewer.
+export function ImageGrid({ items }: { items: Item[] }) {
+  return (
+    <div className="grid gap-x-8 gap-y-12 md:grid-cols-2">
+      {items.map((item) => (
+        <figure key={item.src} className="flex flex-col gap-4">
+          <ImageThumb
+            image={item}
+            className="block w-full overflow-hidden rounded-[8px] border border-line hover:border-line-strong"
+            imgClassName="block h-auto w-full"
+          />
+          <figcaption className="flex flex-col gap-1">
+            <span className="text-[16px] font-medium text-ink">{item.title}</span>
+            {item.caption && <span className="text-[15px] leading-[1.5] text-ink-muted">{item.caption}</span>}
+          </figcaption>
+        </figure>
+      ))}
     </div>
   );
 }

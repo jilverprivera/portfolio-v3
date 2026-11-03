@@ -6,21 +6,33 @@ import { CoverImage } from "@/components/project/cover-image";
 export function ProjectHero({ meta }: { meta: ProjectMeta }) {
   return (
     <header className="pt-10 md:pt-12">
-      <nav aria-label="Breadcrumb" className="w-full px-6 text-[15px] md:px-12">
-        <ol className="flex items-center gap-2 text-ink-faint">
-          <li>
-            <Link href="/" className="transition-colors hover:text-ink">
-              Home
-            </Link>
-          </li>
-          <li aria-hidden="true">/</li>
-          <li>
-            <h1 aria-current="page" className="text-[15px] font-normal text-ink">
-              {meta.title}
-            </h1>
-          </li>
-        </ol>
-      </nav>
+      <div className="flex w-full flex-wrap items-center justify-between gap-4 px-6 text-[15px] md:px-12">
+        <nav aria-label="Breadcrumb">
+          <ol className="flex items-center gap-2 text-ink-faint">
+            <li>
+              <Link href="/" className="transition-colors hover:text-ink">
+                Home
+              </Link>
+            </li>
+            <li aria-hidden="true">/</li>
+            <li>
+              <h1 aria-current="page" className="text-[15px] font-normal text-ink">
+                {meta.title}
+              </h1>
+            </li>
+          </ol>
+        </nav>
+        {meta.url && (
+          <a
+            href={meta.url}
+            target="_blank"
+            rel="noreferrer"
+            className="text-ink underline decoration-ink-faint underline-offset-4 transition-colors hover:decoration-ink"
+          >
+            Visit {new URL(meta.url).hostname.replace(/^www\./, "")} <span aria-hidden="true">↗</span>
+          </a>
+        )}
+      </div>
 
       <div className="mt-10 w-full px-6 md:px-12">
         {meta.cover ? (
@@ -37,7 +49,7 @@ export function ProjectHero({ meta }: { meta: ProjectMeta }) {
       </div>
 
       <div className="mt-16 w-full px-6 md:px-12">
-        <dl className="grid grid-cols-2 gap-x-6 gap-y-8 border-y border-line py-8 md:grid-cols-[1fr_1fr_1fr_2fr]">
+        <dl data-motion="meta" className="grid grid-cols-2 gap-x-6 gap-y-8 border-y border-line py-8 md:grid-cols-[1fr_1fr_1fr_2fr]">
           {[
             ["Year", meta.year],
             ["Type", meta.type],
@@ -46,6 +58,22 @@ export function ProjectHero({ meta }: { meta: ProjectMeta }) {
             <div key={label}>
               <dt className="font-mono text-[13px] uppercase tracking-[0.1em] text-ink-faint">{label}</dt>
               <dd className="mt-3 text-[17px] leading-[1.5] text-ink">{value}</dd>
+              {/* The website shares the status column, so the grid keeps its four columns. */}
+              {label === "Status" && meta.url && (
+                <>
+                  <dt className="mt-8 font-mono text-[13px] uppercase tracking-[0.1em] text-ink-faint">Website</dt>
+                  <dd className="mt-3 text-[17px] leading-[1.5]">
+                    <a
+                      href={meta.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-ink underline decoration-ink-faint underline-offset-4 transition-colors hover:decoration-ink"
+                    >
+                      {new URL(meta.url).hostname.replace(/^www\./, "")} <span aria-hidden="true">↗</span>
+                    </a>
+                  </dd>
+                </>
+              )}
             </div>
           ))}
           <div className="col-span-2 md:col-span-1">

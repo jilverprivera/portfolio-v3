@@ -151,10 +151,96 @@ body {
   transform-origin: center;
 }
 
+@keyframes persona-head {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  30% {
+    transform: rotate(-2deg);
+  }
+  70% {
+    transform: rotate(1.5deg);
+  }
+}
+
+@keyframes persona-breathe {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(1.025);
+  }
+}
+
+@keyframes persona-look {
+  0%,
+  28%,
+  100% {
+    transform: translateX(0);
+  }
+  34%,
+  52% {
+    transform: translateX(1.4px);
+  }
+  58%,
+  76% {
+    transform: translateX(-1.4px);
+  }
+  82% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes persona-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* The head turns around the neck and the shoulders rise from the bottom of the avatar. */
+.persona-head {
+  animation: persona-head 6s ease-in-out infinite;
+  transform-box: view-box;
+  transform-origin: 100px 150px;
+}
+
+.persona-breathe {
+  animation: persona-breathe 4s ease-in-out infinite;
+  transform-box: view-box;
+  transform-origin: 100px 220px;
+}
+
+.persona-look {
+  animation: persona-look 7s ease-in-out infinite;
+}
+
+.persona-pulse {
+  animation: persona-pulse 1.8s ease-in-out infinite;
+}
+
+/* On hover the persona reacts: the head turns a little faster and the object it holds moves. */
+.group:hover .persona-head {
+  animation-duration: 2.4s;
+}
+
+.group:hover .persona-tool {
+  animation-duration: 1.2s;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .persona-float,
   .persona-blink,
-  .persona-tool {
+  .persona-tool,
+  .persona-head,
+  .persona-breathe,
+  .persona-look,
+  .persona-pulse {
     animation: none;
   }
 }

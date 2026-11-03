@@ -108,6 +108,7 @@ export function ImageThumb({
         type="button"
         onClick={() => setOpen(true)}
         aria-label={`Open ${image.title} in a large viewer`}
+        data-motion="image"
         className={`cursor-zoom-in text-left transition-colors ${className}`}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
