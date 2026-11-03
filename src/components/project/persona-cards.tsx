@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
-type Tool = "bag" | "register" | "box" | "coat" | "tie" | "map" | "headset" | "magnifier" | "chip" | "chart";
-type Hair = "short" | "long" | "bun" | "cap" | "curly" | "bob";
+type Tool = "bag" | "register" | "box" | "wrench" | "coat" | "tie" | "map" | "headset" | "magnifier" | "chip" | "chart";
+type Hair = "short" | "long" | "bun" | "cap" | "hardhat" | "curly" | "bob";
 
 export type Persona = {
   name: string;
@@ -146,6 +146,20 @@ function HairFront({ hair, color, uid }: { hair: Hair; color: string; uid: strin
           <path d="M72 93c18-3 38-3 56 0" stroke="#fff" strokeOpacity="0.18" strokeWidth="1.5" fill="none" strokeLinecap="round" />
         </>
       );
+    case "hardhat":
+      return (
+        <>
+          {fill("M68 102c-1-6 0-10 2-12h60c2 2 3 6 2 12-3-5-6-7-9-8H77c-3 1-6 3-9 8z")}
+          <path d="M66 90c0-28 15-42 34-42s34 14 34 42z" fill="#f5b82e" />
+          <path d="M66 90c0-28 15-42 34-42s34 14 34 42z" fill={`url(#hair-${uid})`} />
+          <path d="M95 48.500c3-.700 7-.700 10 0V90H95z" fill="#d9951c" />
+          <path d="M80 60c-5 8-7 18-7 30M120 60c5 8 7 18 7 30" stroke="#000" strokeOpacity="0.12" strokeWidth="1.3" fill="none" />
+          <path d="M78 62c5-6 10-8 15-9" stroke="#fff" strokeOpacity="0.45" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+          <path d="M58 92c0-4 4-6 8-6h68c4 0 8 2 8 6s-4 6-8 6H66c-4 0-8-2-8-6z" fill="#f5b82e" />
+          <path d="M58 92c0-4 4-6 8-6h68c4 0 8 2 8 6s-4 6-8 6H66c-4 0-8-2-8-6z" fill="#000" opacity="0.14" />
+          <path d="M64 89.500h72" stroke="#fff" strokeOpacity="0.3" strokeWidth="1.5" strokeLinecap="round" />
+        </>
+      );
     default:
       return (
         <>
@@ -193,6 +207,17 @@ function ToolShape({ tool }: { tool: Tool }) {
           <rect x="112" y="200" width="22" height="12" rx="2" fill="#fff" opacity="0.85" />
           <path d="M116 204h14M116 208h9" stroke="#8a8273" strokeWidth="1.2" />
           <rect x="58" y="180" width="84" height="46" rx="4" fill="#000" opacity="0.06" />
+        </g>
+      );
+    case "wrench":
+      return (
+        <g className="persona-tool">
+          <g transform="rotate(35 150 195)">
+            <path d="M145 152v12h10v-12a13 13 0 1 1-10 0z" fill="#c3c8d2" stroke="#6b7180" strokeWidth="1.5" strokeLinejoin="round" />
+            <rect x="144.500" y="174" width="11" height="48" rx="5.500" fill="#c3c8d2" stroke="#6b7180" strokeWidth="1.5" />
+            <rect x="144.500" y="192" width="11" height="30" rx="5.500" fill={ACCENT} />
+            <path d="M147.500 178v14" stroke="#fff" strokeOpacity="0.6" strokeWidth="2" strokeLinecap="round" />
+          </g>
         </g>
       );
     case "coat":

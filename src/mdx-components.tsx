@@ -21,6 +21,7 @@ import {
   DesignSystemSection,
   LearningsSection,
   FinalProductSection,
+  CaseSection,
   Pending,
 } from "@/components/project/sections";
 
@@ -105,6 +106,7 @@ export function useMDXComponents(): MDXComponents {
     DesignSystemSection,
     LearningsSection,
     FinalProductSection,
+    CaseSection,
     Pending,
   };
 }

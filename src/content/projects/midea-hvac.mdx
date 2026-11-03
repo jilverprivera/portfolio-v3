@@ -1,12 +1,14 @@
 ---
 title: "Midea HVAC"
 slug: "midea-hvac"
-summary: "A bilingual ecosystem platform for Midea Germany's HVAC business: a portal for installers, technicians and trainers, an admin back-office and an API with SSO, role-based access, a product catalog, a documentation center and a thermal load calculator. A client project delivered at Tres Astronautas."
+summary: "A bilingual ecosystem platform for Midea Germany's HVAC business: a portal where installers, technicians, trainers, sales people and wholesalers find products, manuals, training, commissioning and a thermal load calculator, and a back-office where Midea's team manages everything they see. A client project delivered at Tres Astronautas."
 type: "Work project · Tres Astronautas"
 date: "2026-09"
 year: "2026"
-status: "Platform build"
+status: "In production"
 featured: true
+cover: "/screenshots/midea-hvac/cover.webp"
+url: "https://hvac-midea.com"
 stack:
   - "Nest.js"
   - "PostgreSQL and Prisma ORM"
@@ -16,154 +18,445 @@ stack:
   - "TanStack Query"
   - "next-intl"
   - "Google Cloud Storage"
-  - "SendGrid"
   - "Cloud Run and Firebase Hosting"
   - "Turborepo"
 highlights:
-  - value: "11"
+  - value: "10"
     label: "capabilities"
-  - value: "~125"
-    label: "API endpoints"
-  - value: "63"
-    label: "audit event types"
+  - value: "7"
+    label: "user profiles"
+  - value: "2"
+    label: "portals, in German and English, on desktop and phone"
 ---
 
 <SummarySection title="Summary">
 
-This is an ecosystem platform for Midea Germany's HVAC business. It brings installers, technicians, trainers and sales people into one portal, and gives Midea's team a back-office to manage everything they see.
+Midea HVAC is an ecosystem platform for Midea Germany's HVAC business. It brings the professionals who sell, install and maintain Midea's air conditioning and heat pump equipment into one portal, and gives Midea's team a back-office to manage everything they see.
 
-It is a work project, not a personal one: it was built at Tres Astronautas for a client. The monorepo contains a user portal, an admin back-office and the REST API behind both, in German and English.
+Installers, technicians, trainers, sales people and wholesalers need the right product, the current manual or the next training, and without a shared place that depends on emails, attachments and spreadsheets. The platform puts all of that in one place, with the language and the permissions that each audience needs.
 
-The portal's most distinctive tool is a thermal load calculator that sizes air-conditioning equipment for a building, room by room.
+The product is made of two portals on one platform:
+
+- **The HVAC Solution Portal**, for professionals: the product catalog, the documentation of each model, a thermal load calculator, training and roadshows, and commissioning. It works on the desktop and on the phone.
+- **The back-office**, for Midea's team: users, roles and permissions, products, the documentation center, content settings and the audit log.
+
+Everything works in German, the default language, and in English. The most distinctive tool is the thermal load calculator, which sizes air conditioning equipment for a building room by room and suggests real products from the catalog.
+
+I worked on the platform at Tres Astronautas for a client, as a Senior Software Engineer, in a team of five over three months. I built the API and the back-office, and later refactored part of the HVAC Solution Portal.
 
 </SummarySection>
 
-<ChallengeSection title="Challenge & strategy">
+<ContextSection title="Context & role">
 
-### Challenge
+- **Client:** Midea Germany, HVAC business
+- **Company:** Tres Astronautas
+- **Product:** A portal for HVAC professionals and a back-office for Midea's team, on one platform
+- **Languages:** German by default, and English
+- **My role:** Senior Software Engineer
+- **Team:** 1 product owner, 2 software engineers, 1 product designer and 1 QA
+- **What I built:** The API and the back-office, and the refactor of several views of the HVAC Solution Portal
+- **Duration:** 3 months
 
-Midea's HVAC business depends on a network of installers, technicians and trainers who need current product information, manuals, training and a way to size equipment correctly. Doing that across emails, PDFs and spreadsheets was slow and hard to keep consistent.
+</ContextSection>
 
-### Strategy
+<ProblemSection title="Problem">
 
-The proposal was to put it all in one place: a portal where installers, technicians, trainers and sales people share products, documentation, training and commissioning. People would arrive with the Midea account they already have through single sign-on and be provisioned automatically, with the language and permissions that each audience needs.
+Midea's HVAC business depends on a network of professionals who need current product information, manuals, training and a way to size equipment correctly. Without one shared place for it, that information depends on emails, attachments and whoever happens to have the latest version, and it is slow and hard to keep consistent.
 
-Several decisions followed from that. Permissions are stored in the database and edited from the admin, so roles can change without a deploy. The platform is bilingual by design: German is the default locale, English is available everywhere, and domain content is stored in both languages. And every business action leaves a record of who did what and whether it succeeded.
+The scope of the platform shows where that hurts:
 
-</ChallengeSection>
+- **Installers and technicians** cannot be sure they have the latest manual or the right specifications for a model, especially on the job site.
+- **Sales people** size equipment by hand or with spreadsheets, and every proposal depends on whoever makes it.
+- **Trainers** organize trainings and roadshows with no shared agenda, and requests from installers arrive through scattered channels.
+- **Midea's team** has no single place to publish a product, its documents and its media once, for every audience and in two languages.
 
-<PersonasSection title="User persona">
+And without a record of who changed what, nobody can answer for a product or a manual once more people and more content join.
 
-Seven profiles use the platform. The first six work in the web portal and the last one works in the admin back-office. They match the system roles seeded in the database, and an admin edits what each role can do. Sales, installers and technicians also have an Admin variant, and a Super Admin role reaches both portals.
+The installer carries most of that weight. It is the default profile of every new professional and the one that crosses the most flows: it looks up products and manuals, sizes equipment, requests commissionings and asks for training, often from the phone on a job site. Most of the platform was designed around getting that person the right answer quickly.
+
+</ProblemSection>
+
+<PersonasSection title="Users & context of use" nav="Users">
+
+Seven profiles use the platform. The first six work in the HVAC Solution Portal and the last one works in the back-office. Each profile matches a role that an administrator can edit, and sales, installers and technicians also have an admin variant for people who coordinate a team.
 
 <PersonaCards
   items={[
-    { name: "Installer", does: "Looks up products and manuals, sizes equipment with the calculator, requests a commissioning of the installation and asks a trainer for training. It is the default role of a new user who arrives by single sign-on.", where: "Web portal", tool: "box", hair: "cap", skin: "#c68863", shirt: "#e8743b", hairColor: "#222", },
-    { name: "Technician", does: "Finds the documentation of each model, its compatibilities and its combinations, and subscribes to trainings and roadshows.", where: "Web portal", tool: "chip", hair: "short", skin: "#e2ad88", shirt: "#4b7bec", hairColor: "#2a2a2a", glasses: true, },
-    { name: "Trainer", does: "Creates and edits training events, answers training requests from installers, manages participants and issues certificates.", where: "Web portal", tool: "chart", hair: "long", skin: "#d9a07c", shirt: "#27a36d", hairColor: "#2a1a14", glasses: true, },
-    { name: "Sales team", does: "Uses the catalog and the calculator to propose the right equipment to a customer, and runs the roadshow agenda.", where: "Web portal", tool: "tie", hair: "curly", skin: "#a8704d", shirt: "#e0566b", hairColor: "#1c1c1c", },
-    { name: "Wholesaler", does: "Browses the catalog and reads the wholesaler manuals attached to each product.", where: "Web portal", tool: "bag", hair: "short", skin: "#cf9468", shirt: "#e6a23c", hairColor: "#2a2a2a", },
-    { name: "Commissioner", does: "Follows the commissioning agenda, accepts or denies each request, then certifies the installation with a photo or denies the certification.", where: "Web portal", tool: "magnifier", hair: "bob", skin: "#f0c8a0", shirt: "#7a7f8c", hairColor: "#7a3b2a", },
-    { name: "Back-office administrator", does: "Manages users, roles and their permissions, products, documentation, landing and legal settings, and reads the audit log.", where: "Admin back-office", tool: "headset", hair: "bun", skin: "#f0c8a0", shirt: "#8e5be0", hairColor: "#5a3a22", },
+    { name: "Installer", does: "Looks up products and manuals, sizes equipment with the calculator, requests the commissioning of an installation and asks a trainer for training. It is the default profile of a new professional.", where: "HVAC Solution Portal, desktop and phone", tool: "wrench", hair: "hardhat", skin: "#c68863", shirt: "#e8743b", hairColor: "#222", },
+    { name: "Technician", does: "Finds the documentation of each model, its compatibilities and its combinations, and subscribes to trainings and roadshows.", where: "HVAC Solution Portal, desktop and phone", tool: "chip", hair: "short", skin: "#e2ad88", shirt: "#4b7bec", hairColor: "#2a2a2a", glasses: true, },
+    { name: "Trainer", does: "Creates and edits training events, answers training requests from installers, manages participants and issues certificates.", where: "HVAC Solution Portal", tool: "chart", hair: "long", skin: "#d9a07c", shirt: "#27a36d", hairColor: "#2a1a14", glasses: true, },
+    { name: "Sales team", does: "Uses the catalog and the calculator to propose the right equipment to a customer, and runs the roadshow agenda.", where: "HVAC Solution Portal", tool: "tie", hair: "curly", skin: "#a8704d", shirt: "#e0566b", hairColor: "#1c1c1c", },
+    { name: "Wholesaler", does: "Browses the catalog and reads the wholesaler manuals attached to each product.", where: "HVAC Solution Portal", tool: "bag", hair: "short", skin: "#cf9468", shirt: "#e6a23c", hairColor: "#2a2a2a", },
+    { name: "Commissioner", does: "Follows the commissioning agenda, accepts or denies each request, then certifies the installation with a photo or denies the certification.", where: "HVAC Solution Portal, desktop and phone", tool: "magnifier", hair: "bob", skin: "#f0c8a0", shirt: "#7a7f8c", hairColor: "#7a3b2a", },
+    { name: "Back-office administrator", does: "Manages users, roles and their permissions, products, documentation, landing and legal content, and reads the audit log.", where: "Back-office", tool: "headset", hair: "bun", skin: "#f0c8a0", shirt: "#8e5be0", hairColor: "#5a3a22", },
   ]}
 />
 
+### The moments that shaped the design
+
+- **The installer on the job site** checks a specification or a manual from the phone, often in the middle of an installation. The catalog and the documents had to work on a small screen as well as on the desktop.
+- **The sales person in front of a customer** needs a sizing they can trust and explain. The calculator had to be short, guided and end in real products.
+- **The commissioner at the installation** certifies the work with a photo and a note, so that step had to be quick and leave a record.
+- **Midea's team** publishes a product once, with its specifications, media and documents, for several audiences and in two languages.
+
+These moments come from the scope of the project and from what was reviewed in the progress meetings, not from field research with installers or commissioners. They worked as a check for every screen: if a flow did not hold up in one of these moments, it went back to design.
+
 </PersonasSection>
 
-<FeaturesSection title="Features">
+<ObjectivesSection title="Goals, success metrics & constraints" nav="Goals & constraints">
+
+### Goals
+
+1. Put products, documentation, training and commissioning in one place for every professional.
+2. Give each audience only what it needs, with permissions Midea's team can change without a new release.
+3. Let professionals size equipment correctly and consistently, room by room.
+4. Make every piece of content available in German and English.
+5. Keep a record of every business action.
+
+### How success would be measured
+
+No success metrics were agreed with the client during the project. These are the ones I would propose to know whether the platform is meeting its goals, each tied to one of them:
+
+| Goal | Metric | What it tells us |
+|---|---|---|
+| One place for professionals | Weekly active professionals per profile, and share of new users who complete their profile | Whether professionals actually use the portal instead of emails and attachments. |
+| Current documentation | Manual downloads per product, and searches that end without a result | Whether people find the document they need, and which ones are missing. |
+| Consistent sizing | Calculations completed per week, and share that end in a product page or a saved result | Whether the calculator is used in real proposals. |
+| Training and commissioning | Time from request to accepted commissioning, and seats filled per training | Whether requests move faster and events reach their audience. |
+| Content in two languages | Share of content with both languages written by a person | How much the team relies on automatic translation. |
+
+### Constraints
+
+- **Seven profiles** with very different needs, sharing one platform and one catalog.
+- **Two languages** from the start, for the interface and for every piece of content.
+- **Permissions that change** as Midea's organization changes, without waiting for a release.
+- **Large files**, such as manuals, videos and 3D models, that had to reach professionals reliably.
+- **Three months and two engineers.** The whole platform, from the API to both portals, had to fit in a short timeline, so the flows each profile uses every day came first.
+- **A large organization.** Some decisions and inputs, such as content, access or the sign-in with the Midea account, went through several levels of approval, and some depended on Midea's global teams. The platform was built so each piece could keep moving while it waited, for example with its own sign-in ready in case the Midea account was not.
+- **Changing points of contact.** The person leading the project on the client side changed more than once, so decisions and context were kept in writing to carry over from one to the next.
+- **Working across languages.** The team and the client worked in a language that was not the first one for either side, so agreements were confirmed in writing and against the screens, not only in calls.
+
+</ObjectivesSection>
+
+<ProcessSection title="Process & prioritization" nav="Process">
+
+### From problem to scope
+
+The work started from the profiles and what each one repeats every day, and from the flows that cross from one profile to another, such as a commissioning that starts with an installer and ends with a commissioner, or a training request that becomes an event.
+
+That map turned into the product's modules, and into two portals: one for the professionals and one for the team that manages what they see.
+
+### How the team worked
+
+Twice a week we met to review progress. Each review covered what had been built since the last one, the next flows to tackle and any change in scope, which kept design, product and engineering aligned in a short project with a small team, and let priorities shift without losing weeks.
+
+### What the platform covers
 
 | Area | What it enables |
 |---|---|
-| Authentication | Email and password with a one-time code, assisted registration by an admin, public self-registration, password reset, forced password change on first login and rotating refresh tokens. |
-| Single sign-on | OAuth 2.0 against Midea's identity provider, with automatic user provisioning and a role-selection step for new users. |
-| Roles and permissions | Roles mapped to modules and to actions (view, create, edit, delete, use, download), enforced on the server for each request. |
-| Product catalog | A taxonomy of categories, subcategories, series and tiers, with product sheets, compatibilities, combinations, 3D models and multimedia, plus a guided create and edit wizard. |
-| Documentation center | Manuals and resources with versions, independent publishing per resource and per version, and assignment to several products. |
-| Thermal calculator | Room-by-room load estimation, indoor and outdoor unit suggestions, multi-split combinations, saved and shareable results, and a PDF export. |
-| Training and roadshows | Events with participants, trainer statistics and certificates, with scheduled jobs that start and close events automatically. |
-| Commissioning | Installers request a commissioning, a commissioner accepts, performs and certifies it with photo evidence. |
-| Admin settings | A landing carousel, social links and legal documents such as terms, privacy and the imprint. |
-| Audit log | An event log with status, priority and actor, and an admin screen with dashboard statistics. |
+| Accounts | Sign-in with a one-time code, public registration with the choice of a profile, accounts created by an admin, password recovery. Sign-in with the Midea account is built but not yet enabled. |
+| Roles and permissions | Roles mapped to modules and to actions (view, create, edit, delete, use and download), edited from the back-office and applied right away. |
+| Product catalog | Categories, subcategories, series and tiers, with product sheets, specifications, compatibilities, media, 3D models and a guided create and edit wizard. |
+| Documentation center | Manuals and resources with versions, published one by one, assigned to several products and grouped by audience. |
+| Thermal calculator | Room-by-room load estimation, indoor and outdoor unit suggestions, multi split combinations, saved and shareable results, and a PDF export. |
+| Training and roadshows | Events with participants, requests from installers, trainer statistics and certificates, with events that start and close on their own. |
+| Commissioning | Installers request a commissioning, and a commissioner accepts, performs and certifies it with photo evidence. |
+| Content settings | A landing carousel, social links and legal documents such as the terms, the privacy policy and the imprint. |
+| Audit log | An event log with status, priority and actor, and a back-office screen with statistics. |
+| Two languages | German and English for the interface and for every piece of content. |
 
-### The thermal calculator
+### What waited and what was left out
 
-The calculation estimates the load of each room from its volume and from the people in it, then adds the rooms together. It then compares that load with the nominal capacity of each candidate indoor unit and classifies the match as undersized, optimal or acceptable. For multi-split systems it picks the smallest outdoor unit that covers the load and has a valid combination, and spreads the load over several outdoor units when one is not enough. The method is documented with worked examples in the repository.
+- **Sign-in with the Midea account** was left out of the launch. The integration with Midea's identity provider was built on the platform side, but access to its production environment was never shared, so it could not be turned on. The platform launched with its own sign-in, with one-time codes and password recovery, and the integration stays ready for when that access arrives.
+- **Some statistics**, such as the roadshow ones, still show placeholder data.
+- **The calculator** is a simplified model for now.
 
-</FeaturesSection>
+</ProcessSection>
 
-<ImplementationSection title="Implementation & final design">
+<DesignDecisionsSection title="Design decisions">
 
-<DiagramRow item={{ src: "/diagrams/midea-hvac/architecture.svg", title: "Architecture", caption: "The portal and the admin, the NestJS API with its ten modules, and the services behind it.", width: 1200, height: 710 }}>
+The decisions that most shaped the experience, made by the team and designed by the product designer of the project, part of the Tres Astronautas team. Each one starts from a real situation, explains what was chosen and what it cost. Click any image to open it larger. The screens are in English, and every one of them also exists in German.
+
+<DiagramRow item={{ src: "/screenshots/midea-hvac/roles.webp", title: "Each profile sees what it needs", caption: "The portal for professionals and the back-office, with what each profile opens.", width: 3000, height: 1200, light: true }}>
+
+### Two portals, one per audience
+
+**Problem.** Professionals look for products, documents and events. Midea's team creates and manages them. Putting both in one interface would make every screen harder to use.
+
+**Decision.** Two portals on one platform: the HVAC Solution Portal for professionals and a back-office for Midea's team, with one design system shared by both.
+
+**Trade-off.** Two applications to design, build and maintain.
+
+**In the product.** Inside the portal, the menu and the screens change with the profile. An installer sees the calculator and commissioning, a trainer sees the training panel and a commissioner sees the commissioning agenda. A role can open one portal or both.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/midea-hvac/roles-annotated.webp", title: "Creating a role", caption: "A matrix of modules and actions, edited from the back-office.", width: 3000, height: 1475, light: true }}>
+
+### Permissions that change without a release
+
+**Problem.** Midea's organization changes: new teams, new responsibilities, new partners. Fixed roles in code would need a new release for every change.
+
+**Decision.** Roles are created and edited in the back-office, as a matrix of modules and actions, and each role decides which portal it can open.
+
+**Trade-off.** A matrix is powerful but easy to get wrong, so the screen has to make each permission clear.
+
+**In the product.** The portals hide what a person cannot use, and every action is also checked on the server, so a hidden button is never the only protection. Removing a role asks first which role its users move to.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/midea-hvac/flow-product.webp", title: "Editing a product", caption: "Seven steps, from general data to marketing.", width: 3000, height: 1120, light: true }}>
+
+### A wizard for a product with many parts
+
+**Problem.** A product has general data, model numbers, specifications with three values each, compatibilities, a gallery, 3D models, documents and marketing content. One long form would be overwhelming.
+
+**Decision.** A guided wizard in seven steps, each with one topic, and a progress bar that shows where the editor is.
+
+**Trade-off.** More steps to go through, even when only one part of the product changes.
+
+**In the product.** Specifications are entered as minimum, nominal and maximum values, compatibilities are chosen from the catalog, and large media go straight to storage while the editor keeps working.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/midea-hvac/flow-documentation.webp", title: "Documentation center", caption: "A manual from the back-office to the product page.", width: 3000, height: 1250, light: true }}>
+
+### Documents grouped by who reads them
+
+**Problem.** The same product has catalogs for customers, installation guides for installers and error codes for technicians. A single list of files would mix them up.
+
+**Decision.** Each resource has an audience, a subsection, a language and a version, and the product page groups them by audience.
+
+**Trade-off.** Editors have to classify each document when they upload it.
+
+**In the product.** A manual is uploaded once and assigned to several products. Each version is published on its own, so a new one can be prepared without hiding the current one.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/midea-hvac/flow-commissioning.webp", title: "Commissioning", caption: "From the installer's request to the certified installation.", width: 3000, height: 1250, light: true }}>
+
+### One person asks, another resolves
+
+**Problem.** Commissioning an installation involves an installer, a technician and a visit, and without a shared tool it falls to phone calls and emails.
+
+**Decision.** The installer picks a day, a technician and an address in one screen. The commissioner sees it in an agenda, accepts or denies it, and certifies the visit with a photo.
+
+**Trade-off.** Both sides need an account and have to use the portal for the flow to work.
+
+**In the product.** Each request moves through a fixed set of states, both sides see the same status, and every step is recorded.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/midea-hvac/flow-training.webp", title: "Training and roadshows", caption: "Requests from installers, the trainer's panel and the agenda.", width: 3000, height: 1250, light: true }}>
+
+### Requests that become events
+
+**Problem.** Without a shared tool, installers ask for training through scattered channels and trainers have no shared agenda.
+
+**Decision.** Installers send a request from the portal, and the trainer turns it into an event or rejects it. Professionals see one agenda of trainings and roadshows and subscribe while there are seats.
+
+**Trade-off.** Trainers manage requests and events in two places of the same panel.
+
+**In the product.** Events start and close on their own at their scheduled times, and certificates are issued when they end.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/midea-hvac/bilingual.webp", title: "Two languages", caption: "The same screen in German and in English.", width: 3000, height: 1250, light: true }}>
+
+### Two languages as data, not only as labels
+
+**Problem.** Professionals in Germany work in German, but part of the content and part of the team work in English.
+
+**Decision.** German is the default, and every piece of content, from a role name to a product sheet, is stored in both languages.
+
+**Trade-off.** Editors work with two fields for each text.
+
+**In the product.** When only one language is written, the platform fills the other with automatic translation, so no screen is left half translated.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/midea-hvac/views-mobile-catalog.webp", title: "The portal on the phone", caption: "Home, catalog, product detail, specifications and menu.", width: 3000, height: 1688, light: true }}>
+
+### The same portal on the phone
+
+**Problem.** Installers and commissioners check products and agendas on the job site, away from a desk.
+
+**Decision.** One responsive portal instead of a separate mobile app, with the same features on every screen.
+
+**Trade-off.** Dense screens, such as specifications or the calculator, had to be redesigned for a narrow column.
+
+**In the product.** Product lists become cards, the menu folds into one button and keeps the language switch at hand.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/midea-hvac/audit-annotated.webp", title: "The audit log", caption: "Statistics, filters and every recorded action.", width: 3000, height: 1475, light: true }}>
+
+### A record anyone on the team can read
+
+**Problem.** As more people edit products, documents and roles, the team needs to know who changed what.
+
+**Decision.** Every business action is recorded with its actor, role, module, status and priority, and the back-office shows it as a table or as an activity feed.
+
+**Trade-off.** Every new feature has to remember to write its own records.
+
+**In the product.** Sensitive changes, such as editing an admin role, are marked with a higher priority, and failed actions are recorded too.
+
+</DiagramRow>
+
+</DesignDecisionsSection>
+
+<CaseSection id="thermal-calculator" title="Thermal calculator" nav="Thermal calculator">
+
+The calculator is the tool that most sets the portal apart. It replaces a sizing done by hand or in a spreadsheet with a short, guided flow that ends in real products from the catalog.
+
+<DiagramRow item={{ src: "/screenshots/midea-hvac/flow-calculator.webp", title: "Sizing equipment", caption: "Type of installation, rooms and conditions of use.", width: 3000, height: 1250, light: true }}>
+
+### A few guided steps
+
+The installer chooses the type of installation, single split, multi split or both, then enters the size of each room and how many people use it and for what. Each step validates its fields before moving on, so the result never comes from incomplete data.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/midea-hvac/thermal-calculator.webp", title: "From rooms to products", caption: "The load of each room, the total, and the suggestions for single and multi split.", width: 3000, height: 1500, light: true }}>
+
+### From rooms to products
+
+The calculation estimates the load of each room from its volume and from the people in it, then adds the rooms together. For a single split it compares each room with the indoor units of the catalog and marks the match as undersized, optimal or acceptable. For a multi split it picks the smallest outdoor unit that covers the load with a valid combination, and spreads the load over several units when one is not enough.
+
+The result is saved with its inputs, can be shared and exported as a PDF. The method is documented in the repository with worked examples.
+
+</DiagramRow>
+
+</CaseSection>
+
+<DesignSystemSection title="Design system">
+
+The portal and the back-office are built on one design system, created by the product designer assigned to the project at Tres Astronautas and shared as a component library by both applications. A person who works in both, such as a trainer who is also an admin, recognizes every piece.
+
+<DiagramRow item={{ src: "/screenshots/midea-hvac/design-system-foundations.webp", title: "Foundations", caption: "Typography, color, status colors, radius and spacing shared by the portal and the back-office.", width: 3000, height: 1575, light: true }}>
+
+### Foundations
+
+- **One typeface for everything.** Montserrat carries titles, the interface, forms and data, and the hierarchy comes from size and weight: medium for body text, semibold for labels and product names, bold for titles.
+- **A type scale shared by both portals.** Titles, body text, labels and captions have the same sizes and line heights in the back-office, in the portal and on the phone.
+- **Midea's blue as the action color.** The brand blue marks the main action of each screen, with fixed tones for hover, selected, loading and disabled, so every button and link reacts the same way.
+- **A neutral scale for surfaces and text.** Backgrounds, borders, secondary text and disabled states come from one gray scale, which keeps dense screens, such as specifications and tables, calm and readable.
+- **Status colors with fixed meanings.** Green, red, orange and blue always mean the same thing, for example in a published product, a denied commissioning or a pending training request.
+- **Radius and spacing scales.** A short set of values that keeps cards, inputs, tables and buttons consistent.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/midea-hvac/ecosystem.webp", title: "Two portals and the phone", caption: "The back-office, the portal and the portal on the phone share one visual language.", width: 3000, height: 1575, light: true }}>
+
+### One language on every screen
+
+The components follow atomic design: primitives such as buttons, inputs and checkboxes combine into fields, filters and badges, then into cards, tables and forms, and finally into full screens. A product card, a status badge or a filter looks and behaves the same in the back-office, in the portal and on the phone.
+
+</DiagramRow>
+
+### Built into the apps
+
+Together with the other engineer, I brought the design system into code as a shared component library used by the portal and the back-office. The colors, typography, radius and spacing became theme tokens, and the components were built following the same atomic layers as the design, from primitives to full screens. That way a new screen is assembled from existing pieces, and a change to a token reaches every screen that uses it, in both portals.
+
+</DesignSystemSection>
+
+<ImplementationSection title="From design to code" nav="Design to code">
+
+As a Senior Software Engineer, my work was turning the design into a working product. Many technical choices exist only to protect the experience the design called for. This section explains how the platform is organized, in terms of what each part does.
+
+<DiagramRow item={{ src: "/diagrams/midea-hvac/architecture.webp", title: "Architecture", caption: "The two portals, the API with its business modules, where data lives, and the services around it.", width: 3000, height: 1800, light: true }}>
 
 ### Architecture
 
-The repository is a monorepo with yarn workspaces and Turborepo: three apps (the API, the portal and the admin) and two shared packages, one with TypeScript contracts and one with the design system. The frontends talk to the API only over REST and JSON. They share no database and no session. Click a diagram to open it at full size.
+The platform lives in one repository: the API, the portal, the back-office and shared packages for the design system and the contracts between them. The API is split into business modules, such as users and roles, products, documentation, the calculator, training and commissioning, and each module keeps its business rules apart from the technical details, so features can grow without getting tangled. Click a diagram to open it at full size.
+
+The two portals talk to the API only, and the shared contracts keep the three applications in agreement about every piece of data.
 
 </DiagramRow>
 
-The API has ten business modules plus a logger module for auditing. Each one is a hexagon, with a domain layer that never imports Nest.js or Prisma, an application layer with handlers and use cases, and an infrastructure layer with controllers and repositories. Modules talk to each other only through exported handlers or ports, and there is no event bus. The data model has 41 Prisma models and 70 migrations.
-
-The types package mirrors the database enums and the JSON shapes, so the frontends never depend on the Prisma client. The portal and the admin share one UI package built with Atomic Design, shadcn components, rich text and data tables.
-
-<DiagramRow item={{ src: "/diagrams/midea-hvac/access.svg", title: "Sign-in and permission check", caption: "Local login and single sign-on end in the same tokens, and every request passes two guards before it reaches a handler.", width: 1200, height: 800 }}>
-
-### Sign-in and permissions
-
-A user gets into the API by local login, with an optional one-time code sent by email, or by single sign-on with Midea's identity provider. Both end in the same pair of tokens: an access token of 15 minutes and a refresh token of 7 days. The single sign-on endpoints are in place, although the button is hidden in both login forms for now.
-
-</DiagramRow>
-
-Permissions are decided on the server by a global guard that checks the role's module and action, using data stored in the database. The frontends read the permissions from the current-user endpoint only to hide what a user cannot use. The settings module is the one exception: any authenticated role may reach it. The API also uses Helmet, throttling, an HTML sanitization pipe and strict validation that rejects unknown fields, and raw SQL is blocked by default in the database service. Business handlers write an audit event for each action, and a step that throws is stored as failed.
-
-<DiagramRow item={{ src: "/diagrams/midea-hvac/thermal-calculator.svg", title: "Thermal calculator", caption: "From room dimensions and people to a load, then to indoor units for a mini split or outdoor units for a multi split.", width: 1200, height: 540 }}>
-
-### The thermal calculator
-
-The calculation lives in the API, in a module with three use cases: the load of each room, the product suggestions and a preview of the combination matrix. The repository documents the method with worked examples.
-
-</DiagramRow>
-
-<DiagramRow item={{ src: "/diagrams/midea-hvac/lifecycles.svg", title: "Commissioning and training life cycles", caption: "The states of a commissioning and of a training or roadshow event, with who moves each one.", width: 1200, height: 790 }}>
+<DiagramRow item={{ src: "/diagrams/midea-hvac/lifecycles.webp", title: "Life cycles", caption: "The states of a commissioning and of a training or roadshow event, with who moves each one.", width: 3000, height: 1990, light: true }}>
 
 ### Commissioning and training
 
-Both flows follow the same pattern: one person asks, another resolves, and every transition is audited. A commissioning moves through five states and the certification photo goes to Google Cloud Storage. Training events have four states, and two scheduled jobs move events forward without anyone touching them.
+Both flows follow the same pattern: one person asks, another resolves, and every step is recorded. A commissioning moves from requested to accepted and then to certified, or it is denied. Training events and roadshows are planned, start and close on their own at their scheduled times, and only a person can cancel one.
 
 </DiagramRow>
 
-<DiagramRow item={{ src: "/diagrams/midea-hvac/deploy.svg", title: "Tag-driven deploy", caption: "A tag such as v1.0.30-web-prod selects the workflow, the environment and the Cloud Run service.", width: 1200, height: 750 }}>
+### Files and languages
 
-### Files, language and delivery
+Manuals, videos and 3D models can be large, so they go straight to storage from the browser, in parts, and never slow down the rest of the platform. Every piece of content exists in German and English, and when only one is written the other is filled with automatic translation.
 
-Large manuals and product media go directly to Google Cloud Storage with signed URLs, in resumable chunks of 8 MB, so they never pass through the API. The commissioning certification photo is the exception: it is a single image of up to 10 MB and the API validates and stores it. When only one language is supplied for a piece of content, the API fills the other with Google Cloud Translation.
+### Delivery
 
-Deployments are driven by tags: a tag names the app and the environment, and a GitHub Actions workflow builds a Docker image, pushes it to Artifact Registry and deploys it to Cloud Run, with the two frontends behind Firebase Hosting.
+The platform has separate development, staging and production environments, and the API, the portal and the back-office are released on their own. Every change runs automated quality and security checks before it is merged.
 
-</DiagramRow>
+My part of the build was the API and the back-office, which I built end to end. I then joined the work on the HVAC Solution Portal, where I refactored several views so they followed the same components, patterns and data handling as the rest of the platform.
 
-Secrets are scanned with gitleaks in a pre-commit hook, a pre-push hook and CI, and CI also runs Trivy and SonarQube. Work is spec-driven, so features start as written specs, and the repository carries rules and skills for AI coding agents.
+### Working with AI agents
 
-### Decisions
+The work is spec-driven: features start as written specifications, and the repository carries rules and skills for AI coding agents, so that people and agents follow the same conventions.
 
-These are the choices that shaped the platform, with the reason for each and what it cost.
+### Technical decisions
+
+These are the technical choices that shaped the platform, with the reason for each and what it cost.
 
 | Decision | Why | Trade-off |
 |---|---|---|
-| Hexagonal modules per feature | Keeps the domain free of frameworks and easy to test. | More boilerplate, and a very large products module with more than 40 endpoints in one controller. |
-| Permissions stored in the database | Roles can be edited at runtime without a deploy. | One extra query on every guarded request. |
-| A shared types package | One source of truth for contracts across three apps. | It has to be built before the apps that use it. |
-| Separate portal and admin | Different audiences and navigation, one design system. | Two Next.js apps to deploy and maintain. |
-| Direct-to-storage uploads | Large manuals and media should not load the API. | The upload flow lives in the client. |
-| Bilingual content as data | Every piece of domain content exists in German and English. | Editors work with two fields, and automatic translation fills gaps. |
-| Modules call each other only through ports | Each module stays isolated and testable on its own. | Cross-module work needs an exported port or handler, and there is no event bus to decouple them. |
-| One audit log with dynamic priority | Every action is traceable, and a change to an admin role is marked critical. | Every handler has to write its own audit event. |
+| Business modules with clear boundaries | Business rules stay apart from technical details and are easy to test. | More files per module, and the products module grew large. |
+| Permissions stored as data | Roles can be edited at any time without a release. | Every guarded action has to check them. |
+| Shared contracts between apps | One source of truth for the data the three applications exchange. | The shared package has to be built before the apps that use it. |
+| Separate portal and back-office | Different audiences and navigation, one design system. | Two web applications to release and maintain. |
+| Uploads straight to storage | Large manuals and media do not load the API. | The upload flow lives in the browser. |
+| Content in two languages as data | Every piece of content exists in German and English. | Editors work with two fields, and automatic translation fills gaps. |
+| One audit log with priorities | Every action is traceable, and sensitive changes stand out. | Every feature has to write its own records. |
 
 </ImplementationSection>
 
 <ResultsSection title="Results">
 
-The client received one portal that brings installers, technicians, trainers and sales people together, and a back-office where the team manages everything they see. Professionals can browse the product catalog, find documentation in one place, follow training and roadshows, and take part in commissioning. The thermal load calculator lets them size air-conditioning equipment for a building room by room, and the administrators manage users, roles and content, and can review the audit log.
+The client received one portal that brings installers, technicians, trainers, sales people and wholesalers together, and a back-office where Midea's team manages everything they see, in German and English, on the desktop and on the phone.
 
-Some parts are still evolving. The calculator is a simplified model for now, and some pages show placeholder data, such as roadshow statistics. No adoption figures are reported yet.
+- Professionals browse the catalog and find the documentation of each model in one place.
+- Installers size equipment with the thermal calculator and request commissionings from the portal.
+- Trainers and commissioners manage their agendas, from the request to the certificate.
+- Midea's team manages users, roles, products and documents, and can review every action in the audit log.
+
+Some parts are still evolving: the calculator is a simplified model for now, and some statistics, such as the roadshow ones, show placeholder data.
+
+The platform is in production, and the professional profiles in Germany use it in their daily work. No usage figures were shared with the team, which is why the metrics above matter: the first measurements will set the baseline, and from there it will be clear whether professionals find documents faster, whether the calculator ends in real proposals and whether commissionings move faster from request to certificate.
 
 </ResultsSection>
+
+<LearningsSection title="Learnings & next steps" nav="Learnings">
+
+### Next steps
+
+- Take the first measurements of use as the baseline for the metrics above.
+- Turn on sign-in with the Midea account once access to its production environment is shared.
+- Evolve the calculator from a simplified model with Midea's engineers.
+- Replace the placeholder statistics with real data.
+
+### What I learned
+
+- **Permissions belong in the data, not in the code.** Making roles editable from the back-office took more work at the start than a fixed list would have. It paid off quickly: Midea's organization and its points of contact changed during the project, and each change became a setting the team could adjust instead of a new release.
+- **Plan for what you do not control.** The sign-in with the Midea account depended on access that never arrived. Because the platform had its own sign-in from the beginning, the launch did not depend on it. Next time I would ask for that kind of access in the first week, and still build the fallback.
+- **Shared conventions are cheaper at the start than later.** Refactoring part of the portal showed me how much it costs to align views after they are built. Agreeing early on the components, the patterns and how each screen loads its data keeps two people building in the same direction, and it is something I would set up on day one.
+
+</LearningsSection>
+
+<FinalProductSection title="Final product">
+
+A few screens of the final product, with demo data.
+
+<ImageGrid
+  items={[
+    { src: "/screenshots/midea-hvac/cover.webp", title: "Midea HVAC", caption: "The portal for professionals and the back-office for Midea's team.", width: 2880, height: 1620 },
+    { src: "/screenshots/midea-hvac/views-web-portal.webp", title: "HVAC Solution Portal", caption: "Catalog, product detail and the training agenda.", width: 3000, height: 1688 },
+    { src: "/screenshots/midea-hvac/views-web-admin.webp", title: "Back-office", caption: "Users, products and the documentation center.", width: 3000, height: 1688 },
+    { src: "/screenshots/midea-hvac/views-mobile-catalog.webp", title: "The catalog on the phone", caption: "Home, catalog, product detail, specifications and menu.", width: 3000, height: 1688 },
+    { src: "/screenshots/midea-hvac/views-mobile-work.webp", title: "On the job site", caption: "Sign-in, the calculator, the training agenda and commissioning.", width: 3000, height: 1688 },
+    { src: "/screenshots/midea-hvac/ecosystem.webp", title: "One visual language", caption: "The back-office, the portal and the phone.", width: 3000, height: 1575 },
+  ]}
+/>
+
+</FinalProductSection>

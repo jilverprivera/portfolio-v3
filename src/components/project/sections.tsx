@@ -182,3 +182,13 @@ export function Pending({ children }: { children: ReactNode }) {
     </div>
   );
 }
+
+// A section a project needs beyond the usual ones (a regulation, a flow or a feature worth its own space).
+// Its id must also be listed in the sidebar for it to show there.
+export function CaseSection({ id, title, nav, children }: Props & { id: string }) {
+  return (
+    <SectionFrame id={id} title={title} nav={nav} className="[&_h3]:mt-6 [&_h3]:border-t [&_h3]:border-line [&_h3]:pt-8 [&_strong]:text-accent-text">
+      {children}
+    </SectionFrame>
+  );
+}
