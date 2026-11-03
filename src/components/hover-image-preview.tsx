@@ -169,5 +169,5 @@ export function HoverImagePreview({ images, active }: Props) {
     };
   }, [imagesKey]);
 
-  return <canvas ref={canvasRef} aria-hidden="true" className="pointer-events-none fixed inset-0 z-40 h-dvh w-screen" />;
+  return <canvas ref={canvasRef} aria-hidden="true" className="pointer-events-none fixed inset-0 z-40 h-dvh w-full" />;
 }

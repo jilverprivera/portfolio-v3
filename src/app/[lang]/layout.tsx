@@ -10,10 +10,11 @@ import { getDictionary } from "@/i18n/dictionaries";
 import { LocaleProvider } from "@/i18n/locale-context";
 import "../globals.css";
 
+// Regular and medium are loaded too: with only the bold file, text set to normal or medium also rendered bold.
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
   subsets: ["latin"],
-  weight: ["700"],
+  weight: ["400", "500", "700"],
 });
 
 const anton = Anton({
@@ -58,7 +59,7 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
           secondaryColor="#4a38f5"
           theme="light"
           blendMode="normal"
-          className="!fixed !inset-0 !h-dvh !w-screen z-50 pointer-events-none"
+          className="!fixed !inset-0 !h-dvh !w-auto z-50 pointer-events-none"
           style={{}}
         >
           {null}

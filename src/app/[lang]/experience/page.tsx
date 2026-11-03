@@ -68,7 +68,7 @@ export default async function ExperiencePage({ params }: PageProps<"/[lang]/expe
                       key={h.title}
                       className="relative pl-6 text-[18px] leading-[1.6] text-ink-soft before:absolute before:left-0 before:top-[0.75em] before:h-1 before:w-1 before:rounded-full before:bg-ink"
                     >
-                      <Reveal className="text-ink" textClassName="!text-[18px] !font-medium !leading-[1.6]">
+                      <Reveal className="text-ink" textClassName="!text-[18px] !font-bold !leading-[1.6]">
                         {`${h.title}.`}
                       </Reveal>
                       <Reveal textClassName="!text-[18px] !font-normal !leading-[1.6]">{h.text}</Reveal>

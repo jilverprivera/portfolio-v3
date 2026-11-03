@@ -55,6 +55,12 @@
   --font-label: var(--font-space-mono), ui-monospace, monospace;
 }
 
+/* Nothing may scroll the page sideways. `clip` instead of `hidden` keeps position: sticky working. */
+html,
+body {
+  overflow-x: clip;
+}
+
 html {
   color-scheme: light;
 }
