@@ -15,7 +15,7 @@ const proofs = {
   emisys: { slug: "emisys", title: "Emisys", context: "Tres Astronautas", text: "Back-office and portals to run the lifecycle of credit-card products for employee funds." },
   getsellers: { slug: "getsellers", title: "GetSellers", context: "Tres Astronautas", text: "Handover and modernization of a live lead marketplace, with a prepaid wallet on Stripe." },
   uncierre: { slug: "uncierre", title: "UnCierre", context: "Conversion", text: "Event-sourced microservices for real-estate sales and rentals, with a dashboard and a mobile app." },
-  midea: { slug: "midea-hvac", title: "Midea HVAC", context: "Tres Astronautas", text: "A bilingual portal and API with SSO, role-based access and a thermal load calculator." },
+  midea: { slug: "midea-hvac", title: "Midea HVAC", context: "Tres Astronautas", text: "A bilingual portal, back-office and API with role-based access and a thermal load calculator." },
   nido: { slug: "nido", title: "NIDO", context: "Tres Astronautas", text: "A condominium platform with a resident app, a staff app and a web portal." },
   comfandi: { slug: "comfandi-digital", title: "Comfandi Digital Products", context: "OL-Software", text: "A health portal and app for appointments and lab results, and an assessment platform." },
 } satisfies Record<string, Proof>;
@@ -47,7 +47,7 @@ export const disciplines: Discipline[] = [
       "Shared component libraries in monorepos",
       "Static exports served from Firebase Hosting",
     ],
-    proofs: [proofs.midea, proofs.emisys, proofs.nido],
+    proofs: [proofs.midea, proofs.getsellers, proofs.nido],
   },
   {
     id: "mobile",
@@ -75,6 +75,6 @@ export const disciplines: Discipline[] = [
       "Decisions recorded with their trade-offs",
       "Dependency rules checked in CI",
     ],
-    proofs: [proofs.midea, proofs.getsellers],
+    proofs: [proofs.mottika, proofs.emisys],
   },
 ];
