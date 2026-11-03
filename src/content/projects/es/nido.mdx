@@ -1,0 +1,448 @@
+---
+title: "NIDO"
+slug: "nido"
+summary: "Una plataforma de gestión de condominios: los residentes reciben avisos, autorizan visitantes, reservan zonas comunes, se unen a eventos, chatean en privado, pagan cuotas y compran en un marketplace local, mientras administradores, guardas, aliados y proveedores trabajan desde un portal web. Un proyecto para un cliente entregado en Tres Astronautas."
+type: "Proyecto de trabajo · Tres Astronautas"
+date: "2026-10"
+year: "2026"
+status: "Construcción de la plataforma"
+featured: true
+cover: "/screenshots/nido/mobile-cover.webp"
+url: "https://www.nidocondos.com/"
+stack:
+  - "Nest.js"
+  - "PostgreSQL y Prisma ORM"
+  - "MongoDB"
+  - "Socket.IO"
+  - "Next.js"
+  - "React"
+  - "Expo y React Native"
+  - "Tailwind CSS y NativeWind"
+  - "Google Cloud Run"
+  - "Firebase Hosting"
+  - "Turborepo"
+highlights:
+  - value: "13"
+    label: "funcionalidades"
+  - value: "6"
+    label: "roles de usuario"
+  - value: "3"
+    label: "apps: portal web, tablet del personal y celular del residente"
+---
+
+<SummarySection title="Resumen" nav="Resumen">
+
+NIDO es una plataforma de gestión de condominios que reúne la vida diaria de un edificio residencial en un solo producto: avisos, visitantes, zonas comunes, eventos, chat, cuotas y comercio local.
+
+Reemplaza los chats de grupo, los avisos en papel, las bitácoras de la portería y las llamadas con las que suele funcionar un condominio. Los administradores publican y gestionan desde un solo lugar, los guardas controlan quién entra, los residentes resuelven sus asuntos del día a día desde el celular, y cada acción importante deja un registro.
+
+NIDO funciona como una red y no como un solo edificio. Un equipo de plataforma gestiona muchos condominios desde un solo lugar, y cada condominio tiene su propia administración, residentes y personal de portería. A su alrededor, los negocios locales participan de dos formas: los aliados, como restaurantes, gimnasios o tiendas, ofrecen beneficios y cupones a los residentes, y los proveedores, como domicilios de agua, panadería o farmacia, venden a través de un catálogo dentro de la app y gestionan pedidos.
+
+El producto está compuesto por tres apps sobre una sola plataforma:
+
+- **Un portal web** que se comporta como cinco portales, uno por cada rol que inicia sesión: el equipo de plataforma de NIDO, los administradores de condominio, los guardas, los aliados y los proveedores.
+- **Una app para el personal** en una tablet, para el equipo de portería: visitantes, llegadas, prerregistros, verificación de pases e historial de accesos.
+- **Una app para residentes** en el celular, la única forma en que los residentes usan NIDO.
+
+No todos los condominios necesitan todas las funciones. El equipo de NIDO activa o desactiva módulos como zonas comunes, pagos, pedidos, el marketplace entre vecinos o el directorio de servicios para cada condominio, y las apps se adaptan de inmediato. Avisos, accesos, eventos, clubes y chat siempre están disponibles. Todo funciona en español e inglés, con temas claro y oscuro.
+
+Trabajé en NIDO en Tres Astronautas para un cliente, como Senior Software Engineer, en un equipo de cinco personas durante cinco meses. Construí la app de residentes y la app del personal, y una gran parte del portal web.
+
+</SummarySection>
+
+<ContextSection title="Contexto y rol" nav="Contexto">
+
+- **Cliente:** Una empresa de administración de condominios. El nombre se mantiene privado.
+- **Empresa:** Tres Astronautas
+- **Producto:** Portal web, app del personal en tablet y app de residentes en celular, sobre una sola plataforma
+- **Mi rol:** Senior Software Engineer
+- **Equipo:** 1 product owner, 2 ingenieros de software, 1 diseñador de producto y 1 QA
+- **Lo que construí:** La app de residentes, la app del personal y una gran parte del portal web
+- **Duración:** 5 meses
+
+</ContextSection>
+
+<ProblemSection title="Problema" nav="Problema">
+
+Antes de NIDO, un condominio funcionaba con canales dispersos. Los avisos salían por chats de grupo y en papel pegado en la pared, la portería llevaba una bitácora a mano, las zonas comunes se reservaban por teléfono, los comprobantes de pago de las cuotas llegaban como capturas de pantalla y los servicios locales se conocían de boca en boca.
+
+Eso le costaba algo a cada persona involucrada:
+
+- **Los administradores** pasaban el día respondiendo las mismas preguntas y persiguiendo pagos, sin una imagen completa del condominio.
+- **Los guardas** anotaban cada visita a mano mientras alguien esperaba en la portería, y tenían que llamar al residente para confirmar.
+- **Los residentes** se perdían avisos enterrados en los chats y no podían saber si un espacio estaba libre sin preguntar.
+- **Los negocios locales** no tenían una forma directa y confiable de llegar a las personas que vivían en el edificio.
+
+Y nada dejaba un registro confiable. Cuando algo salía mal, nadie podía decir quién dejó entrar a una persona, quién aprobó un pago o quién cambió una reserva.
+
+</ProblemSection>
+
+<PersonasSection title="Usuarios y contexto de uso" nav="Usuarios">
+
+Seis roles usan NIDO, además de los visitantes, que no tienen cuenta. Cada uno usa el producto en una situación muy distinta, y esas situaciones definieron el diseño más que la lista de funcionalidades.
+
+<PersonaCards
+  items={[
+    { name: "Residente", does: "Recibe avisos, autoriza visitantes, reserva zonas comunes, se une a eventos, chatea con vecinos, paga cuotas y compra a proveedores locales.", where: "App móvil", tool: "bag", hair: "bun", skin: "#e8b48f", shirt: "#4b7bec", hairColor: "#3b2a22", },
+    { name: "Visitante", does: "No tiene cuenta. Completa el enlace de prerregistro que comparte un residente y luego se registra con el guarda en la portería.", where: "Página web desde un enlace, sin instalar nada", tool: "coat", hair: "long", skin: "#f0c8a0", shirt: "#6b7a8f", hairColor: "#5a3a22", },
+    { name: "Guarda", does: "Registra llegadas y visitas sin cita, escanea los códigos QR de los pases, revisa prerregistros y lleva el historial de accesos del condominio.", where: "App del personal, o portal web si el condominio lo permite", tool: "magnifier", hair: "cap", skin: "#a8704d", shirt: "#3b4a6b", hairColor: "#222", },
+    { name: "Administrador del condominio", does: "Gestiona residentes, unidades, guardas, zonas comunes y reservas, cuotas, anuncios, eventos, proveedores de servicios y accesos, y modera los chats.", where: "Portal web, área del condominio", tool: "tie", hair: "short", skin: "#e2ad88", shirt: "#2f3e5e", hairColor: "#555", glasses: true, },
+    { name: "Administrador de la plataforma", does: "Crea y gestiona condominios, anuncios y eventos globales, comercios y ofertas, proveedores y pedidos, el centro de recursos y el registro de auditoría.", where: "Portal web, área de la plataforma", tool: "headset", hair: "bob", skin: "#f0c8a0", shirt: "#8e5be0", hairColor: "#7a3b2a", },
+    { name: "Aliado", does: "Un negocio que publica ofertas y cupones para los residentes, registra las redenciones y sigue sus métricas.", where: "Portal web, área de aliados", tool: "map", hair: "curly", skin: "#a8704d", shirt: "#27a36d", hairColor: "#1c1c1c", },
+    { name: "Proveedor", does: "Un negocio local que mantiene un catálogo, con carga por CSV, y gestiona los pedidos de los residentes desde la aceptación hasta la entrega y la confirmación del pago.", where: "Portal web, área de proveedores", tool: "box", hair: "short", skin: "#cf9468", shirt: "#e6a23c", hairColor: "#2a2a2a", },
+  ]}
+/>
+
+### Los momentos que definieron el diseño
+
+- **El guarda en la portería** trabaja de pie, con un visitante esperando y a menudo un carro detrás. Cada campo o toque de más se nota, así que la app del personal necesitaba áreas táctiles grandes y formularios muy cortos.
+- **El administrador** abre el portal para responder una pregunta: ¿qué necesita mi atención hoy? La primera pantalla tenía que responderla sin tener que buscar.
+- **El residente** abre la app para algo específico y se va. Lo que más usa tenía que estar a un toque, y eso cambia de una persona a otra.
+- **El visitante** no debería tener que instalar nada. Un enlace y un formulario web corto tenían que ser suficientes.
+
+</PersonasSection>
+
+<ObjectivesSection title="Objetivos, métricas de éxito y restricciones" nav="Objetivos">
+
+### Objetivos
+
+1. Reemplazar los canales dispersos por un solo lugar para cada rol.
+2. Hacer el acceso al condominio más rápido en la portería y trazable después.
+3. Permitir que los residentes resuelvan asuntos del día a día, como reservas, visitas y pagos, sin llamar a la administración.
+4. Darles a los negocios locales un canal directo y confiable hacia los residentes.
+
+### Cómo se mediría el éxito
+
+Durante el proyecto no se acordaron métricas de éxito con el cliente. Estas son las que yo propondría para saber si NIDO está cumpliendo sus objetivos, cada una ligada a uno de ellos:
+
+| Objetivo | Métrica | Qué nos dice |
+|---|---|---|
+| Un solo lugar para cada rol | Porcentaje de unidades con al menos un residente activo, y residentes activos por semana en cada condominio | Si los residentes realmente pasaron de los chats de grupo y los avisos en papel a la app. |
+| Acceso más rápido y trazable | Tiempo mediano para registrar una llegada en la portería, y porcentaje de visitas que llegan con prerregistro o con pase | Si la portería se volvió más rápida, y cuánto del trabajo hacen ahora los residentes por adelantado. |
+| Autoservicio para residentes | Porcentaje de reservas y aprobaciones de visitas completadas en la app sin que intervenga la administración | Si los asuntos del día a día dejaron de pasar por llamadas a la administración. |
+| Pagos a tiempo | Porcentaje de cuotas pagadas antes de su fecha de vencimiento, y tiempo para validar un comprobante | Si cobrar las cuotas se volvió más fácil para ambas partes. |
+| Un canal para los negocios locales | Redenciones de cupones y pedidos a proveedores por condominio cada mes, y qué tan rápido responden los proveedores | Si los aliados y proveedores obtienen valor real de la plataforma. |
+
+La primera medición establecería la línea base, comparada cuando sea posible con cómo funcionaba cada condominio antes de NIDO.
+
+### Restricciones
+
+- **Seis roles** con necesidades muy distintas, compartiendo una plataforma y muchos condominios, cada uno con sus propios datos.
+- **Los datos personales** de residentes y visitantes tenían que mantenerse protegidos, y cada acción sensible tenía que ser trazable.
+- **Dos idiomas** y temas claro y oscuro desde el inicio.
+- **Los pagos** tenían que funcionar antes de que una pasarela de pagos estuviera lista.
+- **Capacidad compartida.** El equipo empezó en NIDO a tiempo completo. A mitad del camino, la empresa también nos necesitó en otro proyecto, así que parte de la construcción se entregó trabajando en ambos a la vez. Eso hizo la priorización más estricta: primero los flujos que cada rol usa todos los días, y el resto se planeó por etapas.
+
+</ObjectivesSection>
+
+<ProcessSection title="Proceso y priorización" nav="Proceso">
+
+### Del problema al alcance
+
+El trabajo empezó por los roles y sus momentos, no por las pantallas. Para cada rol, el equipo mapeó las tareas que repite todos los días, los flujos que pasan de un rol a otro, como una visita que empieza con un residente y termina con un guarda, y la información que necesita cada paso.
+
+Ese mapa se convirtió en los módulos del producto, y en una primera versión enfocada en lo que un condominio necesita todos los días: avisos, visitantes y accesos, zonas comunes, cuotas y la app de residentes.
+
+### Cómo trabajó el equipo
+
+Cada semana nos reuníamos con diseño y con producto para revisar el avance, y una vez a la semana también nos reuníamos con el cliente para validar el avance y el alcance y recoger sus comentarios. Esos dos ciclos mantuvieron alineados a diseño, producto e ingeniería, y le permitieron al cliente ver crecer el producto y ajustar prioridades en el camino, algo que importó aún más cuando el equipo empezó a compartir su tiempo con otro proyecto.
+
+### Qué cubre la plataforma
+
+| Área | Qué permite |
+|---|---|
+| Anuncios | Avisos de la administración, anuncios urgentes y un asistente de redacción con IA para los administradores. |
+| Visitantes y accesos | Prerregistro de visitantes, pases de invitado, una lista de visitantes bloqueados, acceso para guardas e historial de accesos. |
+| Reservas | Zonas comunes con reservas, invitaciones y pases de invitado. |
+| Eventos y clubes | Eventos a los que los residentes se pueden inscribir, además de clubes con moderación. |
+| Chat | Conversaciones en tiempo real entre vecinos, con mensajes privados, un filtro de groserías y una política de retención. |
+| Cuotas y pagos | Cobros por unidad con un proceso que marca las cuotas vencidas, pago con comprobante validado por un administrador, y una integración con una pasarela de pagos que se conecta paso a paso. |
+| Marketplace | Proveedores locales, un catálogo, pedidos, ofertas y promociones, y beneficios de aliados. |
+| Administración | Condominios, unidades, residentes, guardas, proveedores de servicios, documentos legales, configuración y un área de administración de la plataforma. |
+| Premium y métricas | Planes premium y métricas para la plataforma. |
+| Notificaciones | Notificaciones push, correo y SMS. |
+| Seguridad de la cuenta | Códigos de un solo uso por dispositivo, eliminación de cuenta con verificación y aceptación de términos versionados. |
+
+### Qué esperó y qué se descartó
+
+- **La pasarela de pagos en línea** esperó. Las cuotas empezaron con un flujo basado en comprobantes, para que el condominio pudiera cobrar desde el primer día mientras la pasarela se integra paso a paso.
+- **Los roles y permisos granulares** se descartaron. La idea era permitir que el equipo de plataforma de NIDO y cada administrador de condominio crearan sus propios roles y eligieran, permiso por permiso, qué podía hacer cada uno dentro de su alcance. No cabía en el tiempo disponible y no hacía parte del roadmap, así que el producto mantuvo seis roles fijos con permisos claros y predefinidos. Los roles fijos cubren lo que cada condominio necesita hoy, y los permisos granulares siguen siendo una opción si la red crece hacia allá.
+
+</ProcessSection>
+
+<DesignDecisionsSection title="Decisiones de diseño" nav="Decisiones de diseño">
+
+Las decisiones que más definieron la experiencia, tomadas por el equipo y diseñadas por el diseñador de producto del proyecto. Cada una parte de una situación real, explica qué se eligió y qué costó. Haz clic en cualquier imagen para verla más grande. Las pantallas están en español, el idioma de los usuarios.
+
+<DiagramRow item={{ src: "/screenshots/nido/roles.webp", title: "Un portal, un área por rol", caption: "El portal web con un área separada para cada rol.", width: 3000, height: 1200, light: true }}>
+
+### Un portal, un área por rol
+
+**Problema.** Cinco roles trabajan desde la web, y cada uno necesita herramientas muy distintas. Mostrarle todo a todos haría cada pantalla más difícil de usar.
+
+**Decisión.** Un portal con un área separada por rol. El menú, la pantalla de inicio y las acciones disponibles cambian según la persona que inicia sesión.
+
+**Costo.** Las piezas compartidas, como los avisos o los accesos, tuvieron que diseñarse una vez y adaptarse a varios roles.
+
+**En el producto.** Después de iniciar sesión, cada persona llega directo a su propia área, y el menú y las pantallas que puede abrir dependen de su rol. Los módulos compartidos, como avisos y accesos, se construyen una vez y le muestran a cada rol solo las acciones que le corresponden.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/nido/dashboard-annotated.webp", title: "El condominio de un vistazo", caption: "La primera pantalla del administrador, con lo que necesita atención hoy.", width: 3000, height: 1475, light: true }}>
+
+### Una primera pantalla que responde una pregunta
+
+**Problema.** Los administradores abrían el portal para saber qué necesitaba su atención, y esa información estaba en módulos distintos.
+
+**Decisión.** La pantalla de inicio resume dinero, personas, accesos y zonas comunes, con atajos para actuar sobre cada uno.
+
+**Costo.** Solo muestra un resumen, así que el detalle siempre está a un paso.
+
+**En el producto.** Cada tarjeta de resumen también es un atajo: un clic lleva al administrador del número a la lista que hay detrás, ya filtrada.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/nido/action-staff-register.webp", title: "Registrar una llegada en una tablet", caption: "El formulario corto de llegada de la app del personal.", width: 3000, height: 1475, light: true }}>
+
+### La portería en una tablet, con un formulario corto
+
+**Problema.** Los guardas registran visitas de pie, con alguien esperando. Un portal de escritorio o la pantalla de un celular hacían eso lento.
+
+**Decisión.** Una app separada en tablet para el equipo de portería, en horizontal o vertical, donde solo la unidad y el tipo de acceso son obligatorios y todo lo demás es opcional.
+
+**Costo.** Una app más para diseñar, construir y mantener, y menos datos capturados en cada visita.
+
+**En el producto.** Construí la app del personal para que cada pantalla funcione en horizontal y vertical, con áreas táctiles grandes y un formulario que solo se bloquea en los dos campos obligatorios. La foto del visitante se toma con la cámara de la tablet, directamente desde el formulario.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/nido/action-staff-detail.webp", title: "Una ficha de visitante con datos protegidos", caption: "El documento del visitante está oculto hasta que se necesita.", width: 3000, height: 1475, light: true }}>
+
+### Datos personales ocultos por defecto
+
+**Problema.** Los guardas y administradores ven datos personales de muchas personas todos los días, y la mayoría del tiempo no los necesitan.
+
+**Decisión.** Los documentos y otros datos sensibles aparecen enmascarados, y revelarlos es una acción deliberada que queda registrada.
+
+**Costo.** Un toque más cuando el dato de verdad se necesita.
+
+**En el producto.** Las pantallas reciben los datos personales ya enmascarados, así que están ocultos en todas partes por defecto, no solo en una pantalla. Revelarlos es una acción separada y deliberada, y esa acción también queda registrada.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/nido/flow-visitors.webp", title: "Visitantes y accesos", caption: "De la portería al historial de accesos.", width: 3000, height: 1250, light: true }}>
+
+### Aprobación solo cuando se necesita
+
+**Problema.** Llamar al residente por cada visita hacía lenta la portería, pero dejar entrar a cualquiera no era aceptable.
+
+**Decisión.** Un visitante que llega solo con un pase válido entra, y al residente solo se le notifica. Un visitante con acompañantes o sin prerregistro necesita aprobación, y quien decida primero, el residente o el guarda, cierra la solicitud.
+
+**Costo.** Las reglas son más difíciles de explicar que "siempre preguntar", así que la app tiene que dejar claro cada caso.
+
+**En el producto.** La solicitud llega al celular del residente de inmediato, y tanto el residente como el guarda la ven actualizarse en vivo, así que quien responda primero la cierra y el otro ve el resultado sin recargar.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/nido/mobile-home-annotated.webp", title: "Una pantalla de inicio que cada residente organiza", caption: "La pantalla de inicio de la app de residentes con atajos editables.", width: 3000, height: 1750, light: true }}>
+
+### Una pantalla de inicio que organiza el residente
+
+**Problema.** Cada residente usa la app para cosas distintas. Un menú fijo enterraría lo que cada persona más necesita.
+
+**Decisión.** La pantalla de inicio es un tablero de atajos grandes que cada residente agrega, quita y reordena.
+
+**Costo.** Una pantalla personalizada es más difícil de explicar en soporte y de mostrar en el onboarding.
+
+**En el producto.** Construí la pantalla de inicio como una cuadrícula de atajos con un modo de edición para agregarlos, quitarlos y reordenarlos, y la disposición se guarda para cada residente. Los atajos de módulos que el condominio desactivó simplemente no aparecen.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/nido/flow-fees.webp", title: "Cuotas y pagos", caption: "Del cobro recurrente al comprobante que valida la administración.", width: 3000, height: 1250, light: true }}>
+
+### Primero, pagos con comprobante
+
+**Problema.** Los condominios necesitaban cobrar las cuotas de inmediato, y la pasarela de pagos en línea no estaba lista.
+
+**Decisión.** Cobros recurrentes por unidad, con un comprobante que el residente sube y la administración valida, mientras la pasarela se integra paso a paso.
+
+**Costo.** Por ahora, los administradores revisan los comprobantes a mano.
+
+**En el producto.** Los residentes ven sus facturas, suben el comprobante desde el celular y siguen su estado hasta que la administración lo valida, así que el flujo está listo para pasar a pagos en línea cuando llegue la pasarela.
+
+</DiagramRow>
+
+</DesignDecisionsSection>
+
+<DesignSystemSection title="Sistema de diseño" nav="Sistema de diseño">
+
+El portal web, la app del personal y la app de residentes están construidos sobre un solo sistema de diseño, creado por el diseñador de producto asignado a NIDO en Tres Astronautas. Una persona que pasa de una app a otra, como un administrador que también vive en el edificio, reconoce cada pieza.
+
+<DiagramRow item={{ src: "/screenshots/nido/design-system-foundations.webp", title: "Fundamentos", caption: "Tipografía, color, colores de estado, radios y espaciado compartidos por las tres apps.", width: 3000, height: 1575, light: true }}>
+
+### Fundamentos
+
+- **Dos tipografías con roles claros.** EB Garamond, una serif clásica, para los títulos, que le da al producto un tono tranquilo y residencial. Karla, una sans serif clara, para la interfaz, los formularios y los datos.
+- **Una escala tipográfica compartida por web y móvil.** Títulos, texto, etiquetas y botones tienen los mismos tamaños e interlineados en todas las pantallas.
+- **Un dorado de marca usado con intención.** El dorado marca la acción principal de cada pantalla y el estado activo. Un dorado más oscuro se usa para los anillos de foco, para que mantengan suficiente contraste contra el blanco.
+- **Dos escalas de neutros.** Una para el tema claro y otra para el tema oscuro, con pasos equivalentes, para que cada superficie, texto y borde tenga su equivalente en ambos.
+- **Colores de estado con significados fijos.** Éxito, error, advertencia, información y morado siempre significan lo mismo, por ejemplo en los estados de un pedido, un pago o una visita.
+- **Escalas de radios y espaciado.** Un conjunto corto de valores que mantiene consistentes las tarjetas, los campos y los botones.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/nido/design-system-components.webp", title: "Componentes", caption: "Los mismos componentes en los temas claro y oscuro.", width: 3000, height: 1313, light: true }}>
+
+### Componentes en ambos temas
+
+La librería de componentes sigue atomic design en las tres apps. Los primitivos, como botones, campos, pestañas e interruptores, se combinan en átomos, como insignias de estado y chips de filtro. Estos forman moléculas, como filas de lista, tarjetas y formularios, y luego organismos, como listas, calendarios y dashboards.
+
+Los temas claro y oscuro fueron una regla desde el inicio, no algo agregado después. Cada componente, desde un botón hasta un skeleton de carga, tenía que funcionar en ambos, usando solo los tokens del sistema, nunca colores sueltos. Los residentes pueden seguir el tema de su celular o elegir uno, y la app lo recuerda desde el primer frame que muestra.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/nido/ecosystem.webp", title: "Tres pantallas, un condominio", caption: "El portal web, la app del personal y la app de residentes comparten un lenguaje visual.", width: 3000, height: 1575, light: true }}>
+
+### Un lenguaje en tres pantallas
+
+Los mismos tokens y patrones aparecen en el portátil, la tablet y el celular. Una reserva, una visita o un pago se ven igual dondequiera que se vean, lo que hace más simple moverse entre apps y darles soporte.
+
+</DiagramRow>
+
+### Llevado a las apps
+
+Llevé el sistema de diseño al código en la app de residentes y en la app del personal. Los colores, la tipografía, los radios y el espaciado se convirtieron en tokens de tema compartidos con una versión clara y una oscura, y los componentes se construyeron como una librería que sigue las mismas capas atómicas del diseño, desde los primitivos hasta las pantallas completas. Así, una pantalla nueva se arma con piezas existentes, y un cambio en un token llega a cada pantalla que lo usa, en ambos temas.
+
+</DesignSystemSection>
+
+<ImplementationSection title="Del diseño al código" nav="Diseño a código">
+
+Como Senior Software Engineer, mi trabajo fue convertir el diseño en un producto que funciona. Muchas decisiones técnicas existen solo para proteger la experiencia que pedía el diseño. Esta sección explica cómo está organizada la plataforma, en términos de lo que hace cada parte.
+
+<DiagramRow item={{ src: "/diagrams/nido/architecture.webp", title: "Arquitectura", caption: "Los clientes, la API con sus módulos de negocio y el chat en tiempo real, dónde viven los datos, y los servicios que envían correos, SMS y notificaciones push.", width: 3000, height: 1775, light: true }}>
+
+### Arquitectura
+
+La plataforma vive en un solo repositorio: la API, el portal web, la app de residentes, la app del personal y paquetes compartidos. La API está dividida en módulos de negocio, como condominios, accesos, zonas comunes, cuotas y el marketplace, y cada módulo mantiene sus reglas de negocio separadas de los detalles técnicos, para que las funcionalidades puedan crecer sin enredarse. Haz clic en un diagrama para abrirlo en tamaño completo.
+
+Los datos de la plataforma, como condominios, unidades, personas y pagos, se mantienen separados de las conversaciones del chat, que tienen su propio almacenamiento. El chat en tiempo real funciona junto al resto de la API. El portal web está disponible en español e inglés, y las dos apps móviles comparten el mismo lenguaje de diseño.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/nido/chat.webp", title: "Chat privado en tiempo real", caption: "Cómo un mensaje llega a un vecino, y cómo la app se recupera cuando se cae la conexión.", width: 3000, height: 1625, light: true }}>
+
+### Chat privado en tiempo real
+
+Los vecinos pueden hablar entre ellos en tiempo real desde la app de residentes. Antes de enviar un mensaje, se filtran las palabras ofensivas, y una vez llega se guarda de forma privada, así que nunca se almacena como texto legible. Las conversaciones siguen una política de retención, y los administradores del condominio pueden moderar las conversaciones de su comunidad.
+
+Las conexiones móviles no siempre son estables, así que el chat se construyó para recuperarse solo. Si la conexión se cae por mala señal o por mucho tiempo inactivo, la app lo detecta, se reconecta sin que el residente haga nada y muestra los mensajes que llegaron mientras tanto.
+
+</DiagramRow>
+
+### Cuentas y auditoría
+
+Las sesiones expiran solas y se renuevan en silencio mientras la persona está activa, y al iniciar sesión desde un dispositivo nuevo se pide un código de un solo uso. Cada rol solo puede acceder a las acciones que le corresponden.
+
+Cada acción sensible deja un registro: quién la hizo, con qué rol, en qué condominio y cuándo. Revelar datos personales, como el documento de un visitante, también queda registrado. Revisiones automáticas buscan credenciales expuestas antes de compartir cualquier cambio.
+
+<DiagramRow item={{ src: "/diagrams/nido/visitor-arrival.webp", title: "Prerregistro y llegada de visitantes", caption: "Del enlace compartido al guarda en la portería, con la solicitud de aprobación cuando un visitante la necesita.", width: 3000, height: 1950, light: true }}>
+
+### Visitantes y accesos
+
+Un residente comparte un enlace ligado a su unidad, válido por 24 horas. El visitante llena un formulario web sin instalar nada, y el enlace se consume. En la portería, a un visitante que llega solo con un pase válido se le registra la entrada y al residente solo se le notifica. Un visitante con acompañantes, o uno sin prerregistro, necesita aprobación: el residente recibe una solicitud, y quien decida primero, el residente o el guarda, la cierra.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/nido/order-lifecycle.webp", title: "Ciclo de vida de un pedido", caption: "Los estados de un pedido a un proveedor, desde la solicitud del residente hasta un pedido completado o cerrado.", width: 3000, height: 1625, light: true }}>
+
+### Pedidos del marketplace
+
+Los pedidos a proveedores locales siguen un conjunto fijo de estados. El proveedor acepta o rechaza, el residente puede cancelar hasta dos horas antes de la franja, y el pago es contra entrega, confirmado por el proveedor. Un problema con el pago cierra el pedido con una incidencia.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/nido/clients.webp", title: "Web, personal y móvil", caption: "Los clientes de la plataforma, cómo inicia sesión cada uno y qué abre, todos sobre la misma API.", width: 3000, height: 1875, light: true }}>
+
+### Web, personal y móvil
+
+Tres clientes comparten una API. La app de residentes tiene cinco pestañas, y su pestaña Explorar muestra solo los módulos que el condominio tiene activos. La app del personal es una segunda app para los guardas, con el mismo inicio de sesión pero abierta solo para ellos. Lista los visitantes, muestra el historial de accesos y verifica los pases de visitante con la cámara. El portal web tiene un área por rol: administrador del condominio, administrador de la plataforma, aliado, proveedor y guarda cuando el condominio lo permite. Algunas páginas públicas, como el prerregistro de visitantes y la creación de contraseña, se abren desde un enlace sin cuenta.
+
+</DiagramRow>
+
+### Entrega
+
+La plataforma tiene ambientes separados de desarrollo, staging y producción, y cada versión se promueve de forma deliberada. El portal web y las dos apps móviles se publican con sus propios calendarios. Cada cambio corre pruebas y revisiones automáticas de calidad y seguridad antes de integrarse.
+
+Mi parte de la construcción fue el lado cliente de la plataforma: construí la app de residentes y la app del personal, y una gran parte del portal web, sobre la API compartida.
+
+### Trabajo con agentes de IA
+
+El repositorio incluye un pequeño harness para sesiones de personas y agentes de IA sobre un mismo checkout: un registro de sesiones con reclamos de rutas, bloqueos para recursos compartidos, un agente líder que reparte el trabajo, agentes implementadores y revisores que escriben reportes en disco, y criterios de estado final escritos. Las personas son dueñas de git, y los agentes nunca hacen commits.
+
+### Decisiones técnicas
+
+Estas son las decisiones técnicas que definieron la plataforma, con la razón de cada una y lo que costó.
+
+| Decisión | Por qué | Costo |
+|---|---|---|
+| Módulos de negocio con límites claros | Las reglas de negocio se mantienen separadas de los detalles técnicos. | Más archivos por módulo. |
+| Almacenamientos separados para los datos de la plataforma y el chat | Cada tipo de dato vive donde mejor encaja. | Dos almacenamientos para operar y respaldar. |
+| Chat privado por diseño | Los mensajes se mantienen privados, incluso dentro de los propios datos de la plataforma. | Trabajo extra para proteger los mensajes más antiguos. |
+| Una sola tabla de registro de auditoría | Un solo lugar para responder quién hizo qué. | Cada mutación debe acordarse de escribir en ella. |
+| Una exportación web estática | Hosting barato y rápido, sin un servidor que operar. | Sin renderizado del lado del servidor para el portal. |
+| Primero, pagos con comprobante | Las cuotas se pueden cobrar ya mientras la pasarela se integra de forma gradual. | Un administrador valida los comprobantes a mano. |
+| Importación de CSV tolerante | La comparación de encabezados ignora mayúsculas, espacios, guiones y puntos, y acepta sinónimos. | Validación más laxa en los archivos de importación. |
+
+</ImplementationSection>
+
+<ResultsSection title="Resultados" nav="Resultados">
+
+El cliente recibió una plataforma completa para condominios: un portal web para administradores, guardas, aliados y proveedores, una app en tablet para la portería y una app en celular para los residentes, en español e inglés con temas claro y oscuro.
+
+- Los administradores gestionan la comunidad desde un solo lugar, con un resumen diario de lo que necesita atención.
+- Los guardas registran llegadas desde una tablet, y cada acceso deja un registro.
+- Los residentes manejan visitas, reservas, eventos, pagos y comercio local desde el celular.
+- Los aliados y proveedores tienen su propio espacio para llegar a la comunidad.
+
+Una parte todavía se está terminando: las cuotas funcionan con comprobantes, y la pasarela de pagos en línea se está integrando.
+
+NIDO es un MVP a punto de lanzarse en Panamá, así que todavía no hay cifras de uso. Por eso también importan las métricas de arriba: los primeros condominios en adoptarlo establecerán la línea base, y a partir de ahí sabremos si la portería se volvió más rápida, si los residentes dejaron de llamar a la administración para asuntos del día a día y si las cuotas se pagan a tiempo. El lanzamiento es donde empieza la retroalimentación real, y espero que cambie algunas de las prioridades que definimos durante la construcción.
+
+</ResultsSection>
+
+<LearningsSection title="Aprendizajes y próximos pasos" nav="Aprendizajes">
+
+### Próximos pasos
+
+- Lanzar con los primeros condominios en Panamá y tomar las primeras mediciones como línea base.
+- Terminar la pasarela de pagos en línea, para que los residentes puedan pagar sin subir comprobantes.
+- Medir los flujos que más importan, como registrar una visita y reservar un espacio, para mejorarlos con datos reales.
+
+### Lo que aprendí
+
+- **El sistema de diseño se paga solo desde temprano.** Llevar los tokens y los componentes base al código tomó tiempo al inicio, y durante unas semanas se sintió más lento que solo construir pantallas. Después fue al revés: las pantallas nuevas se armaban con piezas que ya existían, y el modo oscuro dejó de ser trabajo extra. La próxima vez empezaría por ahí aún antes.
+- **Dejar cosas por fuera también es trabajo de producto.** Los permisos granulares eran una buena idea, y era tentador intentar meterlos. Mantener seis roles fijos hizo el producto más claro para todos y nos permitió terminar lo que cada rol necesita todos los días. Aprendí a tratar el "ahora no" como una decisión, no como algo que no logramos hacer.
+- **El contexto de uso también cambia el código.** Construir la app del personal pensando en un guarda de pie en la portería cambió pequeñas cosas en todas partes: menos campos obligatorios, áreas táctiles más grandes, pantallas que funcionan en ambas orientaciones. La mejor retroalimentación en las reuniones semanales salió de pensar dónde y cómo cada persona iba a usar realmente la app.
+
+</LearningsSection>
+
+<FinalProductSection title="Producto final" nav="Producto final">
+
+Algunas pantallas del producto final, con datos de demostración.
+
+<ImageGrid
+  items={[
+    { src: "/screenshots/nido/cover.webp", title: "Portal web", caption: "El portal de administración, un área por rol.", width: 2880, height: 1620 },
+    { src: "/screenshots/nido/staff-cover.webp", title: "App del personal", caption: "Visitantes, llegadas, prerregistros e historial para el equipo de portería.", width: 2880, height: 1620 },
+    { src: "/screenshots/nido/views-web-condominium.webp", title: "Administración del condominio", caption: "Anuncios, pagos y reservas desde un solo portal.", width: 3000, height: 1688 },
+    { src: "/screenshots/nido/views-web-network.webp", title: "La red NIDO", caption: "El equipo de plataforma, los negocios aliados y los proveedores, cada uno con su propia área.", width: 3000, height: 1688 },
+    { src: "/screenshots/nido/views-mobile-everyday.webp", title: "El día a día", caption: "Inicio, visitas, pagos, pedidos y notificaciones.", width: 3000, height: 1688 },
+    { src: "/screenshots/nido/views-mobile-community.webp", title: "Comunidad", caption: "Avisos, noticias, eventos, clubes y zonas comunes.", width: 3000, height: 1688 },
+    { src: "/screenshots/nido/views-mobile-bookings.webp", title: "Reservas y eventos", caption: "Zonas comunes, reservar una fecha, reservas, detalle de eventos y pases.", width: 3000, height: 1688 },
+    { src: "/screenshots/nido/views-mobile-commerce.webp", title: "Comercio local", caption: "Marketplace, ofertas, proveedores, servicios y cupones.", width: 3000, height: 1688 },
+    { src: "/screenshots/nido/views-mobile-account.webp", title: "Mi actividad", caption: "Explorar, accesos, reservas, pases y notificaciones.", width: 3000, height: 1688 },
+    { src: "/screenshots/nido/views-staff.webp", title: "App del personal en cualquier orientación", caption: "Nuevo visitante, ficha del visitante e historial de accesos.", width: 3000, height: 1688 },
+  ]}
+/>
+
+</FinalProductSection>

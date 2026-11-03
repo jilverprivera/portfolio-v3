@@ -1,0 +1,309 @@
+---
+title: "UnCierre"
+slug: "uncierre"
+summary: "Una plataforma de venta y arriendo para constructoras: inventario, cotizaciones, reservas con la cuota inicial en cuotas, arriendos, pagos, PDFs y notificaciones, construida como servicios con event sourcing, con un panel comercial y una app para clientes. Construida en Conversion."
+type: "Proyecto de trabajo · Conversion"
+date: "2025-12"
+year: "2023–2025"
+status: "Proyecto abr 2024 – dic 2025"
+featured: true
+hideCover: true
+url: "https://www.uncierre.com"
+stack:
+  - "Node.js y TypeScript"
+  - "Express"
+  - "Next.js y React"
+  - "Expo y React Native"
+  - "PostgreSQL"
+  - "Hasura (GraphQL)"
+  - "RabbitMQ"
+  - "Knex y Prisma ORM"
+  - "Jest y Playwright"
+  - "Turborepo"
+highlights:
+  - value: "+40%"
+    label: "de crecimiento en ventas"
+  - value: "-30%"
+    label: "en el ciclo de lanzamientos"
+  - value: "1,500+"
+    label: "de mis commits en la plataforma"
+---
+
+<SummarySection title="Resumen" nav="Resumen">
+
+UnCierre es la plataforma que usan las constructoras para vender y arrendar sus proyectos. Cubre toda la vida comercial de un edificio, desde el inventario de unidades hasta el último pago de una venta o un arriendo.
+
+Las constructoras cargan sus proyectos y unidades, con parqueaderos y depósitos como adicionales. Su equipo comercial cotiza una unidad con un plan de cuota inicial, puede separarla para un cliente por unos días, y convierte la cotización en una reserva con sus cuotas y pagos. Luego los supervisores llevan cada negocio por la revisión de documentos, la firma del contrato, la aprobación del crédito y la entrega. Los arriendos viven en la misma plataforma, con incrementos, canon variable según las ventas del arrendatario, prórrogas y terminaciones, y los clientes siguen sus negocios y pagan desde una app móvil.
+
+El producto tiene tres partes:
+
+- **Un panel comercial** para administradores, supervisores y vendedores.
+- **Una app para clientes** en el celular, donde compradores y arrendatarios siguen sus negocios en vivo y pagan.
+- **Un conjunto de servicios** detrás de ambos, donde cada cambio en una venta se guarda como un evento.
+
+Trabajé en UnCierre en Conversion como Mid-level Software Engineer, de abril de 2024 a diciembre de 2025. Escribí la mayor parte de los servicios de reservas, arriendos y notificaciones, los motores de cotización, una gran parte del panel y la app para clientes. Este caso de estudio muestra el producto a través de sus flujos y diagramas.
+
+</SummarySection>
+
+<ContextSection title="Contexto y rol" nav="Contexto">
+
+- **Empresa:** Conversion
+- **Producto:** Un panel comercial, una app para clientes y los servicios detrás de ellos
+- **Mi rol:** Mid-level Software Engineer
+- **Qué construí:** La mayor parte de los servicios de reservas, arriendos y notificaciones, el cotizador de ventas, el asistente de reservas y el cotizador de arriendos, la librería core compartida, una gran parte del panel y la app para clientes
+- **Duración:** Abril de 2024 a diciembre de 2025
+
+</ContextSection>
+
+<ProblemSection title="Problema" nav="Problema">
+
+Vender y arrendar inmuebles implica procesos largos y con mucho dinero de por medio. Una reserva puede durar meses, con cuotas, descuentos, adicionales y varios vendedores en el camino, y un arriendo tiene sus propias cuotas, incrementos y terminaciones. Un sistema que solo guarda el estado actual no puede responder qué cambió, cuándo y quién lo hizo, y esa es justo la pregunta que hacen un equipo comercial y un comprador cuando hay dinero de por medio.
+
+El alcance de la plataforma muestra dónde duele:
+
+- **Los vendedores** necesitan cotizar rápido, separar una unidad para un cliente y convertir la cotización en una reserva sin perder las condiciones que acordaron.
+- **Los supervisores** necesitan confirmar cada pago y avanzar cada negocio, con un registro de cada paso.
+- **Los compradores y arrendatarios** necesitan ver sus cuotas y pagar sin llamar a la sala de ventas.
+- **La plataforma en sí** tenía que crecer a partir de una anterior, partiendo un monolito en servicios que pudieran cambiar a su propio ritmo.
+
+El vendedor carga con la mayor parte de ese peso. Cada negocio empieza con él, y una unidad cotizada dos veces o una separación que nunca vence se convierte en una conversación con un cliente molesto, así que la mayor parte del lado comercial se diseñó para que unidades, cotizaciones y reservas se mantuvieran consistentes por sí solas.
+
+</ProblemSection>
+
+<PersonasSection title="Usuarios y contexto de uso" nav="Usuarios">
+
+Cinco perfiles le dan forma a la plataforma, desde las personas que venden una unidad hasta los arrendatarios que pagan su arriendo desde el celular.
+
+<PersonaCards
+  items={[
+    { name: "Vendedor", does: "Cotiza unidades con descuentos, bonos y adicionales, las separa para un cliente, crea reservas y registra pagos.", where: "Panel comercial", tool: "tie", hair: "short", skin: "#e2ad88", shirt: "#2f3e5e", hairColor: "#2a2a2a" },
+    { name: "Supervisor", does: "Confirma, cancela o deshace pagos y mueve cada reserva por sus etapas.", where: "Panel comercial", tool: "chart", hair: "bob", glasses: true, skin: "#d9a07c", shirt: "#4b7bec", hairColor: "#2a1a14" },
+    { name: "Administrador", does: "Configura proyectos, importa unidades, define descuentos, bonos y límites, y gestiona el equipo comercial y las notificaciones.", where: "Panel comercial", tool: "headset", hair: "bun", skin: "#f0c8a0", shirt: "#8e5be0", hairColor: "#5a3a22" },
+    { name: "Comprador", does: "Reserva una unidad, la paga en cuotas y recibe cotizaciones, estados de cuenta y recibos.", where: "App para clientes, correo y WhatsApp", tool: "bag", hair: "bun", skin: "#e8b48f", shirt: "#e8743b", hairColor: "#3b2a22" },
+    { name: "Arrendatario", does: "Paga las cuotas del arriendo con comprobante, reporta ventas para un canon variable y sigue el contrato.", where: "App para clientes", tool: "register", hair: "cap", skin: "#c68863", shirt: "#27a36d", hairColor: "#222" },
+  ]}
+/>
+
+### Los momentos que definieron el diseño
+
+- **Un vendedor con un cliente al frente** cotiza una unidad y quiere separarla. Nadie más debería poder venderla mientras tanto, y la separación tiene que terminar sola si el cliente se va.
+- **Un supervisor que revisa pagos** necesita deshacer un error, pero solo el último, para que la historia de un negocio nunca se reescriba.
+- **Un arrendatario que paga desde el celular** sube el comprobante y espera ver la cuota actualizada, en vivo.
+- **Un administrador que responde la pregunta de un comprador** necesita saber exactamente qué le pasó a una reserva, meses después.
+
+</PersonasSection>
+
+<ObjectivesSection title="Objetivos, métricas de éxito y restricciones" nav="Objetivos">
+
+### Objetivos
+
+1. Permitir que el equipo comercial cotice, separe y reserve unidades más rápido, sin vender dos veces la misma.
+2. Guardar la historia completa de cada negocio, para que cualquier cambio se pueda explicar.
+3. Permitir que compradores y arrendatarios sigan y paguen sus negocios por su cuenta.
+4. Partir el monolito anterior en servicios que puedan cambiar de forma independiente.
+5. Llevar cambios a producción más rápido, con pruebas en las que el equipo confíe.
+
+### Cómo se midió el éxito
+
+Del trabajo salieron dos resultados: los motores de cotización y reservas abrieron nuevas fuentes de ingresos y **las ventas crecieron un 40%**, y estandarizar el desarrollo guiado por pruebas, junto con el resto del trabajo, **acortó los ciclos de lanzamiento a producción en un 30%**.
+
+### Restricciones
+
+- **Un legado que mantener.** La plataforma creció a partir de una anterior, así que sus datos y algunos de sus paquetes tenían que seguir funcionando mientras se separaban los servicios.
+- **Dinero en más de una moneda.** Los pagos y los arriendos llevan un monto equivalente y una tasa de cambio.
+- **Muchos proyectos, cada uno con sus reglas.** Los límites de días de cotización y separación, los canales de notificación, los webhooks y las plantillas de PDF se configuran por proyecto.
+
+</ObjectivesSection>
+
+<ProcessSection title="Proceso y priorización" nav="Proceso">
+
+### Del problema al alcance
+
+El trabajo partió de la vida de un negocio: una unidad se cotiza, se separa, se reserva, se paga y se entrega, o se arrienda y se paga mes a mes. Cada paso se convirtió en una capacidad, y cada capacidad recibió el lugar en la arquitectura que pedía su riesgo, con la reserva, crítica por el dinero, en el centro.
+
+### Qué cubre la plataforma
+
+| Área | Qué permite |
+|---|---|
+| Inventario | Proyectos, torres y unidades con parqueaderos y depósitos como adicionales, importados desde hojas de cálculo, y una vista de torre con las unidades por estado. |
+| Cotizaciones | Planes de cuota inicial con cuotas editables, abonos extraordinarios, descuentos, bonos y un descuento por pronto pago. |
+| Separaciones | Una unidad separada para un cliente por un número limitado de días, liberada por una tarea programada. |
+| Reservas | Un asistente de tres pasos, cuotas, pagos, vendedores, adicionales, notas y un indicador de etapas con la historia completa. |
+| Cartera | Cuotas al día, parciales, pagadas o en mora, por proyecto. |
+| Arriendos | Cotizaciones de arriendo, contratos con incrementos, canon variable a partir de reportes de ventas, pagos, prórrogas y terminaciones. |
+| Notificaciones | Correo y WhatsApp por rol y evento, y webhooks salientes por proyecto. |
+| Documentos | Cotizaciones, recibos, estados de cuenta y documentos de arriendo en PDF, por proyecto. |
+| App para clientes | Reservas y arriendos en vivo, cuotas, pagos con comprobante y reportes de ventas. |
+
+### Qué quedó pendiente
+
+- **Dos servicios planeados**, de autenticación y de clientes, no se construyeron.
+- **Parte del panel** todavía usa los estilos anteriores mientras pasa a la librería de componentes compartida.
+
+</ProcessSection>
+
+<DesignDecisionsSection title="Decisiones de diseño" nav="Decisiones">
+
+Las decisiones que más le dieron forma al producto, tomadas por el equipo y diseñadas por el diseñador de producto de la empresa. Cada una se muestra como un flujo o un diagrama.
+
+<DiagramRow item={{ src: "/diagrams/uncierre/flow-sale.webp", title: "De una cotización a una unidad entregada", caption: "El vendedor, la plataforma y el supervisor, cada uno con su parte.", width: 3000, height: 1560, light: true }}>
+
+### Una reserva que avanza por sus propios pasos
+
+**Problema.** Una venta pasa por cotizar, reservar, pagar y una larga lista de trámites, y cada paso le corresponde a una persona distinta.
+
+**Decisión.** El vendedor cotiza y reserva, la plataforma reacciona a cada paso, y el supervisor confirma los pagos y avanza el negocio. El primer pago abre la reserva por sí solo.
+
+**Costo.** Más estados que modelar, y algunos pasos que solo puede dar un supervisor.
+
+**En el producto.** Crear una reserva reserva la cotización y la unidad y notifica a todos los involucrados, y el supervisor ve exactamente qué etapa sigue.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/uncierre/flow-option.webp", title: "Una separación de una unidad", caption: "Separar una unidad para un cliente, y qué pasa cuando la separación vence.", width: 3000, height: 1240, light: true }}>
+
+### Una separación que termina sola
+
+**Problema.** Un vendedor que separa una unidad para un cliente bloquea a todos los demás vendedores. Si el cliente nunca vuelve, la unidad sigue bloqueada hasta que alguien se acuerde.
+
+**Decisión.** Separar una unidad marca como perdidas todas las demás cotizaciones de esa unidad. Una tarea programada libera la separación después del límite de días del proyecto, y las cotizaciones perdidas vuelven solas.
+
+**Costo.** Las cotizaciones tienen más estados, y una cotización perdida puede volver a la vida.
+
+**En el producto.** Cuando una separación vence, la unidad vuelve a estar disponible y cada cotización perdida vuelve a abierta, o a vencida si su propia fecha ya pasó.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/uncierre/flow-rental.webp", title: "Un arriendo", caption: "De la cotización a la última cuota, con el arrendatario pagando desde la app.", width: 3000, height: 1560, light: true }}>
+
+### Arriendos que se cierran solos
+
+**Problema.** Un arriendo es una larga serie de pagos, a veces ligada a las ventas del arrendatario, y es fácil pasar por alto su terminación.
+
+**Decisión.** El arrendatario paga y reporta ventas desde la app, el equipo confirma cada pago, y la plataforma avisa cuando quedan dos cuotas y cierra el arriendo cuando todo está pagado.
+
+**Costo.** Los cánones variables recalculan las cuotas cada vez que llega un reporte.
+
+**En el producto.** Cerrar un contrato marca la unidad como arrendada y cierra las demás ofertas sobre ella, y terminar el arriendo libera la unidad de nuevo.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/uncierre/reservation-lifecycle.webp", title: "Una reserva, paso a paso", caption: "Del primer pago a la entrega, y las dos formas en que un negocio puede terminar antes.", width: 3000, height: 1260, light: true }}>
+
+### Dos formas de terminar un negocio
+
+**Problema.** Un cliente que desiste y una reserva creada por error son muy distintos, pero ambos sacan un negocio del pipeline.
+
+**Decisión.** Desistir marca la reserva como perdida y libera la unidad. Eliminar es definitivo: la unidad queda disponible y sus cotizaciones vuelven.
+
+**Costo.** Dos acciones que el equipo tuvo que aprender a diferenciar.
+
+**En el producto.** Cada una notifica a las personas correctas y deja su rastro en la historia de la reserva.
+
+</DiagramRow>
+
+### El cliente ve el negocio en vivo
+
+**Problema.** Compradores y arrendatarios necesitan saber cuánto deben y si su último pago llegó, sin preguntarle a la sala de ventas.
+
+**Decisión.** La app para clientes se suscribe a los mismos modelos de lectura que usa el panel, así que un pago confirmado aparece en el celular en cuanto se confirma.
+
+**Costo.** Suscripciones en vivo que mantener abiertas para cada cliente con sesión iniciada.
+
+**En el producto.** Compradores y arrendatarios ven sus cuotas, pagos y documentos, y los arrendatarios pagan con un comprobante y reportan ventas desde la app.
+
+</DesignDecisionsSection>
+
+<DesignSystemSection title="Sistema de diseño" nav="Sistema de diseño">
+
+El panel y la app para clientes comparten un lenguaje visual, creado por el diseñador de producto de la empresa, y los componentes del panel viven en una librería compartida construida sobre Tailwind y shadcn.
+
+<DiagramRow item={{ src: "/screenshots/uncierre/design-system-foundations.webp", title: "Fundamentos", caption: "Tipografía, color, colores de estado, radios y espaciado del panel y la app para clientes.", width: 3000, height: 1575, light: true }}>
+
+### Fundamentos
+
+- **Dos tipografías.** Poppins para los títulos y Roboto para la interfaz, las tablas y los montos.
+- **Un violeta profundo y un verde azulado.** Violeta para la marca y las acciones principales, azul marino para la estructura y dos verdes azulados como acentos.
+- **Una app para clientes con dos temas.** La app sigue el tema claro u oscuro del celular, con una paleta para cada uno.
+- **Colores de estado para el dinero.** Pagado y al día, parcial y en mora siempre se ven igual, en la cartera y en la app.
+- **Una escala de radios.** Una escala corta de valores de radio compartida por todos los componentes.
+
+</DiagramRow>
+
+### Integrado en las apps
+
+Construí la app para clientes con sus paletas clara y oscura, y trabajé en el panel mientras pasaba a la librería de componentes compartida. Un componente que se agrega a la librería queda disponible para todas las pantallas, y así es como las partes más antiguas del panel pasan una por una.
+
+</DesignSystemSection>
+
+<ImplementationSection title="Del diseño al código" nav="Diseño a código">
+
+Como Mid-level Software Engineer, mi trabajo era convertir el diseño y las reglas de negocio en una plataforma que funcionara. Esta sección explica cómo está organizada, en términos de lo que hace cada parte.
+
+<DiagramRow item={{ src: "/diagrams/uncierre/architecture.webp", title: "Arquitectura", caption: "Las dos apps, la capa GraphQL, los servicios y los datos detrás de ellos.", width: 3000, height: 1560, light: true }}>
+
+### Arquitectura
+
+El repositorio es un monorepo con el panel, los servicios y paquetes compartidos para los cotizadores, el asistente de reservas, la vista de torre, las tablas, los componentes y una librería core. Las apps hablan con una sola capa GraphQL, que sirve los modelos de lectura con suscripciones en vivo y envía cada cambio al servicio correcto como una acción.
+
+Los servicios siguen una arquitectura hexagonal estricta: el dominio se mantiene independiente del framework, las bases de datos y la mensajería. Se comunican entre sí a través de un bus de mensajes, así que las notificaciones y el inventario reaccionan a una venta sin hacerla más lenta, y el event store, los modelos de lectura y los datos de arriendos viven en bases de datos separadas.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/uncierre/event-sourcing.webp", title: "Cómo se escribe un cambio", caption: "De una mutación al event store, el modelo de lectura, los efectos secundarios y los demás servicios.", width: 3000, height: 1340, light: true }}>
+
+### Event sourcing para el dinero
+
+Las reservas y los clientes usan event sourcing. Un comando reconstruye la reserva a partir de sus eventos, aplica la regla de negocio y agrega un nuevo evento. Un trigger actualiza el modelo de lectura, y un mapa de post-acciones ejecuta los efectos secundarios de cada evento, como reservar la cotización y la unidad o llamar al webhook de un proyecto.
+
+Esa historia es la razón por la que la plataforma puede explicar cualquier negocio meses después, y por la que un supervisor puede deshacer el último pago sin reescribir lo que vino antes.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/uncierre/lifecycles.webp", title: "Ciclos de vida", caption: "Los estados de una cotización, una unidad y un arriendo, y qué mueve a cada uno.", width: 3000, height: 1560, light: true }}>
+
+### Un inventario que sigue al negocio
+
+Las cotizaciones, las unidades y los arriendos cambian de estado al ritmo de los negocios que los rodean. Separar, reservar, desistir, eliminar o arrendar se propaga a la unidad y sus adicionales automáticamente, así que el inventario nunca dice que una unidad está libre cuando no lo está.
+
+</DiagramRow>
+
+### Calidad y entrega
+
+El desarrollo guiado por pruebas se estandarizó en todos los servicios, con pruebas unitarias en cada servicio y suites end-to-end para los flujos principales: cotizaciones, reservas, arriendos, pagos, inicio de sesión e inventario. Cada servicio sale por su cuenta, así que un cambio en arriendos nunca espera un cambio en ventas.
+
+### Decisiones técnicas
+
+| Decisión | Por qué | Costo |
+|---|---|---|
+| Arquitectura hexagonal | Las reglas de negocio se mantienen independientes de frameworks, bases de datos y mensajería. | Más estructura al inicio, con puertos y adaptadores que escribir. |
+| Event sourcing para reservas y clientes | Los negocios duran mucho y cada cambio debe poder explicarse. | Un event store, proyecciones y handlers que mantener sincronizados. |
+| CQRS con lecturas en GraphQL | Las escrituras siguen las reglas de negocio, y las apps leen proyecciones con la forma que necesitan. | Dos modelos que mantener. |
+| Un bus de mensajes entre servicios | Las notificaciones y el inventario reaccionan sin bloquear una venta. | Enrutamiento que diseñar y un broker que operar. |
+| Bases de datos separadas por responsabilidad | La historia de ventas, los modelos de lectura y los arriendos evolucionan de forma independiente. | La consistencia entre bases de datos hay que diseñarla. |
+| Post-acciones como un mapa | Los efectos secundarios de cada evento se declaran en un solo lugar y quedan registrados. | Un lugar más donde buscar cuando un evento falla. |
+
+</ImplementationSection>
+
+<ResultsSection title="Resultados" nav="Resultados">
+
+Los motores de cotización y reservas abrieron nuevas fuentes de ingresos, y las ventas crecieron un 40%. Estandarizar el desarrollo guiado por pruebas, junto con el resto del trabajo, acortó los ciclos de lanzamiento a producción en un 30%.
+
+En el día a día, el equipo comercial cubre toda la vida de un negocio en un solo lugar: inventario, cotizaciones, separaciones, reservas con sus cuotas, cartera, arriendos, pagos, recibos y notificaciones. Compradores y arrendatarios siguen sus negocios y pagan desde la app para clientes.
+
+</ResultsSection>
+
+<LearningsSection title="Aprendizajes y próximos pasos" nav="Aprendizajes">
+
+### Próximos pasos
+
+- Construir los servicios de autenticación y de clientes que estaban planeados.
+- Terminar de pasar las partes más antiguas del panel a la librería de componentes compartida.
+
+### Qué aprendí
+
+- **El event sourcing vale la pena donde está el dinero.** Guardar cada cambio como un evento agregó piezas, pero hizo que cualquier pregunta sobre un negocio tuviera respuesta, que es lo que más necesita un equipo comercial.
+- **La consistencia es un problema de diseño, no una función de la base de datos.** Las separaciones, las reservas y los arriendos tocan las mismas unidades, y mantenerlos consistentes entre servicios implicó diseñar cada propagación de forma explícita.
+- **Las pruebas cambian qué tan rápido se atreve a lanzar un equipo.** Estandarizar TDD se sintió más lento al principio, y es lo que permitió acortar los lanzamientos.
+
+</LearningsSection>

@@ -1,21 +1,25 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getAllProjectMeta } from "@/content/projects";
+import type { Locale } from "@/i18n/config";
+import { getDictionary } from "@/i18n/dictionaries";
 
-export const metadata: Metadata = {
-  title: "Projects · Portfolio",
-  description: "Projects: goals, features, decisions and architecture.",
-};
+export async function generateMetadata({ params }: PageProps<"/[lang]/projects">): Promise<Metadata> {
+  const t = getDictionary((await params).lang as Locale).meta;
+  return { title: t.projects, description: t.projectsDescription };
+}
 
 // Index of all projects, with cards linking to each detail view.
-export default async function ProjectsIndexPage() {
-  const projects = await getAllProjectMeta();
+export default async function ProjectsIndexPage({ params }: PageProps<"/[lang]/projects">) {
+  const lang = (await params).lang as Locale;
+  const t = getDictionary(lang);
+  const projects = await getAllProjectMeta(lang);
 
   return (
     <section className="mx-auto w-full max-w-[960px] px-4 pt-32 md:pt-[200px]">
       <header className="mx-auto max-w-[640px] text-center">
-        <p className="text-[14px] text-ink-muted">{projects.length} projects</p>
-        <h1 className="mt-8 text-[36px] font-medium leading-[1.4] text-ink">Projects</h1>
+        <p className="text-[14px] text-ink-muted">{t.project.count(projects.length)}</p>
+        <h1 className="mt-8 text-[36px] font-medium leading-[1.4] text-ink">{t.nav.projects}</h1>
       </header>
 
       <ul className="mt-20 grid grid-cols-1 gap-x-8 gap-y-16 md:grid-cols-2">
@@ -26,16 +30,16 @@ export default async function ProjectsIndexPage() {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={p.cover}
-                  alt={`Cover of ${p.title}`}
+                  alt={t.project.cover(p.title)}
                   className="aspect-video w-full rounded-[8px] border border-line object-cover object-top"
                 />
               ) : (
                 <div
                   role="img"
-                  aria-label={`Cover of ${p.title}`}
+                  aria-label={t.project.cover(p.title)}
                   className="flex aspect-video w-full items-center justify-center rounded-[8px] bg-surface-2 text-[13px] text-ink-faint"
                 >
-                  Cover
+                  {t.project.coverPlaceholder}
                 </div>
               )}
               <div className="flex flex-col gap-2">

@@ -1,0 +1,340 @@
+---
+title: "Emisys"
+slug: "emisys"
+summary: "Una plataforma que permite a los fondos de empleados ofrecer una tarjeta de crédito a sus afiliados: un back-office, un portal del fondo, una app para afiliados y un portal de gobierno para manejar toda la vida del programa de tarjetas, conectada con Mottika y con terceros solo a través de contratos. Un proyecto para un cliente en Tres Astronautas."
+type: "Proyecto de trabajo · Tres Astronautas"
+date: "2026-10"
+year: "2026"
+status: "En desarrollo"
+featured: true
+hideCover: true
+stack:
+  - "Go"
+  - "PostgreSQL"
+  - "Next.js"
+  - "React"
+  - "Tailwind CSS"
+  - "shadcn/ui"
+  - "gRPC y OpenAPI"
+  - "Turborepo y pnpm"
+  - "PWA"
+highlights:
+  - value: "26"
+    label: "capacidades"
+  - value: "115"
+    label: "funcionalidades"
+  - value: "4"
+    label: "apps web: back-office, portal del fondo, app para afiliados y portal de gobierno"
+---
+
+<SummarySection title="Resumen" nav="Resumen">
+
+Emisys permite que los fondos de empleados, las cooperativas de ahorro y crédito que muchas empresas ofrecen a su personal, les den a sus afiliados una tarjeta de crédito sin construir sus propios sistemas de emisión, autorización, conciliación y control.
+
+Funciona como el registro y el orquestador del programa de tarjetas. Vincula a cada fondo, configura productos y reglas, gestiona a los afiliados y la vida completa de cada tarjeta, agrega contexto a cada compra, registra las transacciones y sus correcciones, y controla el dinero que cada fondo debe poner por adelantado. Lo que no hace importa igual: Emisys nunca mueve dinero, nunca toma la decisión de crédito y nunca ve el PIN de una tarjeta. El fondo conserva su autoridad, y cada tercero conserva su propia tarea.
+
+El producto se compone de cuatro apps web sobre una misma plataforma:
+
+- **Un back-office** para el equipo que opera el programa.
+- **Un portal del fondo** para los administradores y usuarios de cada fondo, con la marca propia del fondo.
+- **Una app para afiliados** en el celular, también con la marca del fondo, el único canal que usan los afiliados.
+- **Un portal de gobierno** donde los revisores aprueban la liquidación y las garantías.
+
+Emisys es una mitad de un producto de dos partes. Mottika, documentado como un proyecto aparte, es el switch transaccional que está detrás.
+
+Trabajo en Emisys en Tres Astronautas para un cliente, como Senior Software Engineer, construyendo la mayor parte de la API y de las apps web. El proyecto es confidencial y sigue en desarrollo, así que este caso de estudio muestra flujos y diagramas en lugar de pantallas.
+
+</SummarySection>
+
+<ContextSection title="Contexto y rol" nav="Contexto">
+
+- **Cliente:** Una empresa de servicios financieros. El nombre se mantiene privado.
+- **Empresa:** Tres Astronautas
+- **Producto:** Un back-office, un portal del fondo, una app para afiliados y un portal de gobierno sobre una misma plataforma
+- **Idiomas:** Español e inglés
+- **Mi rol:** Senior Software Engineer
+- **Qué construí:** La mayor parte de la API y de las apps web
+- **Estado:** En desarrollo
+
+</ContextSection>
+
+<ProblemSection title="Problema" nav="Problema">
+
+Un programa de tarjetas para un fondo de empleados depende de muchas partes a la vez: el procesador que emite y autoriza las tarjetas, los sistemas propios del fondo que toman la decisión de crédito, una plataforma de conciliación, un core contable y los propios afiliados. Sin una plataforma en el medio, cada paso entre ellos se vuelve un traspaso por correo, archivo o teléfono, y cada traspaso es un lugar donde algo se pierde, se digita dos veces o queda sin rastro.
+
+El alcance de la plataforma muestra dónde duele:
+
+- **Los administradores del fondo** necesitan registrar afiliados, solicitar y asignar tarjetas y definir sus propias reglas, sin depender de alguien más en cada paso.
+- **Los afiliados** necesitan un solo lugar para ver su tarjeta, activarla, definir el PIN y bloquearla cuando algo sale mal.
+- **El equipo de operación** necesita vincular fondos, definir productos y vigilar cada integración desde un solo lugar.
+- **Los analistas de conciliación** necesitan que las cifras de cada periodo se puedan explicar después, con aprobaciones que dejen evidencia.
+
+El administrador del fondo carga con la mayor parte de ese peso. Es el perfil que cruza más flujos, desde la vinculación de su propio fondo hasta la tarjeta en la mano de un afiliado, y la mayor parte del portal del fondo está diseñada para que cada uno de esos pasos sea claro y seguro de repetir.
+
+</ProblemSection>
+
+<PersonasSection title="Usuarios y contexto de uso" nav="Usuarios">
+
+Cinco perfiles trabajan con Emisys. Las partes externas, como el procesador de tarjetas o el autorizador del fondo, se modelan como puntos de integración y no como personas.
+
+<PersonaCards
+  items={[
+    { name: "Administrador del fondo", does: "Registra afiliados, solicita y asigna tarjetas, define las reglas transaccionales del fondo y hace seguimiento a los reclamos, solo para su propio fondo.", where: "Portal del fondo", tool: "tie", hair: "long", skin: "#d9a07c", shirt: "#2f3e5e", hairColor: "#2a1a14", glasses: true, },
+    { name: "Afiliado", does: "Un afiliado del fondo que ve su tarjeta, saldo y movimientos, activa la tarjeta, define el PIN y la bloquea.", where: "App para afiliados, primero celular", tool: "bag", hair: "curly", skin: "#a8704d", shirt: "#27a36d", hairColor: "#1c1c1c", },
+    { name: "Operador de la plataforma", does: "Vincula fondos, configura productos y reglas, arma lotes de tarjetas y vigila cada integración.", where: "Back-office", tool: "headset", hair: "short", skin: "#e2ad88", shirt: "#8e5be0", hairColor: "#5a3a22", },
+    { name: "Analista de conciliación", does: "Concilia cada periodo, gestiona las diferencias y controla lo que pasa a contabilidad.", where: "Back-office", tool: "chart", hair: "bob", skin: "#f0c8a0", shirt: "#4b7bec", hairColor: "#7a3b2a", glasses: true, },
+    { name: "Revisor de gobierno", does: "Revisa la liquidación y las garantías con su evidencia y las aprueba mediante un flujo configurable.", where: "Portal de gobierno", tool: "magnifier", hair: "short", skin: "#c68863", shirt: "#7a7f8c", hairColor: "#2a2a2a", glasses: true, },
+  ]}
+/>
+
+### Los momentos que definieron el diseño
+
+- **El afiliado que activa una tarjeta** está en el celular, muchas veces por primera vez. La app tenía que ser una tarea por pantalla, y el PIN tenía que ir directo al procesador sin pasar por Emisys.
+- **El administrador del fondo que registra afiliados de forma masiva** sube un archivo y necesita un resultado por cada fila, no un solo "falló" para todo el lote.
+- **El operador frente a un tercero lento** necesita ver qué está pendiente y actuar solo mediante las acciones de recuperación permitidas.
+- **El analista que cierra un periodo** necesita que cada cifra sea rastreable, con una segunda aprobación donde hay dinero de por medio.
+
+Estos momentos salen del backlog funcional y del blueprint de UX del proyecto, y sirvieron como prueba para cada flujo.
+
+</PersonasSection>
+
+<ObjectivesSection title="Objetivos, métricas de éxito y restricciones" nav="Objetivos">
+
+### Objetivos
+
+1. Acortar el tiempo desde el registro de un afiliado hasta una tarjeta activa, con menos solicitudes que requieran reproceso.
+2. Mantener la operación fluyendo cuando un tercero falla, con reintentos y recuperación seguros.
+3. Mantener el control financiero de punta a punta, y resolver las diferencias dentro de cada periodo.
+4. Conectar a cada tercero mediante contratos estables y versionados.
+5. Dejar rastro de cada operación relevante.
+
+### Cómo se mediría el éxito
+
+Las metas de cada objetivo se dejaron abiertas a propósito, hasta poder medir una línea base después de la salida a producción. Estas son las métricas que yo propondría, cada una ligada a uno de ellos:
+
+| Objetivo | Métrica | Qué nos dice |
+|---|---|---|
+| Tarjetas más rápido | Días desde el registro del afiliado hasta una tarjeta activa, y porcentaje de solicitudes que requieren reproceso | Si el flujo desde la solicitud hasta la activación de verdad se acortó. |
+| Continuidad | Operaciones que quedan indeterminadas, y tiempo para resolverlas | Qué tan seguido un tercero frena el programa, y qué tan rápido se recupera. |
+| Control financiero | Diferencias por periodo, y porcentaje resuelto antes del cierre | Si la conciliación ocurre dentro del ciclo. |
+| Integraciones gobernadas | Cambios de contrato por versión, y mensajes rechazados en el borde | Qué tan estables son las conexiones con terceros. |
+| Trazabilidad | Porcentaje de operaciones críticas que se pueden reconstruir de punta a punta | Si una auditoría puede seguir cualquier transacción. |
+
+### Restricciones
+
+- **Muchas partes, pocas listas.** El procesador, el autorizador del fondo y otras integraciones no estaban disponibles durante los primeros bloques, así que la plataforma se construyó contra contratos y sustitutos que responden "pendiente".
+- **Límites claros.** Emisys nunca mueve dinero, nunca toma la decisión de crédito y nunca ve un PIN, y cada pantalla tenía que respetar eso.
+- **Aislamiento entre fondos.** Ningún fondo puede ver los datos de otro, y los usuarios de un fondo nunca eligen un fondo: el contexto sale de quiénes son.
+- **Dos idiomas y dos temas** desde el inicio, con el portal del fondo y la app para afiliados bajo la marca de cada fondo.
+- **Decisiones de negocio abiertas,** como la forma en que un fondo confirma su canal de integración o si una carga masiva es todo o nada, todavía se estaban tomando mientras la construcción avanzaba.
+
+</ObjectivesSection>
+
+<ProcessSection title="Proceso y priorización" nav="Proceso">
+
+### Del problema al alcance
+
+El trabajo partió de un mapa de impacto que conectó los objetivos de negocio con las personas y los sistemas involucrados. Ese mapa se convirtió en un backlog funcional de 26 capacidades y 115 funcionalidades, cada una escrita como una historia de usuario con su disparador, precondiciones, flujo, reglas de negocio y criterios de aceptación.
+
+Un único catálogo de identificadores recorre el backlog, la arquitectura, el modelo de dominio y el blueprint de UX, así que una funcionalidad se puede seguir desde la historia hasta el contrato, la pantalla y la prueba.
+
+### Qué cubre la plataforma
+
+| Área | Qué permite |
+|---|---|
+| Identidad y acceso | Usuarios, roles personalizados con permisos granulares y un alcance por fondo, decididos por una sola autoridad. |
+| Vinculación de fondos | Un asistente, una invitación para el primer administrador, una lista de verificación con evidencia y la activación. |
+| Productos y reglas | Un catálogo de productos versionado con aprobación, reglas de la plataforma y las reglas transaccionales propias de cada fondo. |
+| Afiliados | Registro uno por uno, masivo o mediante una integración, con cambios que se propagan a las tarjetas. |
+| Suministro y ciclo de vida de tarjetas | Lotes, inventario por fondo, asignación, entrega, activación, PIN, bloqueos, cancelación y reexpedición. |
+| Autorizaciones y transacciones | Contexto para cada compra, y transacciones con sus anulaciones, devoluciones y reversos por separado. |
+| Extractos y reportes | La vista de la tarjeta para el afiliado, y reportes y tableros para cada fondo. |
+| Control del dinero | Prefondeo, garantías, conciliación, facturación, asientos contables y cashback. |
+| Servicio | Reclamos, contracargos, notificaciones y un enlace con la mesa de ayuda. |
+
+### Construido por bloques
+
+La entrega se divide en un bloque transversal y cinco bloques de negocio, y cada uno se revisa antes de empezar el siguiente. Los contratos de cada bloque se escriben antes de su código.
+
+- **Construido:** identidad y acceso, vinculación de fondos, productos, reglas y afiliados, con las cuatro apps, inicio de sesión, recuperación de contraseña, dos idiomas, dos temas y apps instalables.
+- **Siguiente:** lotes y ciclo de vida de tarjetas, autorizaciones y transacciones, extractos, y luego conciliación y facturación.
+- **Esperando a otros:** las integraciones reales con el switch, el autorizador del fondo y el procesador. Hasta que existan, los sustitutos responden "pendiente" en lugar de inventar un resultado.
+
+</ProcessSection>
+
+<DesignDecisionsSection title="Decisiones de diseño" nav="Decisiones">
+
+Las decisiones que más definieron la experiencia, tomadas por el equipo y diseñadas por el diseñador de producto del proyecto, parte del equipo de Tres Astronautas. El proyecto es confidencial, así que cada una se muestra como un flujo o un diagrama en lugar de una pantalla.
+
+<DiagramRow item={{ src: "/diagrams/emisys/flow-onboarding.webp", title: "La vinculación de un fondo", caption: "Desde el asistente del operador hasta un fondo con sus reglas vigentes, a través de dos perfiles.", width: 3000, height: 1480, light: true }}>
+
+### Un fondo sale en vivo mediante una lista de verificación
+
+**Problema.** Un fondo que empieza a operar con documentos faltantes, una tarifa sin pagar o una integración poco clara crea problemas difíciles de deshacer después.
+
+**Decisión.** El operador crea el fondo con exactamente un primer administrador, que luego arma el equipo y sube la evidencia. El operador valida cada ítem, y el fondo sale en vivo solo cuando se cumplen todos los ítems obligatorios.
+
+**Costo.** La activación toma más tiempo que un solo formulario de "crear y listo".
+
+**En el producto.** Cada fondo tiene dos estados separados, uno de vinculación y otro de operación, y la primera activación mueve ambos en un solo paso. Una solicitud repetida nunca crea un segundo fondo ni una segunda invitación.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/emisys/flow-cards.webp", title: "De una solicitud a una tarjeta activa", caption: "Participan cuatro perfiles, y cada paso tiene un solo responsable.", width: 3000, height: 1700, light: true }}>
+
+### Cada paso de una tarjeta tiene un solo responsable
+
+**Problema.** Una tarjeta física pasa por el fondo, el operador, el procesador y el afiliado. Si cualquiera de ellos puede saltarse un paso, nadie sabe dónde está realmente una tarjeta.
+
+**Decisión.** El fondo solicita, el operador arma el lote, el procesador la fabrica y el fondo confirma la recepción. El inventario solo crece con esa confirmación, y solo el afiliado puede activar la tarjeta.
+
+**Costo.** Más confirmaciones, y una tarjeta que está entregada pero no se puede usar hasta que el afiliado actúe.
+
+**En el producto.** Asignar una tarjeta toma exactamente una del inventario, aunque la solicitud se repita, y una respuesta que nunca llega se muestra como indeterminada, nunca como hecha.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/emisys/card-lifecycle.webp", title: "El ciclo de vida de una tarjeta", caption: "Los estados de una tarjeta, y las reglas que protegen cada transición.", width: 3000, height: 1340, light: true }}>
+
+### Cada bloqueo recuerda quién lo puso
+
+**Problema.** Una tarjeta puede ser bloqueada por el fondo, por el afiliado, por fraude o porque el afiliado se retiró de la empresa. Si cualquier bloqueo pudiera levantar cualquier otro, una acción podría deshacer una decisión que alguien más tomó por una buena razón.
+
+**Decisión.** Cada restricción conserva su origen. Un fondo levanta solo los bloqueos que puso, y la tarjeta vuelve a activa solo cuando se levanta el último.
+
+**Costo.** Un modelo más complejo detrás de una simple etiqueta de "bloqueada".
+
+**En el producto.** Cuando un fondo reporta un cambio en un afiliado, las tarjetas siguen una política fija: suspendido las bloquea, retirado las cancela, y reactivado levanta solo el bloqueo que causó ese estado.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/emisys/authorization.webp", title: "Una compra, cuatro partes", caption: "Quién decide qué en una autorización, y qué pasa en un timeout.", width: 3000, height: 1080, light: true }}>
+
+### "Indeterminado" es un estado, no un error
+
+**Problema.** En un producto financiero, mostrar "aprobado" o "rechazado" cuando la respuesta real nunca llegó es peor que no mostrar nada.
+
+**Decisión.** Cada operación tiene un estado explícito, y un timeout se registra como indeterminado hasta conocer el resultado real. La interfaz nunca muestra datos que no tiene.
+
+**Costo.** Algunas pantallas dicen "pendiente de confirmación" o "no disponible" por un tiempo, y la plataforma necesita colas para resolver esos casos después.
+
+**En el producto.** La misma regla recorre toda la plataforma: aceptado pero aún no confirmado, indeterminado, no confirmado y pendiente de intervención son estados que las personas pueden ver, con las acciones que permite cada uno.
+
+</DiagramRow>
+
+### La marca del fondo, no la del proveedor
+
+**Problema.** El programa de tarjetas le pertenece al fondo. Los afiliados deberían sentir que tratan con su fondo, no con una plataforma que nunca eligieron.
+
+**Decisión.** El portal del fondo y la app para afiliados son de marca blanca: el logo y el color de marca de cada fondo se cargan después del inicio de sesión. El back-office mantiene su propia marca.
+
+**Costo.** Cada componente tiene que funcionar con colores que no conoce de antemano.
+
+**En el producto.** Del color de marca se derivan un primario, un tinte suave y un tono de texto más oscuro, y el sistema de diseño verifica el contraste de cada par en ambos temas.
+
+### El fondo sale de la sesión
+
+**Problema.** Un usuario de un fondo que tiene que elegir "su" fondo puede elegir el equivocado, y una lista de fondos ya le dice más de lo que debería saber.
+
+**Decisión.** Los usuarios de un fondo nunca ven un selector de fondo. El fondo sale de quién inició sesión, y cada consulta se limita en el servidor.
+
+**Costo.** Cada pantalla depende de que el servidor resuelva bien el contexto, así que el aislamiento se prueba por separado.
+
+**En el producto.** Los datos de otro fondo se ven como si no existieran, y el contexto activo siempre está visible en el encabezado.
+
+</DesignDecisionsSection>
+
+<DesignSystemSection title="Sistema de diseño" nav="Sistema de diseño">
+
+Las cuatro apps comparten un sistema de diseño, creado en Figma por el diseñador de producto asignado al proyecto en Tres Astronautas y documentado como un manual de fundamentos, componentes y plantillas de página. Una persona que pasa del back-office al portal de un fondo reconoce cada pieza, incluso bajo otra marca.
+
+<DiagramRow item={{ src: "/screenshots/emisys/design-system-foundations.webp", title: "Fundamentos", caption: "Tipografía, color, colores de estado, radios y espaciado compartidos por las cuatro apps.", width: 3000, height: 1575, light: true }}>
+
+### Fundamentos
+
+- **Dos tipografías con roles claros.** Space Grotesk, una sans serif geométrica, para los títulos. Satoshi para la interfaz, los formularios, las tablas y los datos.
+- **Una marca con base oscura.** Un azul marino profundo para la estructura, magenta para la acción principal, naranja como acción secundaria y amarillo como acento, con un degradado reservado para el inicio de sesión.
+- **Un tema oscuro que sale gratis.** Cada escala de color simplemente se invierte para el tema oscuro, así que cada token semántico se declara una vez y funciona en ambos.
+- **Colores de estado con significados fijos.** Éxito, error, advertencia e información siempre significan lo mismo, y se verificó el contraste de cada par en ambos temas.
+- **Una escala de radios cerrada y una escala tipográfica densa.** Se eliminaron los tamaños por defecto del framework, así que solo se pueden usar los valores del sistema.
+
+</DiagramRow>
+
+### Integrado en las apps
+
+Llevé el sistema de diseño a código como un paquete de componentes compartido que usan las cuatro apps. Los colores, la tipografía y los radios se convirtieron en tokens de tema con una versión clara y una oscura, y los tokens de marca se pueden reemplazar en tiempo de ejecución, que es como el color de cada fondo llega a su portal y a su app para afiliados. Las nuevas primitivas solo se pueden agregar al paquete, nunca dentro de una app, así que las cuatro apps se mantienen consistentes a medida que crecen.
+
+</DesignSystemSection>
+
+<ImplementationSection title="Del diseño al código" nav="Diseño a código">
+
+Como Senior Software Engineer, mi trabajo es convertir el diseño y la arquitectura en un producto que funciona. Esta sección explica cómo está organizada la plataforma, en términos de lo que hace cada parte.
+
+<DiagramRow item={{ src: "/diagrams/emisys/architecture.webp", title: "Arquitectura", caption: "Las cuatro apps, el núcleo con su servicio de autorización, y los terceros detrás de contratos.", width: 3000, height: 1560, light: true }}>
+
+### Arquitectura
+
+Las cuatro apps hablan con la plataforma a través de un único gateway, siempre desde su propio lado del servidor. Detrás de él, una aplicación modular contiene el negocio: fondos, productos, reglas, afiliados, tarjetas, auditoría e integraciones. Un servicio aparte responde cada "¿puede esta persona hacer esto, en este fondo?" y niega por defecto.
+
+El trabajo que no necesita una respuesta inmediata pasa por colas, con orden por tarjeta, por fondo o por periodo donde el orden importa. Cada tercero, incluido Mottika, está detrás de un contrato versionado, y Emisys nunca lee la base de datos de otro sistema.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/emisys/lifecycles.webp", title: "Ciclos de vida", caption: "Los estados de un fondo, un producto y una solicitud de tarjeta.", width: 3000, height: 1560, light: true }}>
+
+### Estados en los que las personas pueden confiar
+
+El modelo de dominio describe cada entidad con un ciclo de vida, sus estados y quién puede mover cada uno. Un producto, por ejemplo, pasa de editable a validado, autorizado y publicado, y puede suspenderse o retirarse, con las tarjetas existentes siguiendo la política elegida.
+
+Estos estados son lo que muestran las pantallas. Como cada transición es explícita, un botón aparece solo cuando la acción está permitida, y una operación que todavía espera a un tercero lo dice.
+
+</DiagramRow>
+
+### Contratos primero
+
+Cada capacidad tiene su propio contrato OpenAPI, escrito y revisado antes de su código y verificado de forma automática. Una prueba falla cuando una operación del contrato no tiene implementación, y la documentación de la API y las colecciones de solicitudes se generan a partir de los contratos, así que nunca se desactualizan.
+
+### Entrega
+
+Cada cambio pasa por verificaciones automáticas de calidad y seguridad antes de integrarse, y cada servicio y app tiene su propio flujo de despliegue. Las pruebas van más a fondo donde el riesgo es mayor: las autorizaciones y sus correcciones, el aislamiento entre fondos, la contabilidad duplicada y que el PIN nunca se almacene.
+
+### Trabajo con agentes de IA
+
+El trabajo es guiado por especificaciones, y el repositorio incluye mapas y reglas para agentes de IA que programan, con tableros de sesión, reservas sobre rutas compartidas y listas de verificación para revisores, para que varias sesiones puedan trabajar en paralelo sin chocar. Las personas mantienen el control de cada commit.
+
+### Decisiones técnicas
+
+| Decisión | Por qué | Costo |
+|---|---|---|
+| Los terceros como puntos de integración | Emisys se mantiene independiente de los detalles internos de cada tercero. | Cada integración necesita un contrato y un adaptador. |
+| Un contrato por capacidad, antes del código | Los equipos y las partes pueden trabajar en paralelo contra interfaces estables. | Una primera entrega más lenta. |
+| Un servicio de autorización aparte | Los permisos se deciden en un solo lugar, de la misma forma para cada app. | Una llamada más por cada acción protegida. |
+| Operaciones críticas idempotentes | Un reintento nunca duplica un fondo, una tarjeta o un pago. | Cada escritura necesita una llave de operación. |
+| Indeterminado como estado propio | Un timeout nunca se muestra como aprobado o rechazado. | Colas y estados manuales para resolverlo después. |
+| Cuatro apps por audiencia | Cada audiencia tiene una experiencia enfocada y su propia salida a producción. | Las piezas compartidas deben vivir en el sistema de diseño. |
+
+</ImplementationSection>
+
+<ResultsSection title="Resultados" nav="Resultados">
+
+La base de la plataforma está construida: identidad y acceso, vinculación de fondos, productos, reglas y afiliados, con las cuatro apps, inicio de sesión, recuperación de contraseña, dos idiomas, temas claro y oscuro y apps instalables. Los fondos se pueden vincular y gobernar de punta a punta, cada uno aislado de los demás.
+
+El proyecto sigue en desarrollo, así que todavía no hay cifras de uso. Los siguientes bloques traen el ciclo de vida de las tarjetas, las transacciones, los extractos, la conciliación y la facturación, y las integraciones reales con el switch, el autorizador del fondo y el procesador dependen de otras partes.
+
+</ResultsSection>
+
+<LearningsSection title="Aprendizajes y próximos pasos" nav="Aprendizajes">
+
+### Próximos pasos
+
+- Conectar el switch, el autorizador y el procesador reales en lugar de los sustitutos.
+- Construir el ciclo de vida de las tarjetas y las transacciones sobre los contratos que ya están escritos.
+- Tomar las primeras mediciones después de la salida a producción como línea base para las metas.
+
+### Qué aprendí
+
+- **Un estado honesto es una decisión de diseño.** Mostrar "pendiente de confirmación" en lugar de una suposición se sintió al principio como una peor experiencia. En un producto financiero es lo contrario: las personas confían en las pantallas porque las pantallas nunca fingen.
+- **Los contratos permiten construir antes de que exista el otro lado.** Con el procesador y el autorizador aún no disponibles, los contratos y sus sustitutos permitieron que las apps y los flujos avanzaran, e hicieron fácil ver el trabajo pendiente.
+- **La marca blanca es una restricción sobre cada componente.** Diseñar para colores que no conoces de antemano llevó al sistema de diseño a apoyarse en tokens en todas partes, e hizo que el tema oscuro saliera casi gratis.
+
+</LearningsSection>

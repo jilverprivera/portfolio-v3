@@ -1,0 +1,359 @@
+---
+title: "Ganaderiapp"
+slug: "ganaderiapp"
+summary: "Una app móvil para fincas ganaderas en Colombia: fincas y rotación de potreros, registro del hato con genealogía y pesos, sanidad y reproducción, leche, inventario de insumos, finanzas con soportes, reportes exportables, roles de equipo, alertas push y registro sin conexión, sobre Expo y Supabase."
+type: "Proyecto propio"
+date: "2026-10"
+year: "2026"
+status: "En desarrollo"
+featured: true
+cover: "/screenshots/ganaderiapp/cover.png"
+stack:
+  - "Expo y React Native"
+  - "TypeScript y expo-router"
+  - "NativeWind (Tailwind)"
+  - "Zustand"
+  - "React Hook Form y Zod"
+  - "Skia (gráficas)"
+  - "Supabase Postgres y PL/pgSQL"
+  - "Row Level Security"
+  - "Supabase Auth, Realtime y Storage"
+  - "Edge Functions (Deno)"
+  - "pg_cron y pg_net"
+  - "Expo Push Service (APNs y FCM)"
+highlights:
+  - value: "22"
+    label: "capacidades"
+  - value: "98"
+    label: "funcionalidades"
+  - value: "25"
+    label: "migraciones SQL"
+---
+
+<SummarySection title="Resumen" nav="Resumen">
+
+Ganaderiapp es una app móvil, para iOS y Android, para manejar una finca ganadera desde el celular. Reúne la finca y sus potreros, con rotación, días de descanso y mediciones de forraje, y el hato, con genealogía, pesajes, fotos, compra y venta. También cubre sanidad y reproducción, alimentación, producción de leche, inventario de insumos y finanzas con soportes.
+
+Los reportes se pueden exportar en PDF, Excel o CSV para un banco, un contador o un comprador. Una finca se puede compartir con un equipo, con un rol para cada persona, y la app envía alertas de vacunas, celos y partos esperados, inventario bajo y potreros listos. Los animales, pesajes y fotos se pueden registrar sin señal, y se sincronizan cuando el celular vuelve a tener conexión.
+
+La diseñé y la construí de punta a punta. La app está en español, con pesos colombianos y la zona horaria de Bogotá.
+
+</SummarySection>
+
+<ChallengeSection title="Reto y estrategia" nav="Reto">
+
+### Reto
+
+Una finca ganadera en Colombia suele manejarse con un cuaderno, una hoja de cálculo y la memoria de quien está a cargo. Qué animal se vacunó, cuándo pare una vaca, cuánto ha descansado un potrero, cuánto cuesta un insumo y cuánto ganó la finca este mes terminan en lugares distintos, o en la cabeza de nadie. Cuando la finca tiene socios, un mayordomo y un veterinario, la misma información tiene que llegarles a todos, y cada uno solo debería cambiar lo que le corresponde.
+
+El entorno también es difícil para el software. Los potreros y los corrales muchas veces no tienen señal, el celular es un Android de gama media usado al sol con una mano, y quienes necesitan los datos, como un banco, un contador o un comprador, no usan la app.
+
+### Estrategia
+
+La idea fue una sola app para toda la finca, construida alrededor de cómo pasa el trabajo en el campo. Todo lo que pertenece a una finca queda acotado a ella: los potreros, el hato, los insumos, el dinero y el equipo. Lo que no puede esperar a tener conexión, que son los animales nuevos, los pesajes y las fotos, se puede registrar sin conexión y se envía después sin duplicados.
+
+Tres reglas definieron el diseño. Las reglas del dominio viven en la base de datos, así que ninguna pantalla puede romperlas, y cada operación que toca varias tablas es una sola transacción. El dinero sigue al trabajo: comprar o vender un animal, una vacuna, una inseminación, la alimentación o la compra de un insumo crea su gasto o ingreso por sí solo. Y el modelo de equipo es simple: un propietario, copropietarios con permisos por módulo, y socios que solo pueden leer.
+
+</ChallengeSection>
+
+<PersonasSection title="Usuarios" nav="Usuarios">
+
+Se definieron siete perfiles. Cinco usan la app, uno solo recibe sus reportes y uno opera la plataforma.
+
+<PersonaCards
+  items={[
+    { name: "Propietario de la finca", does: "Es dueño de una o más fincas. Decide compras y ventas, lleva las cuentas y quiere saber cuánto gana la finca, qué animales tiene y qué hay que hacer hoy.", where: "App móvil, rol de propietario", tool: "tie", hair: "short", glasses: true, skin: "#e2ad88", shirt: "#2f3e5e", hairColor: "#555" },
+    { name: "Copropietario o administrador", does: "Un socio o familiar que comparte la administración y escribe solo en los módulos que el propietario habilitó: finca, animales, finanzas, inventario o miembros.", where: "App móvil, rol de copropietario", tool: "register", hair: "bob", skin: "#f0c8a0", shirt: "#8e5be0", hairColor: "#7a3b2a" },
+    { name: "Mayordomo de campo", does: "Trabaja en potreros y corrales con poca señal. Registra nacimientos, pesajes, vacunas, ordeños y movimientos de potrero desde el celular.", where: "App móvil, registro sin conexión", tool: "map", hair: "cap", skin: "#a8704d", shirt: "#27a36d", hairColor: "#1c1c1c" },
+    { name: "Veterinario o asesor", does: "Revisa sanidad, reproducción y producción, y recibe el reporte sanitario. Puede unirse como socio de solo lectura o como copropietario con el módulo de animales.", where: "App móvil y reportes compartidos", tool: "coat", hair: "long", skin: "#d9a07c", shirt: "#f4f4f7", hairColor: "#2a1a14" },
+    { name: "Inversionista o socio familiar", does: "Tiene una participación en la finca y quiere ver el hato y las alertas sin cambiar nada.", where: "App móvil, rol de socio", tool: "magnifier", hair: "short", skin: "#cf9468", shirt: "#7a7f8c", hairColor: "#2a2a2a" },
+    { name: "Destinatario de reportes", does: "Un banco, un contador, un comprador de ganado o de leche o una aseguradora. No usa la app: recibe el PDF, Excel o CSV que comparte el ganadero.", where: "Correo, WhatsApp o Drive", tool: "box", hair: "curly", skin: "#e8b48f", shirt: "#e6a23c", hairColor: "#3b2a22" },
+    { name: "Operador de la plataforma", does: "Gestiona los catálogos globales, configura el emisor de push y vigila los trabajos programados desde Supabase.", where: "Supabase", tool: "headset", hair: "bun", skin: "#c68863", shirt: "#4b7bec", hairColor: "#222" },
+  ]}
+/>
+
+</PersonasSection>
+
+<ImplementationSection title="Implementación y diseño" nav="Implementación">
+
+### Arquitectura
+
+Una app en Expo y React Native es la única interfaz, y Supabase es todo el backend: no hay un servidor propio. El esquema vive en 25 migraciones SQL versionadas, y los tipos de TypeScript se generan a partir de él. Haz clic en un diagrama para verlo en tamaño completo.
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/ganaderiapp/architecture.svg", title: "Arquitectura", caption: "La app del celular, los servicios de Supabase detrás de ella y el camino de las notificaciones push hasta el celular.", width: 1200, height: 600 },
+  ]}
+/>
+
+### Modelo de dominio
+
+El dominio se divide en 12 contextos con 41 entidades.
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/ganaderiapp/domain-contexts.svg", title: "Contextos del dominio", caption: "Los contextos del dominio, agrupados según para qué sirven.", width: 1200, height: 645 },
+    { src: "/diagrams/ganaderiapp/money-follows-work.svg", title: "El dinero sigue al trabajo", caption: "Seis operaciones crean su gasto o ingreso en la misma transacción.", width: 1200, height: 560 },
+  ]}
+/>
+
+### Datos y seguridad
+
+La autorización la decide la base de datos, y la app solo la refleja. Row Level Security está activo en todas las tablas, con denegación por defecto, y las operaciones que tocan varias tablas son funciones SQL que corren en una sola transacción.
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/ganaderiapp/security.svg", title: "De la solicitud a los datos", caption: "Los controles por los que pasa una solicitud, y cómo se protegen los archivos y las cuentas.", width: 1200, height: 460 },
+    { src: "/diagrams/ganaderiapp/roles.svg", title: "Roles por finca", caption: "Lo que pueden hacer el propietario, un copropietario y un socio.", width: 1200, height: 640 },
+  ]}
+/>
+
+### Operación sin conexión
+
+Los animales nuevos, los pesajes y las fotos se pueden guardar sin señal. Cada uno recibe un identificador creado en el celular, así que enviarlo dos veces nunca lo duplica.
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/ganaderiapp/offline.svg", title: "Cola sin conexión", caption: "Qué funciona sin conexión, y cómo se sincronizan los cambios en cola.", width: 1200, height: 620 },
+  ]}
+/>
+
+### Alertas y notificaciones push
+
+Una alerta es una fila que escribe un trigger y que se muestra en vivo en la app. Las notificaciones push pasan por una cola de entrega en Postgres, con reintentos y recibos.
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/ganaderiapp/alerts-push.svg", title: "Alertas y push", caption: "De un cambio o una programación a la campana en la app y la notificación en el celular.", width: 1200, height: 640 },
+  ]}
+/>
+
+### Reportes
+
+Los reportes se generan en el celular, así que un ganadero puede enviarlos a un banco o a un contador directamente desde el menú de compartir.
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/ganaderiapp/reports.svg", title: "Reportes", caption: "De los datos de la finca a PDF, Excel o CSV y al menú de compartir.", width: 1200, height: 420 },
+  ]}
+/>
+
+### Decisiones
+
+| Decisión | Por qué | Costo |
+|---|---|---|
+| Lógica del dominio en funciones de PostgreSQL | Las reglas y las transacciones viven junto a los datos, así que ninguna pantalla puede saltárselas. | La lógica de negocio en SQL es más difícil de probar y depurar que en el código de la aplicación. |
+| Multi-tenancy por finca con Row Level Security | La base de datos rechaza cualquier consulta fuera de las fincas de la persona, aunque la app tenga un bug. | Cada tabla necesita sus políticas, y un error en una es una fuga de datos. |
+| Modo sin conexión parcial | Solo se encolan animales nuevos, pesajes y fotos, que es lo que más necesita el campo. | Sanidad, alimentación, leche, finanzas y potreros necesitan conexión, y no hay fusión de conflictos. |
+| Inventario por movimientos | El stock es el resultado de su historial, nunca se edita a mano y nunca es negativo. | Las correcciones son movimientos nuevos, no ediciones. |
+| Ingresos y gastos automáticos | Nadie tiene que registrar la misma operación dos veces. | Borrar o editar el origen no siempre actualiza el registro de dinero. |
+| Cola de push en Postgres | Las entregas sobreviven a fallas, se reintentan y dejan rastro, sin una cola externa. | Entrega al menos una vez y dependencia de que `pg_cron` y `pg_net` estén habilitados a mano. |
+| Reportes generados en el celular | No hay servidor de reportes, y el archivo va directo al menú de compartir. | Las fincas grandes dependen del celular, y las tablas tienen un tope de 20.000 filas. |
+| Zustand y React Hook Form con Zod, sin librería de caché de consultas | Menos piezas móviles, y el manejo de errores vive en los servicios. | La caché y las recargas se hacen a mano. |
+
+</ImplementationSection>
+
+<FeaturesSection title="Funcionalidades" nav="Funcionalidades">
+
+La versión 1.0 incluye todo lo que me propuse construir, y está organizada como está organizada una finca.
+
+| Área | Qué puedes hacer |
+|---|---|
+| La finca y sus pastos | Crear fincas y sus potreros, hasta 50 a la vez. Mover el hato de potrero en potrero, ver cuántos días ha descansado cada uno y registrar mediciones de forraje. |
+| El hato | Registrar animales con fotos, comprarlos y venderlos, pesarlos y ver su ganancia diaria. Seguir su genealogía en un árbol genealógico, y revisar el estado del hato desde el dashboard de inicio. |
+| Cuidado y producción | Llevar el registro sanitario y las vacunas, seguir celos, inseminaciones y partos, y registrar la alimentación y la producción de leche. |
+| Insumos y dinero | Llevar el inventario de insumos, registrar ingresos y gastos con una foto del soporte, y ver cómo va la finca en gráficas. |
+| Todo lo demás | Iniciar sesión, invitar al equipo, recibir alertas, trabajar sin señal, y exportar reportes y copias de seguridad. |
+
+Algunos detalles que marcan la diferencia en el día a día:
+
+- **No escribes el dinero dos veces.** Cuando compras o vendes un animal, aplicas una vacuna o un tratamiento, inseminas una vaca, alimentas al hato o compras un insumo, el gasto o el ingreso se registra solo. Si quien lo hace no tiene acceso a finanzas, el trabajo igual se guarda y simplemente se omite la parte del dinero.
+- **Cada persona ve lo que le corresponde.** El propietario puede cambiar todo, un copropietario solo trabaja en los módulos que el propietario le abrió, y un socio puede mirar pero no tocar. El servidor lo hace cumplir, y la app oculta los botones que una persona no puede usar.
+- **Alertas dos veces al día.** A las 7 de la mañana y a las 5 de la tarde la app te recuerda las vacunas pendientes, los celos y partos esperados, los animales enfermos por revisar, los insumos que se están acabando y los potreros listos para pastorear, sin repetir la misma alerta.
+- **Puedes dejar tu cuenta con tranquilidad.** Puedes pausar tu cuenta y volver, o eliminarla con 15 días para cambiar de opinión y recordatorios 5 días y 1 día antes de que desaparezca.
+
+### Capturas del producto
+
+Imágenes promocionales de la aplicación en funcionamiento con sus datos de demostración. La interfaz está en español, el idioma de sus usuarios. Cada una muestra para qué sirve la pantalla y qué aporta. Haz clic en una imagen para verla más grande.
+
+<ScreenshotGallery
+  items={[
+    {
+      src: "/screens/ganaderiapp/animals.png",
+      title: "Inicio, hato y finanzas",
+      caption: "Las tres pantallas que más abre un ganadero: el dashboard en el centro, el hato a la izquierda y el dinero a la derecha.",
+      features: [
+        "Balance mensual con una gráfica de seis meses de ingresos y gastos.",
+        "Acciones rápidas para registrar un animal o un nuevo movimiento financiero.",
+        "Una lista del hato con búsqueda, con sexo, raza, edad, estado y potrero en cada tarjeta.",
+        "Una barra de pestañas flotante para las cinco secciones principales.",
+      ],
+      width: 828,
+      height: 1800,
+      scene: {
+        tone: "green",
+        phones: [
+          { src: "/screens/ganaderiapp/animals.png", title: "Hato", width: 828, height: 1800 },
+          { src: "/screens/ganaderiapp/home-dark.png", title: "Inicio", width: 828, height: 1800 },
+          { src: "/screens/ganaderiapp/finance-dark.png", title: "Finanzas", width: 828, height: 1800 },
+        ],
+      },
+    },
+    {
+      src: "/screens/ganaderiapp/animal-record.png",
+      title: "Ficha del animal",
+      caption: "Pesos, fotos, leche, sanidad y genealogía de un animal en un solo lugar.",
+      features: [
+        "Chips de estado y la finca, el potrero, la fecha de nacimiento y el peso al nacer.",
+        "Hasta 12 fotos, la primera usada como portada.",
+        "Pesajes con la fecha y el origen de cada uno.",
+        "Secciones de producción de leche, cuidados y el árbol genealógico.",
+      ],
+      width: 828,
+      height: 1800,
+      layout: "right",
+      scene: {
+        tone: "cream",
+        phones: [
+          { src: "/screens/ganaderiapp/animal-record.png", title: "Ficha del animal", width: 828, height: 1800 },
+          { src: "/screens/ganaderiapp/animal-weights.png", title: "Pesos y leche", width: 828, height: 1800 },
+        ],
+      },
+    },
+    {
+      src: "/screens/ganaderiapp/animal-care.png",
+      title: "Compra, finanzas del animal y genealogía",
+      caption: "Más abajo en la ficha, lo que costó el animal y de dónde viene.",
+      features: [
+        "Fecha de compra, precio y peso al momento de la compra.",
+        "Los ingresos y gastos asociados al animal, como el gasto creado cuando se compró.",
+        "Un botón para registrar un gasto de ese animal.",
+        "Un árbol genealógico con madre y padre, con espacios vacíos mientras no se conocen.",
+      ],
+      width: 828,
+      height: 1800,
+      layout: "left",
+      scene: {
+        tone: "mint",
+        phones: [
+          { src: "/screens/ganaderiapp/animal-care.png", title: "Cuidados, compra y finanzas", width: 828, height: 1800 },
+          { src: "/screens/ganaderiapp/animal-pedigree.png", title: "Genealogía", width: 828, height: 1800 },
+        ],
+      },
+    },
+    {
+      src: "/screens/ganaderiapp/finance.png",
+      title: "Finanzas",
+      caption: "Ingresos y gastos de la finca, con el balance del mes arriba.",
+      features: [
+        "Balance, ingresos y gastos del periodo seleccionado.",
+        "Una lista de movimientos con el concepto, la fecha y el monto, y un formulario para agregar un gasto o un ingreso.",
+        "Movimientos creados por la propia app cuando se vende un animal o se compra un insumo.",
+        "Hasta tres soportes por movimiento, guardados en un bucket privado.",
+      ],
+      width: 828,
+      height: 1800,
+      layout: "right",
+      scene: {
+        tone: "forest",
+        phones: [
+          { src: "/screens/ganaderiapp/finance.png", title: "Finanzas", width: 828, height: 1800 },
+          { src: "/screens/ganaderiapp/new-finance.png", title: "Nuevo movimiento financiero", width: 828, height: 1800 },
+        ],
+      },
+    },
+    {
+      src: "/screens/ganaderiapp/finance-reports.png",
+      title: "Reportes financieros",
+      caption: "Gráficas dibujadas con Skia que responden al tacto.",
+      features: [
+        "Ingresos y gastos por mes de los últimos doce meses, con una vista de tabla.",
+        "Balance acumulado del año.",
+        "Toca un mes para ver sus valores.",
+        "Temas claro y oscuro con la misma paleta.",
+      ],
+      width: 828,
+      height: 1800,
+      layout: "left",
+      scene: {
+        tone: "green",
+        phones: [
+          { src: "/screens/ganaderiapp/finance-reports.png", title: "Reportes financieros", width: 828, height: 1800 },
+          { src: "/screens/ganaderiapp/finance-categories.png", title: "Por categoría", width: 828, height: 1800 },
+        ],
+      },
+    },
+    {
+      src: "/screens/ganaderiapp/rotation.png",
+      title: "Rotación de potreros",
+      caption: "Qué potreros están ocupados, cuáles están en descanso y cuándo estará listo cada uno.",
+      features: [
+        "Estados ocupado, en descanso y listo para cada potrero.",
+        "Días de descanso contados desde la última ocupación, con un mínimo por potrero.",
+        "Mover animales entre potreros en una sola acción.",
+        "Una alerta cuando un potrero está listo para usarse de nuevo.",
+      ],
+      width: 828,
+      height: 1800,
+      layout: "right",
+      scene: {
+        tone: "dark",
+        phones: [
+          { src: "/screens/ganaderiapp/rotation.png", title: "Rotación de potreros", width: 828, height: 1800 },
+          { src: "/screens/ganaderiapp/farm-paddocks.png", title: "Potreros de la finca", width: 828, height: 1800 },
+        ],
+      },
+    },
+    {
+      src: "/screens/ganaderiapp/farm-light.png",
+      title: "Detalle de la finca",
+      caption: "El centro de una finca: su hato, sus potreros y el trabajo diario.",
+      features: [
+        "Animales activos y potreros de un vistazo, con la ubicación y el tamaño de la finca.",
+        "Accesos directos al hato, la producción de leche y el registro de animales.",
+        "La lista de potreros con su área y la vista de rotación.",
+        "Mover animales entre potreros y agregar potreros por lotes.",
+      ],
+      width: 828,
+      height: 1800,
+      layout: "left",
+      scene: {
+        tone: "forest",
+        phones: [
+          { src: "/screens/ganaderiapp/farm-light.png", title: "Detalle de la finca", width: 828, height: 1800 },
+          { src: "/screens/ganaderiapp/farm-inventory.png", title: "Inventario y reportes", width: 828, height: 1800 },
+        ],
+      },
+    },
+  ]}
+/>
+
+### La app en movimiento
+
+Grabaciones cortas de la app en uso, que se reproducen en bucle y sin sonido mientras están en pantalla.
+
+<MotionGallery
+  items={[
+    { src: "/videos/ganaderiapp/tabs.mp4", title: "Moverse por la app", caption: "Las cinco pestañas: inicio, finanzas, hato, fincas y perfil." },
+    { src: "/videos/ganaderiapp/home-scroll.mp4", title: "Dashboard de inicio", caption: "Balance, acciones rápidas y métricas del hato." },
+    { src: "/videos/ganaderiapp/animal-record.mp4", title: "Ficha del animal", caption: "Pesos, leche, cuidados y finanzas de un animal." },
+    { src: "/videos/ganaderiapp/charts.mp4", title: "Gráficas interactivas", caption: "Toca un mes para ver sus ingresos y gastos." },
+    { src: "/videos/ganaderiapp/theme.mp4", title: "Tema claro y oscuro", caption: "El tema cambia sin salir de la pantalla." },
+    { src: "/videos/ganaderiapp/farm.mp4", title: "Un recorrido por una finca", caption: "De la finca a sus potreros y la rotación." },
+    { src: "/videos/ganaderiapp/export.mp4", title: "Exportar un reporte", caption: "Elige un reporte y un formato, y compártelo." },
+    { src: "/videos/ganaderiapp/new-animal.mp4", title: "Registrar un animal", caption: "El formulario con validación en español y formatos colombianos." },
+    { src: "/videos/ganaderiapp/finance.mp4", title: "Finanzas", caption: "Movimientos y el balance del mes." },
+  ]}
+/>
+
+</FeaturesSection>
+
+<ResultsSection title="Resultados" nav="Resultados">
+
+Ganaderiapp ya hace lo que me propuse construir. Puedes crear una finca, configurar sus potreros y tener el hato en un solo lugar, con las fotos, los pesos, la sanidad, la leche y el árbol genealógico de cada animal. El dinero se registra casi solo, porque comprar un animal, aplicar una vacuna o comprar alimento crea su gasto por ti.
+
+Puedes invitar a las personas con las que trabajas y decidir qué puede tocar cada una, recibir recordatorios de vacunas, partos e inventario bajo, y compartir un reporte en PDF o Excel directamente desde tu celular. Y en el campo, donde muchas veces no hay señal, igual puedes registrar animales, pesos y fotos, y se sincronizan cuando vuelves a tener conexión.
+
+Sigue en desarrollo, así que la sigo puliendo y probando con datos de demostración.
+
+</ResultsSection>

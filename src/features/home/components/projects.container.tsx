@@ -2,27 +2,25 @@ import Link from "next/link";
 import { AccordionList, type AccordionItem } from "@/components/accordion-list";
 import { SectionHeader, labelClass as label } from "@/components/section-label";
 import { getAllProjectMeta } from "@/content/projects";
+import type { Locale } from "@/i18n/config";
+import { getDictionary } from "@/i18n/dictionaries";
 
-// Short line for each product, shown next to its name when the row is closed.
-const tagline: Record<string, string> = {
-  vigia: "Pharmacy management PWA",
-  telemetrix: "IoT telemetry platform",
-  ganaderiapp: "Cattle farm app",
-};
-
-export async function ProjectsContainer() {
-  const projects = (await getAllProjectMeta()).filter((project) => project.type === "Side project");
+export async function ProjectsContainer({ lang }: { lang: Locale }) {
+  const t = getDictionary(lang).home;
+  // The type is translated, so own products are picked from the English metadata.
+  const own = new Set((await getAllProjectMeta("en")).filter((p) => p.type === "Side project").map((p) => p.slug));
+  const projects = (await getAllProjectMeta(lang)).filter((project) => own.has(project.slug));
 
   const items: AccordionItem[] = projects.map((project) => ({
     id: project.slug,
     title: project.title,
-    subtitle: tagline[project.slug] ?? project.type,
+    subtitle: t.taglines[project.slug] ?? project.type,
     badge: project.status,
     image: project.cover,
     content: (
       <>
         <div className="flex flex-col gap-6">
-          <p className={`${label} text-ink-muted`}>What it is</p>
+          <p className={`${label} text-ink-muted`}>{t.whatItIs}</p>
           <p className="text-[19px] font-medium leading-[1.5]">{project.summary}</p>
           <ul className="flex flex-wrap gap-2">
             {project.stack.slice(0, 5).map((tech) => (
@@ -34,7 +32,7 @@ export async function ProjectsContainer() {
         </div>
 
         <div className="flex flex-col gap-6">
-          <p className={`${label} text-ink-muted`}>In numbers</p>
+          <p className={`${label} text-ink-muted`}>{t.inNumbers}</p>
           <ul className="flex flex-col">
             {project.highlights.map((h) => (
               <li
@@ -54,9 +52,9 @@ export async function ProjectsContainer() {
         >
           <span className={`${label} text-highlight`}>{project.year}</span>
           <span className="font-display text-[clamp(1.75rem,3vw,2.5rem)] uppercase leading-[1.05]">
-            Open the project
+            {t.openProject}
           </span>
-          <span className={`${label} border-t border-paper pt-3`}>Read the case study ↗</span>
+          <span className={`${label} border-t border-paper pt-3`}>{t.readCase}</span>
         </Link>
       </>
     ),
@@ -66,9 +64,9 @@ export async function ProjectsContainer() {
     <section id="projects" className="font-space-grotesk relative overflow-hidden px-8 pb-32 pt-16 text-ink">
       <div className="relative">
         <SectionHeader
-          label="My own products"
-          title="Built and run by me."
-          note={`${items.length} products. Each one designed, built and operated end to end. Tap a word.`}
+          label={t.ownProducts}
+          title={t.productsTitle}
+          note={t.productsNote(items.length)}
         />
         <div className="mt-16">
           <AccordionList items={items} />

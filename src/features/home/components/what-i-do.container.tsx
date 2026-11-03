@@ -1,17 +1,21 @@
 import Link from "next/link";
 import { AccordionList, type AccordionItem } from "@/components/accordion-list";
 import { SectionHeader, labelClass as label } from "@/components/section-label";
-import { disciplines } from "@/content/disciplines";
+import { getDisciplines } from "@/content/localized";
+import type { Locale } from "@/i18n/config";
+import { getDictionary } from "@/i18n/dictionaries";
 
-const items: AccordionItem[] = disciplines.map((d) => ({
+function buildItems(lang: Locale): AccordionItem[] {
+  const t = getDictionary(lang).home;
+  return getDisciplines(lang).map((d) => ({
   id: d.id,
   title: d.title,
   subtitle: d.subtitle,
-  badge: `${d.proofs.length} ${d.proofs.length === 1 ? "proof" : "proofs"}`,
+  badge: t.proofs(d.proofs.length),
   content: (
     <>
       <div className="flex flex-col gap-6">
-        <p className={`${label} text-ink-muted`}>What it covers</p>
+        <p className={`${label} text-ink-muted`}>{t.whatItCovers}</p>
         <p className="text-[19px] font-medium leading-[1.5]">{d.lead}</p>
         <ul className="flex flex-wrap gap-2">
           {d.tags.map((tag) => (
@@ -30,7 +34,7 @@ const items: AccordionItem[] = disciplines.map((d) => ({
       </div>
 
       <div className="flex flex-col gap-6">
-        <p className={`${label} text-ink-muted`}>The work behind it</p>
+        <p className={`${label} text-ink-muted`}>{t.workBehind}</p>
         <ul className="flex flex-col gap-4">
           {d.proofs.map((proof, i) => (
             <li key={proof.slug}>
@@ -55,24 +59,27 @@ const items: AccordionItem[] = disciplines.map((d) => ({
         href="#projects"
         className="flex h-fit flex-col gap-3 bg-ink p-6 text-paper transition-colors hover:bg-ink-soft"
       >
-        <span className={`${label} text-highlight`}>My own products</span>
+        <span className={`${label} text-highlight`}>{t.ownProducts}</span>
         <span className="font-display text-[clamp(1.75rem,3vw,2.5rem)] uppercase leading-[1.05]">
-          See what I build
+          {t.seeWhatIBuild}
         </span>
-        <span className={`${label} border-t border-paper pt-3`}>Go to the list ↓</span>
+        <span className={`${label} border-t border-paper pt-3`}>{t.goToList}</span>
       </Link>
     </>
   ),
-}));
+  }));
+}
 
-export function WhatIDoContainer() {
+export function WhatIDoContainer({ lang }: { lang: Locale }) {
+  const t = getDictionary(lang).home;
+  const items = buildItems(lang);
   return (
     <section id="what-i-do" className="font-space-grotesk relative overflow-hidden px-8 pb-24 pt-16 text-ink">
       <div className="relative">
         <SectionHeader
-          label="Client work"
-          title="The disciplines behind the work."
-          note={`${disciplines.length} disciplines. Each one backed by projects delivered for companies. Tap a word.`}
+          label={t.clientWork}
+          title={t.disciplinesTitle}
+          note={t.disciplinesNote(items.length)}
         />
         <div className="mt-16">
           <AccordionList items={items} />

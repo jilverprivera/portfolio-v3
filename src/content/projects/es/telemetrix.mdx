@@ -1,0 +1,270 @@
+---
+title: "Telemetrix"
+slug: "telemetrix"
+summary: "Una plataforma IoT para recibir, guardar, visualizar y reaccionar a la telemetría de dispositivos, con dashboards en tiempo real, reglas, acciones salientes, tareas programadas y comandos a dispositivos."
+type: "Proyecto propio"
+date: "2026-10"
+year: "2026"
+status: "En desarrollo"
+featured: true
+cover: "/screenshots/telemetrix/workspace-home.png"
+stack:
+  - "Go"
+  - "Next.js"
+  - "React"
+  - "Expo"
+  - "React Native"
+  - "Supabase Postgres y Auth"
+  - "Redis Streams"
+  - "EMQX (MQTT)"
+  - "Tailwind CSS"
+  - "TanStack Query"
+highlights:
+  - value: "16"
+    label: "capacidades del producto"
+  - value: "85"
+    label: "funcionalidades en el backlog"
+  - value: "50"
+    label: "archivos de prueba en Go"
+---
+
+<SummarySection title="Resumen" nav="Resumen">
+
+Telemetrix recibe lecturas de dispositivos por HTTP, WebSocket y MQTT, las guarda como series de tiempo, las muestra en gráficas y dashboards en tiempo real, y permite reaccionar a ellas con reglas, acciones salientes, tareas programadas, comandos a dispositivos y análisis en un entorno aislado.
+
+Los datos se organizan en canales: un canal agrupa hasta ocho campos de datos, además de ubicación y estado. Es un producto propio, diseñado desde cero para makers y para equipos que lo integran en sus propios sistemas.
+
+</SummarySection>
+
+<ChallengeSection title="Reto y estrategia" nav="Reto">
+
+### Reto
+
+Empezó con un vacío. De un lado están las herramientas para aficionados, buenas para un prototipo de fin de semana; del otro, las plataformas industriales hechas para empresas con un equipo que las opere. Los makers y los equipos pequeños quedan en medio: necesitan recoger datos de sus dispositivos, verlos en vivo y reaccionar a ellos, pero no quieren armar y operar un stack de brokers, bases de datos y dashboards solo para lograrlo.
+
+El modelo de negocio hizo el problema más difícil. Telemetrix se planeó como un SaaS con un plan gratuito masivo para makers, y clientes de pago que integran la plataforma en sus propios sistemas. Con cerca del 80% de los dispositivos esperados en el plan Free, cada dispositivo gratuito tenía que costar casi nada de servir, así que el diseño no podía permitirse desperdicio en la ruta crítica.
+
+### Estrategia
+
+El plan partió del dispositivo. Un dispositivo solo debería necesitar una API key y sus identificadores para empezar a enviar lecturas, ya sea por HTTP, MQTT o WebSocket. A partir de ahí, la decisión más importante fue mantener la ingesta independiente de la base de datos: una lectura se confirma cuando está segura en el buffer de eventos, no cuando llega al almacenamiento de series de tiempo, con una meta de diseño de confirmación p99 de 50 ms o menos. Luego una lectura debe llegar al dashboard en menos de 2 segundos (p95), para que las personas vean lo que hacen sus dispositivos en el momento en que pasa.
+
+El costo y la seguridad definieron el resto. Los límites de cada plan se aplican en el borde, antes de tocar cualquier recurso costoso, lo que mantiene sostenible el plan gratuito. Los canales son privados al crearse, las API keys se guardan solo como un HMAC, TLS es un requisito en producción y cada recurso está aislado por su dueño. Todo esto se dimensionó para 100.000 dispositivos activos en el primer año, un supuesto de planeación, con margen para 250.000 conexiones MQTT simultáneas.
+
+</ChallengeSection>
+
+<PersonasSection title="Usuarios" nav="Usuarios">
+
+Cuatro perfiles guían el diseño. La plataforma tiene roles globales, así que no hay organizaciones: cada recurso pertenece a su dueño.
+
+<PersonaCards
+  items={[
+    { name: "Maker o desarrollador IoT", does: "Construye dispositivos (ESP32, Arduino, Raspberry Pi, PLCs detrás de un gateway), crea canales, integra la API y automatiza.", where: "Consola web, app móvil y la API REST", tool: "chip", hair: "cap", glasses: true, skin: "#e2ad88", shirt: "#e8743b", hairColor: "#2a2a2a" },
+    { name: "Analista de monitoreo", does: "Lee dashboards y series de tiempo y recibe alertas para reaccionar.", where: "Consola web y app móvil", tool: "chart", hair: "bob", glasses: true, skin: "#c68863", shirt: "#4b7bec", hairColor: "#2a1a14" },
+    { name: "Operador de la plataforma", does: "Personal interno que gestiona planes, opera la plataforma y atiende soporte.", where: "Back-office y la plataforma de observabilidad", tool: "headset", hair: "curly", skin: "#a8704d", shirt: "#8e5be0", hairColor: "#1c1c1c" },
+    { name: "Visitante de canales públicos", does: "Una persona anónima que mira canales públicos y gráficas embebidas.", where: "Páginas públicas y widgets embebibles", tool: "magnifier", hair: "short", skin: "#f0c8a0", shirt: "#7a7f8c", hairColor: "#5a3a22" },
+  ]}
+/>
+
+</PersonasSection>
+
+<FeaturesSection title="Funcionalidades" nav="Funcionalidades">
+
+La documentación del backlog define 16 capacidades y 85 funcionalidades. Las principales:
+
+| Capacidad | Qué permite |
+|---|---|
+| Identidad y acceso | Registro e inicio de sesión con contraseña, roles globales (owner y developer), tokens personales de API y cierre de las sesiones activas. |
+| Dispositivos y credenciales | Registrar dispositivos, generar una API key por cuenta con tres encabezados por dispositivo, y ver el último contacto y el estado de conexión. |
+| Ingesta | Lecturas individuales y por lote por HTTP, publicación por MQTT y WebSocket, validación y normalización del payload, idempotencia por mensaje y límites de tasa según el plan. |
+| Canales y datos | Crear canales de hasta ocho campos, editarlos, consultar feeds con filtros y agregaciones por intervalo, exportar a CSV, JSON o XML, e importar historial desde CSV. |
+| Visualización | Gráficas en tiempo real por campo, indicadores, medidores y lámparas, dashboards con varios canales, un mapa de ubicación y canales públicos embebibles. |
+| Móvil | Inicio de sesión, navegación por canales y dashboards, datos en tiempo real y notificaciones push. |
+| Reglas y acciones | Umbrales y condiciones compuestas, detección de datos faltantes, tiempo de espera entre disparos, y acciones salientes: webhooks, correo, SMS, push y solicitudes HTTP. |
+| Programación y análisis | Tareas únicas o recurrentes con zonas horarias, y scripts de análisis en un entorno aislado que escriben resultados en canales derivados. |
+| Comandos | Colas de comandos hacia los dispositivos por HTTP y MQTT, con confirmación de ejecución. |
+| Operación y auditoría | Registro de auditoría inmutable, una consola de owner con lecturas auditadas, un dashboard de salud y trazas de extremo a extremo. |
+
+### Capturas del producto
+
+Capturas de la consola en funcionamiento con datos de demostración locales. La interfaz está en español, el idioma de sus usuarios. Cada una muestra para qué sirve la pantalla y qué aporta. Haz clic en una captura para verla más grande.
+
+<ScreenshotGallery
+  items={[
+    {
+      src: "/screenshots/telemetrix/workspace-home.png",
+      title: "Inicio del espacio de trabajo",
+      caption: "Un resumen de lo que el desarrollador ha construido, apenas inicia sesión.",
+      features: [
+        "Contadores de espacios, experimentos, dispositivos y componentes.",
+        "Una gráfica de componentes por dispositivo, y totales de sensores, controles y actuadores.",
+        "Los dispositivos más recientes con su modelo, número de componentes y estado de conexión.",
+        "Una barra lateral organizada en espacio de trabajo, conexión, sistema, y amigos y notificaciones.",
+      ],
+      width: 2160,
+      height: 1350,
+    },
+    {
+      src: "/screenshots/telemetrix/devices.png",
+      title: "Dispositivos",
+      caption: "Las placas que el desarrollador ha registrado. Cada una tiene un identificador que la placa envía con sus lecturas.",
+      features: [
+        "Registrar una placa con hasta ocho componentes.",
+        "Identificador del dispositivo con botón para copiar, modelo, espacio y estado de conexión.",
+        "Búsqueda por dispositivo, identificador, modelo o espacio, y orden por cualquier columna.",
+        "Acciones por dispositivo y paginación.",
+      ],
+      width: 2160,
+      height: 1350,
+    },
+    {
+      src: "/screenshots/telemetrix/components.png",
+      title: "Componentes",
+      caption: "Cada sensor, control y actuador de cada dispositivo, en una sola lista.",
+      features: [
+        "Clase de cada componente: sensor, control o actuador.",
+        "Tipo, unidad y rango válido, por ejemplo una temperatura en grados o un slider de 0 a 100.",
+        "Filtros por clase y por dispositivo, y un buscador.",
+        "Estado habilitado o deshabilitado de cada componente.",
+      ],
+      width: 2160,
+      height: 1350,
+    },
+    {
+      src: "/screenshots/telemetrix/device-library.png",
+      title: "Librería de dispositivos",
+      caption: "La página que le explica a un desarrollador cómo conectar una placa a la API.",
+      features: [
+        "Los tres encabezados que lleva cada solicitud: la API key, el identificador del desarrollador y el identificador del dispositivo.",
+        "Las operaciones que usa un dispositivo: enviar una lectura, pedir el siguiente comando en cola y confirmarlo.",
+        "Pestañas con ejemplos en Arduino y MicroPython para cada tipo de componente.",
+        "Accesos directos a la página de la API key y a la lista de dispositivos.",
+      ],
+      width: 2160,
+      height: 1350,
+    },
+    {
+      src: "/screenshots/telemetrix/login.jpg",
+      title: "Inicio de sesión",
+      caption: "La puerta de entrada a la consola.",
+      features: [
+        "Inicio de sesión con correo y contraseña, con creación de cuenta y recuperación de contraseña.",
+        "En el primer inicio de sesión desde cada navegador o instalación, se envía por correo un código de seis dígitos para verificar ese dispositivo.",
+        "La app móvil admite solo desarrolladores, mientras que la consola web admite ambos roles.",
+        "Un fondo animado tipo radar y un selector de tema claro y oscuro.",
+      ],
+      width: 2160,
+      height: 1350,
+    },
+  ]}
+/>
+
+</FeaturesSection>
+
+<ImplementationSection title="Implementación y diseño final" nav="Implementación">
+
+### Arquitectura
+
+Un monorepo contiene la API en Go, la app web en Next.js, la app móvil en Expo y paquetes compartidos. Los contratos van primero: archivos OpenAPI y AsyncAPI generan el cliente que comparten web y móvil. Haz clic en un diagrama para verlo en tamaño completo.
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/telemetrix/architecture.svg", title: "Arquitectura", caption: "Los clientes, el monolito modular y los servicios detrás de él.", width: 1200, height: 640 },
+  ]}
+/>
+
+### Vida de una lectura
+
+Una lectura se confirma cuando está segura en el buffer de eventos, no cuando Postgres la guarda.
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/telemetrix/value-flow.svg", title: "Del dispositivo al dashboard", caption: "Validación, límites y deduplicación, y luego el stream, el almacenamiento, el tiempo real y las reglas.", width: 1200, height: 600 },
+  ]}
+/>
+
+### Lecturas y escrituras
+
+Los comandos escriben con un outbox, y las consultas leen proyecciones y una caché.
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/telemetrix/cqrs.svg", title: "Lecturas y escrituras (CQRS)", caption: "Los eventos construyen el modelo de lectura e invalidan la caché.", width: 1200, height: 520 },
+  ]}
+/>
+
+### Almacenamiento
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/telemetrix/persistence.svg", title: "Dónde viven los datos", caption: "Redis para velocidad, Postgres para historial y agregados, almacenamiento de objetos para archivos.", width: 1200, height: 560 },
+  ]}
+/>
+
+### Autenticación y dispositivos
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/telemetrix/auth.svg", title: "Quién está llamando", caption: "Las personas inician sesión con Supabase Auth, y los dispositivos se identifican con una key verificada por HMAC.", width: 1200, height: 560 },
+  ]}
+/>
+
+### Carga y rendimiento
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/telemetrix/load.svg", title: "Decisiones de carga", caption: "Cinco medidas que evitan que Postgres sea el cuello de botella.", width: 1200, height: 430 },
+  ]}
+/>
+
+### Modelo de dominio
+
+El dominio se divide en contextos delimitados. El primer diagrama muestra cómo dependen entre sí, y el resto son los ciclos de vida de las entidades con más reglas.
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/telemetrix/domain-contexts.svg", title: "Contextos del dominio", caption: "Los contextos delimitados del dominio y sus dependencias principales.", width: 1640, height: 830 },
+    { src: "/diagrams/telemetrix/state-channel.png", title: "Ciclo de vida del canal", caption: "Cómo pasa un canal entre sus estados, desde la creación hasta la eliminación.", width: 1560, height: 1640 },
+    { src: "/diagrams/telemetrix/state-device.png", title: "Ciclo de vida del dispositivo", caption: "Registro, credenciales y conexión de un dispositivo.", width: 1242, height: 1624 },
+    { src: "/diagrams/telemetrix/state-rule.png", title: "Ciclo de vida de la regla", caption: "Una regla es un borrador, pasa a activa, y puede pausarse, suspenderse por un límite del plan o eliminarse.", width: 1568, height: 1486 },
+    { src: "/diagrams/telemetrix/state-action.png", title: "Ciclo de vida de la acción", caption: "Las acciones salientes que puede disparar una regla o una tarea programada.", width: 762, height: 1176 },
+    { src: "/diagrams/telemetrix/state-delivery.png", title: "Ciclo de vida de la entrega", caption: "Desde que se solicita una acción hasta su entrega, reintentos y manejo de dead-letter.", width: 1568, height: 1188 },
+    { src: "/diagrams/telemetrix/state-command.png", title: "Ciclo de vida del comando", caption: "Un comando en cola para un dispositivo hasta que se entrega y se confirma.", width: 1568, height: 1028 },
+    { src: "/diagrams/telemetrix/state-scheduled-task.png", title: "Ciclo de vida de la tarea programada", caption: "Tareas únicas y recurrentes, desde la creación hasta cada ejecución.", width: 1488, height: 1224 },
+    { src: "/diagrams/telemetrix/state-export.png", title: "Ciclo de vida de la exportación", caption: "Una exportación asíncrona desde la solicitud hasta un archivo descargable.", width: 940, height: 1480 },
+  ]}
+/>
+
+### Decisiones
+
+| Decisión | Por qué | Qué cambió frente al plan 1.0 |
+|---|---|---|
+| Monolito modular en lugar de servicios separados | El equipo es pequeño, y dividir por dominio multiplica la operación y la consistencia distribuida sin beneficio. La separación se mantuvo solo donde el perfil de carga es distinto, y esos casos viven como módulos del mismo proceso. | De siete servicios por perfil de carga (ADR-002) a un monolito modular (ADR-021). |
+| Supabase Postgres en lugar de RDS | Un servicio administrado reduce la operación de la base de datos. | Reemplaza RDS (ADR-018). |
+| Postgres particionado sin TimescaleDB | Supabase dejó de ofrecer la extensión en Postgres 17. | Se pierde la compresión columnar de cerca de diez veces. Con la carga nominal, el volumen bruto pasa de unos 1,3 TB a unos 13 TB por mes (ADR-019). |
+| Supabase Auth en lugar de Keycloak | Evita operar un proveedor de identidad propio, y ya está integrado con la base de datos. | Reemplaza Keycloak (ADR-020). |
+| Redis Streams en lugar de NATS JetStream | Redis ya estaba en el stack para caché, así que evita otra pieza de infraestructura. | Reemplaza NATS (ADR-022). Menor durabilidad y capacidad de buffer que JetStream replicado. |
+| Roles globales sin organizaciones | El aislamiento de recursos por dueño basta para el caso de uso real y simplifica permisos y facturación. | Elimina el modelo multiorganización de la versión 1.0 (ADR-023). |
+| API key por cuenta con HMAC, sin Argon2 | Con 256 bits de entropía un hash lento es innecesario, y pesaría sobre la ruta crítica de ingesta. | Decisión nueva para dispositivos (ADR-025). |
+| MQTT también para las apps | El producto debe soportar los tres transportes de extremo a extremo. Los comandos siguen pasando por la API para validar, auditar y entregar. | Excepción a ADR-012, que daba MQTT solo a los dispositivos (ADR-025). |
+| Sin APISIX, Terraform ni AWS | El producto se simplificó y solo existe el entorno local, así que no vale la pena elegir un proveedor antes de tener datos reales de carga y costo. | Reemplaza el plan de AWS y EKS (ADR-030). Todavía no hay camino a producción: ni Dockerfile de la API, ni CI, ni borde TLS, ni observabilidad. |
+| Escrituras por lotes y caché de lectura | El cuello de botella era Postgres, con muchos lectores de dashboards y muchos dispositivos escribiendo. | Decisión nueva de carga (ADR-029). |
+
+Dos cosas se documentaron como evolución, no como errores. La versión 1.0 menciona Go 1.23, Next.js 15 y Expo SDK 52, mientras que el README actual indica Go 1.26, Next.js 16 y Expo SDK 57. ADR-024 (un código de un solo uso por dispositivo) fue reemplazada: el inicio de sesión es solo con contraseña.
+
+### Documentación consultada
+
+- **Arquitectura de la solución 1.0** (§1 a §9): objetivos, principios, restricciones, atributos de calidad, y las vistas funcional, de integración, de información y de tecnología, más 17 decisiones iniciales (ADR-001 a ADR-017).
+- **Arquitectura C4, modelo de dominio y atributos de calidad**, que definen contenedores, componentes, entidades y criterios medibles.
+- **Backlog funcional**: 16 capacidades y 85 funcionalidades con historias, reglas de negocio y criterios de aceptación.
+- **Contratos OpenAPI y AsyncAPI** para la API HTTP, los eventos y MQTT.
+- **Decisiones posteriores** (ADR-018 a ADR-030) que reemplazaron partes de la arquitectura 1.0.
+
+</ImplementationSection>
+
+<ResultsSection title="Resultados" nav="Resultados">
+
+Para un maker o un equipo pequeño, el resultado es una plataforma que ya cubre el camino del dispositivo a la decisión. Los dispositivos envían lecturas por HTTP, MQTT o WebSocket y las ven en dashboards en vivo, y las personas pueden reaccionar a ellas con reglas, acciones salientes, tareas programadas, comandos a dispositivos y análisis en un entorno aislado, desde una consola web y una app móvil. Una lectura está diseñada para llegar al dashboard en menos de 2 segundos.
+
+El producto sigue en desarrollo, y no todas las 85 funcionalidades del backlog están verificadas como completas. Algunas piezas pendientes son TLS en producción, terminar la retención de telemetría y permitir que los espacios compartidos envíen valores a los dispositivos. Las metas de rendimiento son objetivos de diseño, no resultados medidos.
+
+</ResultsSection>

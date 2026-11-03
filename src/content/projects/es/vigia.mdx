@@ -1,0 +1,272 @@
+---
+title: "Vigía"
+slug: "vigia"
+summary: "Una PWA multi-tenant para droguerías y cadenas de droguerías en Colombia: inventario por lote con FEFO, punto de venta con modo offline, caja, crédito a clientes, catálogo web, fórmulas médicas, libros de medicamentos controlados, retiros de producto y cadena de frío."
+type: "Proyecto propio"
+date: "2026-10"
+year: "2026"
+status: "En desarrollo"
+featured: true
+cover: "/screenshots/vigia/dashboard.png"
+stack:
+  - "Go"
+  - "Next.js"
+  - "React"
+  - "Supabase Postgres, Auth y Storage"
+  - "Redis y asynq"
+  - "IndexedDB (Dexie)"
+  - "Prisma ORM y pgx"
+  - "Twilio y SendGrid"
+  - "OpenTelemetry y Grafana"
+  - "Docker y GitHub Actions"
+highlights:
+  - value: "46"
+    label: "capacidades de producto"
+  - value: "205"
+    label: "funcionalidades en el backlog"
+  - value: "129"
+    label: "archivos de pruebas en Go"
+---
+
+<SummarySection title="Resumen" nav="Resumen">
+
+Vigía es una aplicación web progresiva que unifica la operación de una droguería: inventario por lote con despacho FEFO (lo primero que vence es lo primero que sale), seguimiento de vencimientos, precios, compras a proveedores, punto de venta, caja y cuadre, y crédito a clientes. También atiende a los clientes con un catálogo web que muestra existencias y precio por sede, y cubre las obligaciones de la regulación sanitaria: el libro de medicamentos controlados, los retiros de producto y la trazabilidad por lote.
+
+Atiende a dos perfiles de cliente: la droguería de barrio, donde la misma persona vende, recibe mercancía y cierra la caja, y la cadena con varias sedes, que necesita existencias consolidadas, traslados y promociones centrales.
+
+</SummarySection>
+
+<ChallengeSection title="Reto y estrategia" nav="Reto">
+
+### Reto
+
+La historia empieza en el mostrador de una droguería de barrio. Decenas de mensajes de WhatsApp y llamadas al día preguntan lo mismo: ¿tienen esto y cuánto cuesta? Mientras tanto, los medicamentos se vencen en la estantería y los productos de alta rotación se agotan sin aviso. La estantería, la caja y la web muestran precios distintos, las fórmulas llegan como fotos borrosas, los medicamentos controlados se venden sin validación, y encontrar los lotes afectados por un retiro implica buscar a mano.
+
+El contexto hace más difícil cada uno de esos problemas. Los márgenes son estrechos, el personal rota, la conexión a internet es inestable, y las obligaciones sanitarias y de protección de datos no dejan espacio para improvisar. Cerca del 40% de los SKU se venden fraccionados (una caja, un blíster, una tableta), lo que no encaja en un inventario contado por empaque. Y en muchas droguerías una sola persona hace todo, así que la interfaz tenía que ser lo bastante simple para que cualquiera del equipo pudiera vender sin una capacitación larga.
+
+### Estrategia
+
+La especificación base convirtió esos dolores en cinco objetivos: dedicar menos tiempo del personal a responder preguntas repetitivas, evitar pérdidas por vencimientos y agotados, eliminar las diferencias de precio entre estantería, caja y catálogo, trazar cada unidad vendida, dañada, devuelta o perdida, y fidelizar a los clientes con compras recurrentes, como pacientes crónicos, adultos mayores y familias.
+
+Cada dolor tuvo una respuesta directa. Un catálogo web con existencias y precio en tiempo real reemplaza las preguntas repetitivas. El control por lote con FEFO y alertas se encarga de los vencimientos. Un único maestro de precios por SKU y sede, con historial y auditoría, acaba con las diferencias de precio. La validación del químico farmacéutico antes de dispensar y los libros de control exportables cubren el cumplimiento normativo.
+
+Desde el inicio se fijaron dos reglas como restricciones. El mostrador nunca se detiene: ninguna falla de red, de Redis o de un proveedor externo puede impedir vender, cobrar o cerrar la caja. Y todos los datos de pacientes y fórmulas se tratan como sensibles desde el momento en que se capturan, de acuerdo con la Ley 1581 de 2012 de Colombia.
+
+</ChallengeSection>
+
+<PersonasSection title="Usuarios" nav="Usuarios">
+
+Ocho perfiles guían el diseño. Cada uno usa el producto de una manera distinta, desde un mostrador de barrio hasta el equipo de plataforma.
+
+<PersonaCards
+  items={[
+    { name: "Cliente o paciente", does: "Consulta productos, existencias y precios, sube fórmulas, recibe recordatorios y compra. Incluye adultos mayores y familias que gestionan a sus dependientes.", where: "Tienda pública, WhatsApp, SMS y correo electrónico", tool: "bag", hair: "bun", skin: "#e8b48f", shirt: "#4b7bec", hairColor: "#3b2a22" },
+    { name: "Personal de mostrador", does: "Vende, cobra, gestiona devoluciones y crédito a clientes y cierra la caja. En una droguería de barrio, a menudo cumple también otros roles.", where: "Punto de venta y panel", tool: "register", hair: "cap", skin: "#c68863", shirt: "#e0566b", hairColor: "#222" },
+    { name: "Personal de bodega", does: "Recibe mercancía, ajusta existencias, hace conteos y traslados.", where: "Panel: recepciones, lotes y conteos", tool: "box", hair: "short", skin: "#f0c8a0", shirt: "#e6a23c", hairColor: "#5a3a22" },
+    { name: "Químico farmacéutico responsable", does: "Valida fórmulas, autoriza medicamentos controlados, firma los libros y responde por la cadena de frío y los retiros.", where: "Panel y autorización en el mostrador", tool: "coat", hair: "long", skin: "#d9a07c", shirt: "#f4f4f7", hairColor: "#2a1a14" },
+    { name: "Dueño o administrador", does: "Define precios, proveedores, compras, usuarios, reportes y la configuración de sus sedes.", where: "Panel", tool: "tie", hair: "short", glasses: true, skin: "#e2ad88", shirt: "#2f3e5e", hairColor: "#555" },
+    { name: "Administrador de cadena", does: "Gestiona el catálogo central, los traslados, las promociones y las compras centrales entre sedes.", where: "Panel multisede", tool: "map", hair: "curly", skin: "#a8704d", shirt: "#27a36d", hairColor: "#1c1c1c" },
+    { name: "Operador de plataforma", does: "Vincula droguerías, gestiona planes, operación y soporte.", where: "Consola de plataforma, en un dominio aparte", tool: "headset", hair: "bob", skin: "#f0c8a0", shirt: "#8e5be0", hairColor: "#7a3b2a" },
+    { name: "Visitante del catálogo", does: "Una persona anónima que consulta disponibilidad, precio y horario de atención.", where: "Tienda pública, sin iniciar sesión", tool: "magnifier", hair: "short", skin: "#cf9468", shirt: "#7a7f8c", hairColor: "#2a2a2a" },
+  ]}
+/>
+
+</PersonasSection>
+
+<FeaturesSection title="Funcionalidades" nav="Funcionalidades">
+
+El backlog define 46 capacidades y 205 funcionalidades, agrupadas en seis bloques:
+
+| Bloque | Capacidades | Contenido principal |
+|---|---|---|
+| Transversal | 001 a 008 | Consola de plataforma, usuarios, sedes y roles, registro de auditoría, privacidad de datos, notificaciones, importación inicial, reportes y operación de la PWA. |
+| Catálogo, precios e inventario | 009 a 013 | Productos con unidades y presentaciones, maestro de precios con fechas de vigencia, inventario por lote, conteos físicos y alertas de vencimiento y stock mínimo. |
+| Compras y abastecimiento | 014 a 016 | Proveedores, órdenes de compra, sugerencias de compra y recepción de mercancía. |
+| Ventas, caja y crédito | 017 a 023 | Ventas en mostrador, devoluciones y cambios, ventas offline, turnos y cuadre de caja, crédito a clientes, promociones y documentos electrónicos (propuesto). |
+| Clientes, fórmulas y cumplimiento | 024 a 030 | Tienda web, clientes y pacientes, fórmulas validadas por el químico farmacéutico, recordatorios para pacientes crónicos, libro de medicamentos controlados, retiros de producto y cadena de frío. |
+| Multisede y fidelización | 031 a 033 | Tablero consolidado, traslados entre sedes y un programa de puntos. |
+| Extensiones comerciales y contables | 034 a 046 | Impuestos y retenciones, documentos de venta y cartera, precios por cliente, fichas de producto más completas, centros de costo, reportes de ventas, bodegas, gastos, contabilidad y nómina (las dos últimas propuestas). |
+
+### Capturas del producto
+
+Capturas de la aplicación en funcionamiento con sus datos de demostración. La interfaz está en español, el idioma de sus usuarios. Cada una muestra para qué sirve la pantalla y qué aporta. Haz clic en una captura para verla más grande.
+
+<ScreenshotGallery
+  items={[
+    {
+      src: "/screenshots/vigia/dashboard.png",
+      title: "Panel de la droguería",
+      caption: "El inicio del panel del personal. Después de iniciar sesión, la persona elige una sede y el rol con el que va a trabajar, y el panel se adapta a esa elección.",
+      features: [
+        "Selector de sede y rol en la barra superior, para que la misma persona cambie de contexto sin cerrar sesión.",
+        "Módulos agrupados por producto, existencias, compras y ventas, cada uno con una descripción corta.",
+        "Menú y tarjetas limitados a lo que el rol activo tiene permitido hacer.",
+        "Campana de notificaciones con el número de alertas abiertas.",
+      ],
+      width: 2160,
+      height: 1350,
+    },
+    {
+      src: "/screenshots/vigia/inventory-lots.png",
+      title: "Inventario por lote",
+      caption: "Cada unidad en existencia pertenece a un lote, listado en orden de despacho: el lote que vence primero va primero (FEFO).",
+      features: [
+        "Etiquetas de vencimiento que muestran los lotes vencidos y los días que les quedan al resto.",
+        "Filtros por estado, ubicación y ventana de vencimiento, y un interruptor para ocultar lotes vacíos.",
+        "Acciones por lote: ajustar existencias, enviar a cuarentena y mover a otra ubicación.",
+        "Existencias, costo por unidad base y valor total de cada lote, con pestañas para existencias, movimientos, bodegas y valorización.",
+      ],
+      width: 2160,
+      height: 1350,
+    },
+    {
+      src: "/screenshots/vigia/expiry-alerts.png",
+      title: "Alertas de vencimiento y existencias",
+      caption: "El motor de procesos genera las alertas para que nadie tenga que buscarlas: próximos a vencer, vencidos, stock bajo y sobrestock.",
+      features: [
+        "Contadores por tipo de alerta y filtros por estado, ventana de vencimiento y categoría.",
+        "Cada alerta muestra el lote, la cantidad y su valor al costo.",
+        "Una acción sugerida para cada una, como devolver al proveedor o trasladar a otra sede.",
+        "Reconocer o resolver una alerta, y configurar cuándo se generan las alertas.",
+      ],
+      width: 2160,
+      height: 1350,
+    },
+    {
+      src: "/screenshots/vigia/pricing.png",
+      title: "Maestro único de precios",
+      caption: "Un precio por producto, sede y presentación. La caja, la tienda web y la etiqueta de la estantería leen el mismo valor.",
+      features: [
+        "Precio actual y precio programado junto a cada presentación.",
+        "Cambiar un precio o definirlo donde falta, con el cambio guardado en el historial.",
+        "Herramientas para reglas de redondeo, listas de clientes, descuentos a clientes, promociones e impresión de etiquetas.",
+        "Búsqueda por nombre, SKU, principio activo o código.",
+      ],
+      width: 2160,
+      height: 1350,
+    },
+    {
+      src: "/screenshots/vigia/storefront.png",
+      title: "Tienda pública",
+      caption: "La página pública de cada droguería, sin iniciar sesión. Los clientes pueden ver si está abierta y cómo contactarla.",
+      features: [
+        "Un estado de abierto ahora calculado en la zona horaria de la droguería, actualizado cada minuto.",
+        "Horario semanal de atención, con el día de hoy resaltado.",
+        "Opciones de contacto: escribir por WhatsApp, llamar a la sede u obtener indicaciones para llegar.",
+        "Controles de accesibilidad para texto más grande y alto contraste, además de tema claro y oscuro.",
+      ],
+      width: 2160,
+      height: 1350,
+    },
+  ]}
+/>
+
+</FeaturesSection>
+
+<ImplementationSection title="Implementación y diseño final" nav="Implementación">
+
+### Arquitectura
+
+Un monolito modular en Go con dos ejecutables, la API y un worker, y una sola PWA en Next.js que sirve la tienda pública, el panel de la droguería con el POS y la consola de plataforma. Cada módulo es un vertical slice con arquitectura hexagonal por dentro. Haz clic en un diagrama para abrirlo en tamaño completo.
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/vigia/architecture.svg", title: "Arquitectura", caption: "La PWA, la API y el worker en Go, y los servicios detrás de ellos.", width: 1200, height: 640 },
+  ]}
+/>
+
+### Existencias y ventas
+
+El inventario es el corazón del modelo: cada cambio es un movimiento inmutable por lote.
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/vigia/stock-to-sale-flow.svg", title: "De la compra a la venta", caption: "Lotes que entran, FEFO para salir, y alertas cuando las existencias están por vencer o por agotarse.", width: 1200, height: 520 },
+  ]}
+/>
+
+### Punto de venta offline
+
+El mostrador nunca se detiene, incluso sin conexión.
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/vigia/offline-sync.svg", title: "Ventas offline y sincronización", caption: "Las ventas se encolan en el dispositivo y se reenvían sin duplicados, y los conflictos pasan a una persona.", width: 1200, height: 560 },
+  ]}
+/>
+
+### Multi-tenancy y seguridad
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/vigia/tenancy.svg", title: "Una base de datos, muchas droguerías", caption: "Row-Level Security rechaza cualquier consulta que no tenga tenant.", width: 1200, height: 520 },
+  ]}
+/>
+
+### Trabajo asíncrono
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/vigia/async.svg", title: "Outbox y proveedores", caption: "Los eventos se escriben junto con el cambio y se entregan después, así una venta nunca espera por un mensaje.", width: 1200, height: 520 },
+  ]}
+/>
+
+### Segmentos de droguería
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/vigia/segments.svg", title: "Cinco segmentos", caption: "Cada segmento fija sedes, personas, roles y doble control.", width: 1200, height: 520 },
+  ]}
+/>
+
+### Modelo de dominio
+
+El dominio está dividido en bounded contexts. El primer diagrama muestra cómo dependen unos de otros, y el resto son los ciclos de vida de las entidades con más reglas.
+
+<DiagramGallery
+  items={[
+    { src: "/diagrams/vigia/domain-contexts.svg", title: "Contextos del dominio", caption: "Los bounded contexts del dominio y sus dependencias principales.", width: 1640, height: 1230 },
+    { src: "/diagrams/vigia/state-sale.png", title: "Ciclo de vida de una venta", caption: "Desde una venta en mostrador o una venta offline sincronizada hasta devoluciones y anulaciones con una segunda autorización.", width: 1568, height: 1390 },
+    { src: "/diagrams/vigia/state-batch.png", title: "Ciclo de vida de un lote", caption: "Un lote pasa de recibido a disponible, en cuarentena, vencido o agotado.", width: 1568, height: 816 },
+    { src: "/diagrams/vigia/state-prescription.png", title: "Ciclo de vida de una fórmula", caption: "Desde que se sube hasta la validación por el químico farmacéutico y la dispensación.", width: 1568, height: 1238 },
+    { src: "/diagrams/vigia/state-cash-shift.png", title: "Ciclo de vida de un turno de caja", caption: "Apertura, venta, conteo y cierre, con aprobación del cuadre.", width: 1312, height: 1192 },
+    { src: "/diagrams/vigia/state-offline-sync.png", title: "Sincronización offline", caption: "El estado de cada venta en la cola offline hasta que se sincroniza o se envía a revisión.", width: 1024, height: 1208 },
+    { src: "/diagrams/vigia/state-sync-conflict.png", title: "Conflicto de sincronización", caption: "Cómo se detecta un conflicto y cómo lo resuelve una persona, nunca se oculta.", width: 432, height: 840 },
+    { src: "/diagrams/vigia/state-product-recall.png", title: "Retiro de producto", caption: "Desde el aviso de retiro hasta ubicar los lotes afectados y cerrar el caso.", width: 1568, height: 1128 },
+    { src: "/diagrams/vigia/state-temperature-alert.png", title: "Alerta de temperatura", caption: "Lecturas de cadena de frío fuera de rango, reconocidas y resueltas.", width: 1244, height: 1248 },
+  ]}
+/>
+
+### Decisiones
+
+| Decisión | Por qué |
+|---|---|
+| Una sola PWA en lugar de una app nativa | Un mismo código sirve la tienda pública, el panel del personal y el POS, y corre en el navegador sin instalar nada en cada equipo. |
+| Monolito modular con vertical slices | Hay dos desplegables y un equipo pequeño. Cada caso de uso está aislado en su propio directorio, y las reglas de dependencias se verifican en CI. |
+| Multi-tenancy con RLS y roles propios | Se proyectan trescientas droguerías sobre la misma base de datos. Filtrar solo en la aplicación sería un incidente con datos de salud, así que la base de datos rechaza las consultas sin contexto. |
+| Inventario por movimientos inmutables y FEFO con bloqueo | Permite vender fracciones sin abrir cajas, reconstruir el kárdex y rastrear cada unidad hasta el cliente en caso de un retiro. El costo es la contención en los lotes más vendidos en horas pico. |
+| POS offline con IndexedDB | Las caídas de internet en la tienda eran un riesgo alto. El mostrador debe seguir vendiendo durante ocho horas o quinientas ventas sin conexión. |
+| Integraciones siempre asíncronas | Una caída de Twilio, SendGrid o del proveedor de facturación no puede impedir cobrar. |
+| Cumplimiento en la misma transacción | Un medicamento controlado vendido sin validación del químico farmacéutico, o un lote retirado que se sigue vendiendo, no se arregla con un reporte posterior. La entrada en el libro de control se escribe junto con la venta. |
+| Cinco segmentos de droguería | Una droguería de una sola persona y una cadena no pueden compartir las mismas reglas. El segmento fija sedes, personas, roles y si una segunda persona debe autorizar las operaciones sensibles. | Un límite por segmento que ningún plan puede superar, y un rol que el segmento no tiene no se puede asignar. En los segmentos de una sola persona, las autorizaciones se otorgan a quien las solicita y quedan en el registro de auditoría. |
+| Prisma Client Go con pgx para operaciones críticas | Prisma da un esquema declarativo y detección de diferencias en CI. Como esa librería está archivada y no soporta transacciones interactivas, las operaciones que leen y deciden juntas (FEFO, números de consecutivo, cambiar un tipo de operación) usan pgx directamente. |
+
+La decisión de acceso a datos cambió durante la fase 0. El ADR-004 original definía sqlc con goose; el ADR-014 lo revisó a Prisma Client Go y quedó registrado como un riesgo, porque el proyecto está archivado desde julio de 2025.
+
+### Documentación consultada
+
+- **Especificación base** (15 secciones): objetivos, dolores, requisitos funcionales y no funcionales, decisiones técnicas, modelo de datos, cumplimiento y el plan por fases.
+- **Catálogo maestro de identificadores**, la fuente de los cinco documentos principales: capacidades, entidades, contenedores, decisiones y riesgos.
+- **Arquitectura de solución 1.0**, **arquitectura C4**, **modelo de dominio**, **backlog funcional** y **atributos de calidad**, con 21 decisiones de arquitectura.
+- **Backlog de brechas y backlog unificado** (funcionalidades 147 a 205), que contrastan cada funcionalidad con el código.
+- **Segmentos de droguería**, con los roles y límites de cada segmento.
+
+</ImplementationSection>
+
+<ResultsSection title="Resultados" nav="Resultados">
+
+Para una droguería, el resultado es un sistema que ya está tomando el lugar de las respuestas por WhatsApp, las hojas de cálculo sueltas y los libros en papel. Usuarios, sedes, roles y segmentos, la tienda pública, el panel con el punto de venta, catálogo, precios, inventario por lote, conteos, alertas, caja y ventas ya funcionan, y la API ha crecido a 31 contratos y 25 migraciones.
+
+El backlog unificado compara cada una de las 205 funcionalidades con el código: 80 están terminadas, 30 son parciales, 82 faltan y 13 todavía no tienen evidencia. Falta construir fórmulas, retiros, la mayor parte de la cadena de frío, gastos, contabilidad y nómina, y la facturación electrónica es solo una propuesta. La tienda pública puede tardar hasta un minuto en mostrar un cambio de existencias. Todavía no hay resultados de un piloto.
+
+</ResultsSection>

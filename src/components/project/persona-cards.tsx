@@ -318,7 +318,7 @@ function Character({ persona, uid, delay }: { persona: Persona; uid: string; del
   const face = "M70 98c0-24 13-38 30-38s30 14 30 38c0 22-12 40-30 40s-30-18-30-40z";
 
   return (
-    <svg viewBox="0 0 200 220" role="img" aria-label={`Illustration of ${persona.name}`} className="h-full w-full overflow-visible">
+    <svg viewBox="0 0 200 220" role="img" aria-label={persona.name} className="h-full w-full overflow-visible">
       <Defs uid={uid} shirt={shirt} />
 
       <circle cx="100" cy="112" r="88" fill={`url(#bg-${uid})`} />

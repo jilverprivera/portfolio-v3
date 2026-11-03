@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { useDictionary } from "@/i18n/locale-context";
 
 const SECTIONS = [
   { id: "summary", label: "Summary" },
@@ -29,6 +30,7 @@ const SECTIONS = [
 
 // Fixed sidebar with the sections of a project; the current one follows the scroll.
 export function ProjectSidebar() {
+  const t = useDictionary().nav;
   // Only the sections this project actually has, known after mount.
   const [items, setItems] = useState<typeof SECTIONS>([]);
   const [active, setActive] = useState(SECTIONS[0].id);
@@ -61,7 +63,10 @@ export function ProjectSidebar() {
     );
     // The page is server-rendered, so which sections exist is only known after mount.
     // A section can bring its own short label, for projects whose titles differ from the defaults.
-    const labelled = found.map((s) => ({ ...s, label: document.getElementById(s.id)?.dataset.nav ?? s.label }));
+    const labelled = found.map((s) => {
+      const el = document.getElementById(s.id);
+      return { ...s, label: el?.dataset.nav ?? el?.querySelector("h2")?.textContent ?? s.label };
+    });
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setItems(labelled);
 
@@ -150,15 +155,15 @@ export function ProjectSidebar() {
           href="/"
           className="mb-8 inline-flex items-center gap-2 text-[17px] text-ink-muted transition-colors hover:text-ink"
         >
-          <span aria-hidden="true">←</span> Back to home
+          <span aria-hidden="true">←</span> {t.backHome}
         </Link>
-        <nav aria-label="Project sections">{sections}</nav>
+        <nav aria-label={t.projectSections}>{sections}</nav>
       </aside>
 
       {/* Below the large breakpoint the sidebar becomes a bar with a menu button that stays at the top. */}
       <div className="sticky top-0 z-30 flex items-center justify-between gap-4 border-b border-line bg-paper/90 px-6 py-3 backdrop-blur lg:hidden">
         <Link href="/" className="inline-flex items-center gap-2 text-[15px] text-ink-muted transition-colors hover:text-ink">
-          <span aria-hidden="true">←</span> Home
+          <span aria-hidden="true">←</span> {t.home}
         </Link>
         <button
           type="button"
@@ -173,7 +178,7 @@ export function ProjectSidebar() {
             <span className={`absolute left-0 top-[5px] h-[2px] w-5 bg-ink transition-opacity ${open ? "opacity-0" : ""}`} />
             <span className={`absolute left-0 h-[2px] w-5 bg-ink transition-transform ${open ? "top-[5px] -rotate-45" : "top-[10px]"}`} />
           </span>
-          <span className="sr-only">{open ? "Close the sections menu" : "Open the sections menu"}</span>
+          <span className="sr-only">{open ? t.closeSections : t.openSections}</span>
         </button>
       </div>
       {open && (
@@ -181,7 +186,7 @@ export function ProjectSidebar() {
           <div className="absolute inset-0 bg-paper/70 backdrop-blur-sm" />
           <nav
             id="project-sections-menu"
-            aria-label="Project sections"
+            aria-label={t.projectSections}
             onClick={(event) => event.stopPropagation()}
             className="absolute inset-x-0 top-[49px] max-h-[calc(100dvh-49px)] overflow-y-auto border-b border-line bg-paper px-6 py-6"
           >

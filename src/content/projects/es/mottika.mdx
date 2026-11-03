@@ -1,0 +1,313 @@
+---
+title: "Mottika"
+slug: "mottika"
+summary: "El motor transaccional de una plataforma de dos partes: un switch multi-tenant que valida, enruta, tarifica y concilia transacciones con tarjeta mediante reglas configurables, con una caja para comercios encima. Un proyecto para un cliente en Tres Astronautas."
+type: "Proyecto de trabajo · Tres Astronautas"
+date: "2026-10"
+year: "2026"
+status: "En desarrollo"
+featured: true
+hideCover: true
+stack:
+  - "Go"
+  - "PostgreSQL"
+  - "RabbitMQ"
+  - "Redis"
+  - "gRPC y OpenAPI"
+  - "Next.js y React"
+  - "Tailwind CSS"
+  - "Turborepo"
+highlights:
+  - value: "16"
+    label: "capacidades"
+  - value: "42"
+    label: "funcionalidades"
+  - value: "38"
+    label: "flujos de usuario diseñados"
+---
+
+<SummarySection title="Resumen" nav="Resumen">
+
+Mottika es un switch transaccional multi-tenant para una empresa de servicios financieros. Se ubica entre los sistemas donde nacen las transacciones con tarjeta y los sistemas de gestión de tarjetas que toman la decisión financiera, y gobierna cómo se valida, enruta y registra cada transacción.
+
+En cada transacción, Mottika confirma que la solicitud es auténtica y no está duplicada, identifica a qué cliente pertenece la tarjeta, la envía al destino correcto, aplica las reglas y cupos de gasto propios de ese cliente, adapta el mensaje cuando hace falta y devuelve el veredicto. Después, tarifica la transacción, la concilia y libera el dinero. Sobre el switch, los comercios tienen una caja: ventas, cierre de turno, arqueo y entrega del efectivo recaudado.
+
+Mottika no emite tarjetas, no toma la decisión de autorización y no mueve dinero. Cada una de esas tareas le corresponde a otra parte, y mantener esa línea clara definió la mayor parte del diseño.
+
+El producto se compone de dos consolas sobre una misma plataforma:
+
+- **Una consola de administración** para el equipo de la plataforma, que trabaja sobre todos los clientes.
+- **Una consola de comercio** para el equipo de cada cliente: administradores, cajeros, supervisores y receptores de efectivo, con pantallas pensadas primero para tablet en la caja.
+
+Mottika es una mitad de un producto de dos partes. Emisys, documentado como un proyecto aparte, es la capa visual y el canal hacia los fondos de empleados.
+
+Trabajo en Mottika en Tres Astronautas para un cliente, en la arquitectura y el diseño de la plataforma. El proyecto es confidencial y sigue en desarrollo, así que este caso de estudio muestra flujos y diagramas en lugar de pantallas.
+
+</SummarySection>
+
+<ContextSection title="Contexto y rol" nav="Contexto">
+
+- **Cliente:** Una empresa de servicios financieros. El nombre se mantiene privado.
+- **Empresa:** Tres Astronautas
+- **Producto:** Un switch transaccional con una consola de administración, una consola de comercio y una caja
+- **Mi rol:** Senior Software Engineer, en arquitectura y diseño
+- **Qué hice:** Participé en el diseño de la arquitectura y en documentarla: el modelo del sistema, los registros de decisiones y los flujos que sigue la construcción
+- **Estado:** En desarrollo
+
+</ContextSection>
+
+<ProblemSection title="Problema" nav="Problema">
+
+Operar tarjetas a escala significa conectar muchas partes que hablan cada una un dialecto distinto. Procesadores, sistemas de gestión de tarjetas, adquirentes y contabilidad tienen sus propios formatos y reglas. Cuando cada conexión es código a la medida, agregar una ruta o una regla de negocio significa escribir código y desplegarlo, y vincular a un nuevo cliente amenaza con significar construir otro sistema más.
+
+El alcance de la plataforma muestra dónde duele:
+
+- **El equipo de la plataforma** necesita cambiar rutas, reglas y cupos mientras el tráfico sigue fluyendo, sin un despliegue por cada cambio.
+- **Cada cliente** necesita gestionar sus propios usuarios, llaves y reglas sin esperar al equipo de la plataforma.
+- **Cajeros y supervisores** necesitan una caja donde cada venta, cierre y entrega se pueda rastrear, y donde una respuesta lenta nunca le cobre dos veces a un cliente.
+- **Los administradores del comercio** necesitan revisar la conciliación y aprobarla antes de que se libere el dinero.
+
+El equipo de la plataforma carga con la mayor parte de ese peso. Gobierna a todos los clientes desde un solo lugar, y una regla equivocada o una ruta rota afecta a cada transacción que pasa por ella, así que la mayor parte de la consola de administración está diseñada para cambiar cosas de forma segura.
+
+</ProblemSection>
+
+<PersonasSection title="Usuarios y contexto de uso" nav="Usuarios">
+
+Cinco perfiles usan Mottika, desde el equipo que opera la plataforma hasta las personas en el mostrador de un comercio. Los actores automáticos, como el propio switch o el ERP de un comercio, no son personas.
+
+<PersonaCards
+  items={[
+    { name: "Administrador de la plataforma", does: "Vincula clientes, configura rutas, reglas, cupos y tarifas, y vigila la salud, los incidentes y el registro de auditoría de todos los clientes.", where: "Consola de administración", tool: "headset", hair: "bun", skin: "#f0c8a0", shirt: "#8e5be0", hairColor: "#7a3b2a", },
+    { name: "Administrador del comercio", does: "Gestiona los usuarios, llaves, proyectos y reglas de un cliente, configura los puntos de venta y aprueba la conciliación.", where: "Consola de comercio", tool: "tie", hair: "short", skin: "#e2ad88", shirt: "#2f3e5e", hairColor: "#555", glasses: true, },
+    { name: "Cajero", does: "Abre el turno, cobra ventas, cierra la caja y entrega el efectivo. Una tarea por pantalla, con objetivos táctiles grandes.", where: "Consola de comercio, primero tablet", tool: "register", hair: "cap", skin: "#c68863", shirt: "#e0566b", hairColor: "#222", },
+    { name: "Supervisor", does: "Aprueba ajustes y devoluciones por encima del límite del cajero, y el cierre de cada turno.", where: "Consola de comercio", tool: "chart", hair: "bob", skin: "#d9a07c", shirt: "#4b7bec", hairColor: "#2a1a14", glasses: true, },
+    { name: "Receptor de recaudo", does: "Acepta o rechaza la entrega del efectivo, con lo que se liquida el turno.", where: "Consola de comercio", tool: "box", hair: "short", skin: "#a8704d", shirt: "#e6a23c", hairColor: "#1c1c1c", },
+  ]}
+/>
+
+### Los momentos que definieron el diseño
+
+- **El cajero en el mostrador** trabaja en una tablet con un cliente esperando. Una venta sin respuesta en tres segundos tenía que convertirse en un "fallida" claro que se puede reintentar, nunca en un cobro doble.
+- **El supervisor llamado a aprobar** tiene dos minutos para decidir sobre un ajuste. Después de eso, la respuesta es no.
+- **El administrador de la plataforma que cambia una regla** lo hace mientras fluye tráfico real. La regla tenía que poder probarse antes de salir en vivo, y su activación tenía que llegar a cada switch sin un despliegue.
+- **El administrador del comercio que aprueba una conciliación** necesita que cada diferencia esté resuelta y explicada antes de que se mueva el dinero.
+
+Estos momentos salen de los flujos de usuario y del blueprint de UX del proyecto, y sirvieron como prueba para cada flujo.
+
+</PersonasSection>
+
+<ObjectivesSection title="Objetivos, métricas de éxito y restricciones" nav="Objetivos">
+
+### Objetivos
+
+1. Configurar el enrutamiento y las reglas de negocio en lugar de programarlos y desplegarlos.
+2. Procesar cada transacción de forma segura, rápida y exactamente una vez, incluso cuando un tercero está lento o caído.
+3. Mantener la integridad financiera desde la tarificación hasta la conciliación y el desembolso.
+4. Hacer rastreable el efectivo en el mostrador, desde la venta hasta la entrega.
+5. Vincular a un nuevo cliente sin construir un nuevo sistema, con cada cliente aislado de los demás.
+
+### Cómo se mediría el éxito
+
+Todavía no se acordaron métricas de éxito con el cliente. Estas son las que yo propondría, cada una ligada a uno de los objetivos:
+
+| Objetivo | Métrica | Qué nos dice |
+|---|---|---|
+| Configurado, no programado | Cambios de reglas y rutas hechos sin despliegue, y tiempo desde borrador hasta activo | Si el equipo de la plataforma de verdad dejó de depender de los despliegues. |
+| Rápido y exactamente una vez | Latencia en el percentil 99, y cobros duplicados detectados | Si el switch cumple su promesa bajo carga. |
+| Integridad financiera | Ciclos de conciliación aprobados sin diferencias abiertas | Si la tarificación y la conciliación coinciden. |
+| Efectivo rastreable | Turnos cerrados con una diferencia justificada, y entregas rechazadas | Dónde se sigue perdiendo efectivo entre la caja y el receptor. |
+| Nuevos clientes | Tiempo para vincular a un cliente de punta a punta | Si un nuevo cliente es una configuración o un proyecto. |
+
+### Restricciones
+
+- **Un presupuesto de tiempo ajustado.** El switch está diseñado para 500 transacciones por segundo con un p99 de 500 ms de punta a punta, así que todo en la ruta de autorización tenía que estar en memoria, salvo una llamada saliente.
+- **Terceros aún por definir.** Los ambientes de prueba de los procesadores, el formato del archivo de conciliación y varios proveedores estaban pendientes mientras el diseño avanzaba.
+- **Decisiones que cambiaron en el camino.** Algunos componentes, como la capa de acceso y el proveedor de identidad, se cambiaron a pedido del cliente, y los registros de decisiones hicieron que esos cambios fueran fáciles de explicar.
+- **Validación pendiente.** Los entregables de diseño quedaron documentados, y la sesión de validación conjunta con los stakeholders del cliente todavía se estaba agendando.
+
+</ObjectivesSection>
+
+<ProcessSection title="Proceso y priorización" nav="Proceso">
+
+### Del problema al alcance
+
+La planeación partió de un mapa de impacto que conectó los objetivos de negocio con las personas y los sistemas que usan la plataforma. Sus necesidades se consolidaron en 16 capacidades y 42 funcionalidades, cada una con sus criterios de aceptación, y luego en 7 bloques de construcción.
+
+El diseño siguió el mismo rastro: 20 módulos de consola, 38 flujos de usuario y 38 wireframes, todos ligados a una capacidad. Cualquier pantalla se puede rastrear hasta la necesidad que responde.
+
+### Qué cubre la plataforma
+
+| Área | Qué permite |
+|---|---|
+| Clientes | Vincular a un cliente y a su primer administrador en un solo paso, suspenderlo y reactivarlo. |
+| Switch | Validar, identificar, enrutar, aplicar reglas y cupos, adaptar el mensaje y registrar cada transacción. |
+| Reglas y rutas | Enrutamiento por empresa, reglas de negocio versionadas con sandbox, cupos con alertas y perfiles de mensaje, todo aplicado sin despliegue. |
+| Autoservicio del comercio | Usuarios con roles por módulo, llaves para los sistemas del comercio, y los proyectos y reglas propios del comercio. |
+| Tarificación y liquidación | Tablas de tarifas, conciliación con diferencias tipo semáforo, aprobación y desembolso. |
+| Operación | Un tablero en vivo, incidentes, un registro de auditoría que no se puede editar y tickets de soporte. |
+| Caja | Puntos de venta, catálogo, ventas, facturas electrónicas, cierre de turno con doble control y entrega de efectivo. |
+
+### Construido por bloques
+
+- **Construido:** vinculación y suspensión de clientes, registro de infraestructura, proyectos y enrutamiento, usuarios y llaves del comercio, inicio de sesión con códigos de un solo uso, tableros, y la mayor parte de la ruta del switch con reglas, cupos y perfiles de mensaje.
+- **Siguiente:** tarificación, conciliación y desembolso, monitoreo, incidentes, soporte y toda la caja, que están diseñados y esperan sus bloques.
+
+</ProcessSection>
+
+<DesignDecisionsSection title="Decisiones de diseño" nav="Decisiones">
+
+Las decisiones que más definieron la plataforma, tomadas por el equipo y diseñadas por el diseñador de producto del proyecto, parte del equipo de Tres Astronautas. El proyecto es confidencial, así que cada una se muestra como un flujo o un diagrama en lugar de una pantalla.
+
+<DiagramRow item={{ src: "/diagrams/mottika/transaction.webp", title: "La vida de una transacción", caption: "Ocho pasos en un orden fijo, y los estados en los que puede terminar una transacción.", width: 3000, height: 1560, light: true }}>
+
+### Una sola ruta, en un orden fijo
+
+**Problema.** Una transacción que puede tomar caminos distintos según quién configuró qué es imposible de explicar después.
+
+**Decisión.** Cada transacción sigue los mismos ocho pasos en el mismo orden, y el primer rechazo la detiene. Solo un paso sale del switch: una única llamada al sistema que toma la decisión financiera.
+
+**Costo.** Algunas validaciones que podrían correr en paralelo corren una después de otra.
+
+**En el producto.** Una solicitud repetida recibe la respuesta guardada, un ajuste es una nueva transacción ligada a la original, y un switch sin configuración cargada niega todo en lugar de adivinar.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/mottika/flow-rules.webp", title: "Una regla, del borrador a cada switch", caption: "Escribir, probar, activar, publicar y recargar, sin un despliegue.", width: 3000, height: 1480, light: true }}>
+
+### Las reglas cambian sin despliegue
+
+**Problema.** Si cambiar una regla de negocio significa escribir código y desplegarlo, el equipo de la plataforma se vuelve el cuello de botella de todos los clientes.
+
+**Decisión.** Las reglas se escriben como expresiones, se prueban en un sandbox con transacciones de ejemplo y se activan a mano. Cada switch recarga toda la configuración como una sola instantánea fija.
+
+**Costo.** La configuración necesita sus propias versiones, sus propias pruebas y una forma de saber qué switch tiene qué versión.
+
+**En el producto.** Editar una regla activa crea una nueva versión, y nada se borra. Si un switch no confirma la recarga, el administrador ve cuál es, y una regla propia de un comercio vuelve a borrador si ningún switch la confirma en 30 segundos.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/mottika/flow-cash.webp", title: "Un turno en la caja", caption: "Tres perfiles, dos firmas y un cierre firmado.", width: 3000, height: 1480, light: true }}>
+
+### Dos firmas para el efectivo
+
+**Problema.** El efectivo es donde el dinero es más fácil de perder y más difícil de rastrear.
+
+**Decisión.** Cerrar una caja requiere al cajero y al supervisor, y una entrega requiere al cajero y al receptor. Cada diferencia necesita un motivo, y el reporte de cierre queda firmado.
+
+**Costo.** Más pasos al final de cada turno.
+
+**En el producto.** Una venta sin veredicto en tres segundos se marca como fallida y se reintenta con la misma llave, así que al cliente nunca se le cobra dos veces, y una venta abierta o fallida bloquea el cierre.
+
+</DiagramRow>
+
+### El cliente nunca se elige
+
+**Problema.** En una plataforma compartida por muchos clientes, un solo filtro equivocado puede mostrarle los datos de un cliente a otro.
+
+**Decisión.** El cliente siempre sale de la sesión o de la credencial, nunca de lo que una persona escribe o selecciona. En la consola de comercio siempre está visible.
+
+**Costo.** El equipo de la plataforma necesita su propia consola para trabajar entre clientes.
+
+**En el producto.** Un recurso de otro cliente se ve como si no existiera, y suspender a un cliente corta cada usuario, llave y ruta en su siguiente solicitud, sin borrar nada del historial.
+
+### Cuatro tipos de mensaje
+
+**Problema.** "Algo salió mal" no le dice a un cajero si debe reintentar, llamar a alguien o decirle al cliente que la tarjeta fue rechazada.
+
+**Decisión.** Cada mensaje es de uno de cuatro tipos: éxito, rechazo de negocio, falla técnica o pendiente. Las acciones irreversibles muestran su impacto antes de confirmarse.
+
+**Costo.** Cada flujo tuvo que nombrar sus propias fallas.
+
+**En el producto.** Una tarjeta rechazada y un timeout se ven distintos, y cada uno ofrece solo las acciones que tienen sentido.
+
+</DesignDecisionsSection>
+
+<DesignSystemSection title="Sistema de diseño" nav="Sistema de diseño">
+
+Las dos consolas comparten un sistema de diseño, creado en Figma por el diseñador de producto asignado al proyecto en Tres Astronautas y documentado como un manual de fundamentos, componentes y plantillas de pantalla. El frontend reutiliza el estándar ya probado en Emisys, así que ambos productos se sienten relacionados sin verse iguales.
+
+<DiagramRow item={{ src: "/screenshots/mottika/design-system-foundations.webp", title: "Fundamentos", caption: "Tipografía, color, colores de estado, radios y espaciado compartidos por ambas consolas.", width: 3000, height: 1575, light: true }}>
+
+### Fundamentos
+
+- **Una sola tipografía.** Inter para títulos, interfaz, tablas y datos, con jerarquía dada por tamaño y peso.
+- **Un verde azulado para la acción.** Una escala de cinco pasos de verde azulado, con un tono reservado para acciones y un tinte suave para la selección.
+- **Neutros discretos.** Una escala corta de grises para superficies, bordes y texto, para que las tablas densas y los editores de reglas sigan siendo legibles.
+- **Colores de estado con significados fijos.** Éxito, error y advertencia tienen cada uno un fondo, un relleno y un tono de texto.
+- **Solo tokens.** Se eliminaron la paleta y los radios por defecto del framework, así que solo se pueden usar los valores del sistema, y el tema oscuro invierte cada escala.
+
+</DiagramRow>
+
+### Caja en una tablet
+
+Las vistas de la caja quitan la barra lateral y usan controles más grandes, una tarea por pantalla. El resto de la consola de comercio y la consola de administración usan una barra lateral agrupada y plegable, y una barra superior con la ruta de navegación, el cambio de tema, las notificaciones y el perfil.
+
+</DesignSystemSection>
+
+<ImplementationSection title="Del diseño al código" nav="Diseño a código">
+
+Mi trabajo en Mottika está en la arquitectura: diseñarla con el equipo y con un socio externo de arquitectura, documentarla y mantener la construcción alineada con ella. Esta sección explica cómo está organizada la plataforma, en términos de lo que hace cada parte.
+
+<DiagramRow item={{ src: "/diagrams/mottika/architecture.webp", title: "Arquitectura", caption: "Las consolas y los canales, las dos zonas de Mottika y las partes a su alrededor.", width: 3000, height: 1440, light: true }}>
+
+### Arquitectura
+
+Mottika tiene dos zonas. La zona de gestión, detrás de una única capa de acceso, es donde las personas y sus sistemas configuran la plataforma: clientes, proyectos, reglas, cupos, usuarios, llaves y puntos de venta. La zona transaccional, detrás de un gateway por cada canal de entrada, es donde el switch procesa cada transacción con la configuración que publica el plano de control.
+
+La tarificación, la conciliación y el desembolso corren fuera de la ruta crítica, impulsados por eventos, así que una tarifa faltante nunca bloquea un pago. La caja envía cada venta por el switch como cualquier otro canal, y los tableros leen de una copia de los datos para nunca hacer más lenta una transacción.
+
+</DiagramRow>
+
+### Modelo de dominio
+
+El dominio se divide en once contextos, cada uno a cargo de una parte del sistema y conectado con los demás solo a través de identificadores, contratos y eventos. Un cliente es la unidad de aislamiento. Un cliente tiene proyectos, los proyectos agrupan empresas, y cada tarjeta pertenece exactamente a una empresa. La configuración, compuesta por rutas, reglas, cupos y perfiles de mensaje, se publica a los switches como una instantánea versionada que nunca cambia una vez publicada.
+
+Algunas reglas se cumplen en todas partes: una solicitud se procesa una vez por llave, los montos son números enteros en la unidad más pequeña, una venta solo existe dentro de un turno abierto, y una transacción sin veredicto a tiempo se marca como fallida y nunca pasa a aprobada por sí sola.
+
+### Atributos de calidad
+
+Se definieron ocho atributos de calidad, cada uno con criterios de aceptación medibles. La latencia se protege manteniendo en memoria todo lo que está en la ruta de autorización, con una sola llamada saliente. La disponibilidad viene de una zona transaccional que sigue funcionando cuando la zona de gestión está caída. La resiliencia significa que los errores transitorios se reintentan y los definitivos no, y la auditabilidad se apoya en dos registros que no se pueden editar, uno de quién hizo qué y otro de qué le pasó a cada transacción.
+
+### Trabajo con agentes de IA
+
+El repositorio incluye un harness para personas y agentes de IA que trabajan sobre un mismo código: tableros de sesión, reservas sobre rutas compartidas y aprobación de un revisor antes de aceptar el trabajo. Las personas hacen cada commit.
+
+### Decisiones técnicas
+
+Los registros de decisiones escritos explican por qué se tomó cada decisión. Las principales:
+
+| Decisión | Por qué | Costo |
+|---|---|---|
+| APIs con contrato primero | Ninguna interfaz ni integración toca la base de datos directamente. | Los contratos deben escribirse antes de construir. |
+| Una sola llamada saliente por transacción | La latencia se mantiene predecible. | Todo lo demás en la ruta debe vivir en memoria. |
+| Fallar cerrado | Un switch sin configuración niega en lugar de adivinar. | Se cambia disponibilidad por nunca aprobar por error. |
+| Un broker de colas en lugar de un log | El trabajo son tareas con reintentos, no un historial para reproducir. | La auditoría vive en su propio almacenamiento. |
+| La configuración como instantánea fija | Una transacción nunca ve una regla cambiar a mitad de camino. | Los cambios llegan a los switches en un momento, no al instante. |
+| La tarificación nunca bloquea la autorización | Una tarifa faltante no debe hacer fallar un pago. | La tarificación corre después del veredicto. |
+| La contabilidad queda fuera de Mottika | Cada producto tiene una sola tarea. | Una integración que mantener entre los dos. |
+
+</ImplementationSection>
+
+<ResultsSection title="Resultados" nav="Resultados">
+
+La base de la plataforma está lista: los clientes se pueden vincular, suspender y gobernar, cada uno aislado de los demás, y la mayor parte de la ruta del switch está construida, con reglas, cupos y perfiles de mensaje aplicados sin despliegue. La caja, la tarificación y la liquidación están diseñadas y programadas para bloques posteriores.
+
+El proyecto sigue en desarrollo, así que todavía no hay cifras de producción, y varios terceros están por confirmar. La arquitectura documentada es lo que permite que la construcción avance sin ellos: cada dependencia abierta tiene su lugar en el modelo y su contrato esperando.
+
+</ResultsSection>
+
+<LearningsSection title="Aprendizajes y próximos pasos" nav="Aprendizajes">
+
+### Próximos pasos
+
+- Validar el diseño con los stakeholders del cliente y ajustar los flujos con lo que salga de ahí.
+- Construir la tarificación, la conciliación y la caja sobre los flujos que ya están diseñados.
+- Conectar los procesadores reales a medida que sus ambientes de prueba estén disponibles.
+
+### Qué aprendí
+
+- **Documentar las decisiones vale la pena cuando cambian.** Algunas decisiones cambiaron a pedido del cliente. Como cada una tenía un motivo escrito y un costo, cambiarla fue una conversación sobre el costo, no un debate de memoria.
+- **Un switch se define sobre todo por lo que se niega a hacer.** Las decisiones más claras fueron los límites: no mover dinero, no autorizar, no adivinar la configuración. Cada "no" hizo más simple el resto del diseño.
+- **Los flujos muestran lo que los diagramas esconden.** Un diagrama de arquitectura dice dónde vive la caja. Solo el flujo, paso a paso y con quién firma qué, hace visibles para todos reglas como la ventana de aprobación de dos minutos.
+
+</LearningsSection>

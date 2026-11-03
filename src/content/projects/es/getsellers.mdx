@@ -1,0 +1,320 @@
+---
+title: "GetSellers"
+slug: "getsellers"
+summary: "Un marketplace que envía leads de vendedores de inmuebles en Estados Unidos a inversionistas según el condado, con una billetera prepagada que se recarga sola, reembolsos, referidos y un sitio interno de administración. Un proyecto para un cliente en Tres Astronautas: la transición y modernización de un producto en vivo."
+type: "Proyecto de trabajo · Tres Astronautas"
+date: "2026-03"
+year: "2025–2026"
+status: "En producción"
+featured: true
+hideCover: true
+url: "https://www.getsellers.io"
+stack:
+  - "Node.js"
+  - "Express"
+  - "TypeScript"
+  - "MongoDB y Mongoose"
+  - "React y Vite"
+  - "TanStack Query"
+  - "Zustand"
+  - "Tailwind CSS y Radix UI"
+  - "Stripe"
+  - "Socket.IO"
+  - "Twilio"
+  - "Turborepo"
+highlights:
+  - value: "17"
+    label: "capacidades"
+  - value: "45"
+    label: "funcionalidades"
+  - value: "289"
+    label: "archivos de pruebas del backend"
+---
+
+<SummarySection title="Resumen" nav="Resumen">
+
+GetSellers es un marketplace para inversionistas inmobiliarios en Estados Unidos. Los propietarios que quieren vender llenan un formulario en una campaña de marketing, sus datos llegan como un lead, y cada lead va automáticamente a un inversionista suscrito a ese condado, que el producto llama mercado.
+
+Los inversionistas eligen sus mercados, cargan una billetera prepagada y reciben leads en la app, por correo y por SMS. Trabajan cada lead en un pipeline, desde lead nuevo hasta cerrado o frío, y pueden pedir un reembolso por uno malo. El equipo de la empresa maneja todo lo demás desde un sitio de administración: usuarios, mercados, fuentes y precios, reembolsos, comunicados y reportes.
+
+El producto tiene tres partes:
+
+- **Una app para inversionistas**, para las personas que compran leads.
+- **Un sitio de administración** para el equipo que opera el marketplace, construido desde cero durante el proyecto.
+- **Una API** detrás de ambos, que además recibe los leads de las campañas.
+
+El proyecto fue la transición y modernización de un producto que ya estaba en vivo. Trabajé en él en Tres Astronautas para un cliente, como Senior Software Engineer, a cargo de todo el backend. Este caso de estudio muestra el producto a través de sus flujos y diagramas.
+
+</SummarySection>
+
+<ContextSection title="Contexto y rol" nav="Contexto">
+
+- **Cliente:** Un marketplace de leads inmobiliarios en Estados Unidos
+- **Empresa:** Tres Astronautas
+- **Producto:** Una app para inversionistas, un sitio de administración y la API detrás de ambos
+- **Mi rol:** Senior Software Engineer
+- **Equipo:** 1 product owner, 2 ingenieros de software, 1 diseñador de producto y 1 QA
+- **Qué construí:** Todo el backend: la reestructuración de la API, la recepción y asignación de leads, la billetera y sus pagos, los reembolsos, los referidos y las tareas programadas
+- **Proyecto:** Transición y modernización de un producto en vivo, de 2025 a 2026
+
+</ContextSection>
+
+<ProblemSection title="Problema" nav="Problema">
+
+El marketplace ya estaba funcionando cuando empezó el proyecto, y el equipo saliente había dejado un documento técnico. Recibirlo de forma segura significaba no cambiar nada hasta entender su estado, así que el primer sprint se dedicó a revisar ese documento, hacer un análisis de brechas y medir cómo se comportaba el producto en vivo. Esa revisión identificó las áreas críticas: el feed de leads, los condados, la facturación y el asistente de configuración.
+
+Los problemas que encontró eran de tres tipos:
+
+- **Para los inversionistas,** la entrega de leads dependía de la facturación. Un cobro fallido podía detener la llegada de leads, incluso para un inversionista con otra tarjeta guardada.
+- **Para el equipo que opera el marketplace,** no había herramientas propias para reembolsos, comunicados, reportes, precios de fuentes ni referidos.
+- **Para el producto en sí,** la estructura del backend hacía difícil probar cada caso de uso por separado, y los datos de los leads llevaban información sensible y duplicada que nunca debería llegar al navegador.
+
+El inversionista carga con la mayor parte de ese peso. Los leads son lo que paga, y cada problema en la facturación o la entrega le llega como un lead que no llegó, así que la mayor parte del trabajo del backend se diseñó para mantener los leads fluyendo.
+
+</ProblemSection>
+
+<PersonasSection title="Usuarios y contexto de uso" nav="Usuarios">
+
+Cuatro perfiles le dan forma al producto, pero solo dos inician sesión. El propietario es la razón por la que existen los leads y nunca abre la app. El representante de ventas es un rol que gestionan los administradores, no un usuario con pantallas propias.
+
+<PersonaCards
+  items={[
+    { name: "Inversionista inmobiliario", does: "Se suscribe a condados, recibe leads, los trabaja en el pipeline y gestiona la billetera, las tarjetas, el código de referido y los reembolsos.", where: "App para inversionistas", tool: "tie", hair: "short", skin: "#e2ad88", shirt: "#2f3e5e", hairColor: "#555", glasses: true, },
+    { name: "Propietario", does: "Alguien que quiere vender. Llena un formulario en una campaña de marketing, con su consentimiento. Sus datos personales permanecen ocultos hasta que el lead pertenece a un inversionista.", where: "Campañas de marketing", tool: "map", hair: "curly", skin: "#a8704d", shirt: "#27a36d", hairColor: "#1c1c1c", },
+    { name: "Administrador de la plataforma", does: "Gestiona usuarios, socios, fuentes y precios, mercados, reembolsos, comunicados, reportes y webhooks, y recibe una alerta cuando un lead no se puede asignar.", where: "Sitio de administración", tool: "headset", hair: "bun", skin: "#f0c8a0", shirt: "#8e5be0", hairColor: "#7a3b2a", },
+    { name: "Representante de ventas", does: "Un rol que los administradores asignan y listan entre los usuarios. Las comisiones por referidos pertenecen al inversionista que refirió, no a este rol.", where: "Sitio de administración, como registro", tool: "chart", hair: "cap", skin: "#c68863", shirt: "#e0566b", hairColor: "#222", },
+  ]}
+/>
+
+### Los momentos que definieron el diseño
+
+- **Llega un lead** de una campaña a cualquier hora. Tiene que llegar al inversionista correcto en segundos, sin que nadie del equipo intervenga.
+- **Rechazan la tarjeta de un inversionista** en la mitad de la noche. Sus leads deberían seguir llegando si otra tarjeta puede pagar.
+- **Un inversionista abre el feed** y ve leads que todavía no son suyos. Debería ver lo suficiente para decidir, pero nunca los datos personales del propietario.
+- **Un administrador revisa un reembolso** y necesita saber que completarlo abona a la billetera y envía el lead a otra persona, en un solo paso.
+
+</PersonasSection>
+
+<ObjectivesSection title="Objetivos, métricas de éxito y restricciones" nav="Objetivos">
+
+### Objetivos
+
+1. Mantener el producto en vivo funcionando mientras se moderniza.
+2. Nunca dejar que la facturación bloquee la entrega de un lead.
+3. Darle al equipo que opera el marketplace sus propias herramientas.
+4. Mantener los datos personales dentro del backend hasta que un inversionista sea dueño del lead.
+5. Hacer que cada caso de uso se pueda probar por separado.
+
+### Cómo se mediría el éxito
+
+Durante el proyecto no se acordaron métricas de éxito con el cliente. Estas son las que yo propondría, cada una ligada a uno de los objetivos:
+
+| Objetivo | Métrica | Qué nos dice |
+|---|---|---|
+| Entrega nunca bloqueada por la facturación | Leads sin asignar por falta de fondos, y recargas salvadas por una tarjeta de respaldo | Si la billetera mantiene los leads fluyendo. |
+| Enrutamiento rápido | Tiempo desde el webhook hasta un lead asignado | Si un lead llega a un inversionista mientras todavía está fresco. |
+| Herramientas para operaciones | Reembolsos resueltos por semana, y tiempo para resolver uno | Si el sitio de administración reemplazó el trabajo manual. |
+| Distribución justa | Reparto de leads entre los suscriptores de cada mercado | Si los turnos funcionan como se espera. |
+| Backend que se puede probar | Cobertura de los casos de uso, y defectos encontrados después del lanzamiento | Si la reestructuración valió la pena. |
+
+### Restricciones
+
+- **Un producto en vivo.** Cada cambio tenía que salir sin detener la entrega de leads a los inversionistas que ya lo usaban.
+- **Dos ingenieros.** Yo era responsable del backend y un compañero de las apps web, así que el contrato de la API entre los dos tenía que mantenerse claro y estable.
+- **Una integración que nunca se cerró.** El flujo de reembolsos se planeó contra el backend propio del cliente, pero no se pudo completar por problemas de conectividad, y por eso operaciones recibió un sitio de administración propio.
+- **Muchas fuentes de leads.** Cada campaña nombra los mismos campos de forma distinta, y la recepción tenía que aceptarlos todos.
+
+</ObjectivesSection>
+
+<ProcessSection title="Proceso y priorización" nav="Proceso">
+
+### Del problema al alcance
+
+El trabajo se organizó en los sprints 0 a 6. El sprint 0 fue la revisión del producto en vivo, el sprint 1 reestructuró el backend y montó el monorepo, y los sprints siguientes pasaron los pagos a un nuevo proveedor, construyeron el sitio de administración y reformularon el lenguaje del producto. Todo el alcance se consolidó en 17 capacidades y 45 funcionalidades.
+
+### Cómo trabajó el equipo
+
+Los dos ingenieros dividimos el producto a lo largo de la API: yo era responsable del backend, y mi compañero de la app para inversionistas y del sitio de administración.
+
+### Qué cubre la plataforma
+
+| Área | Qué permite |
+|---|---|
+| Recepción de leads | Un webhook por campaña, un adaptador que normaliza los campos, y enriquecimiento con datos del inmueble y un precio. |
+| Asignación | Condado, luego estado, luego todo el país, por turnos dentro de cada mercado, con validación de presupuesto y saldo. |
+| Feed de leads y pipeline | Un feed en vivo, el detalle del lead y un pipeline desde lead nuevo hasta cerrado o frío, con los datos personales enmascarados hasta que el lead se asigna. |
+| Mercados | Suscripciones a condados de Estados Unidos, cada una abierta, asegurada, en espera, llena o liberada. |
+| Billetera y pagos | Tarjetas guardadas, una tarjeta de respaldo, recarga automática, un presupuesto mensual que se reinicia cada mes, recibos e historial. |
+| Reembolsos | Hasta dos solicitudes por lead, una abierta a la vez, con el lead reasignado cuando se completa un reembolso. |
+| Notificaciones | En la app en tiempo real, por correo y por SMS, según la configuración de cada inversionista. |
+| Referidos | Códigos de referido, configuración y comisiones, procesadas todos los días. |
+| Sitio de administración | Usuarios, socios, fuentes y precios, mercados, reembolsos, comunicados, reportes y webhooks. |
+
+### Qué quedó pendiente
+
+- **La integración de reembolsos con el backend propio del cliente** nunca se completó, así que los reembolsos viven en el sitio de administración.
+- **Parte del proveedor de pagos anterior** sigue en el repositorio, por la migración.
+
+</ProcessSection>
+
+<DesignDecisionsSection title="Decisiones de diseño" nav="Decisiones">
+
+Las decisiones que más le dieron forma al producto, tomadas por el equipo y diseñadas por el diseñador de producto del proyecto, parte del equipo de Tres Astronautas. Cada una se muestra como un flujo o un diagrama.
+
+<DiagramRow item={{ src: "/diagrams/getsellers/flow-onboarding.webp", title: "Del registro al primer lead", caption: "El recorrido del inversionista, y los dos momentos en que actúa la plataforma.", width: 3000, height: 1480, light: true }}>
+
+### Listo para recibir leads en una sola sesión
+
+**Problema.** Un inversionista que se registra pero nunca agrega una tarjeta o un presupuesto es un inversionista que nunca recibe un lead.
+
+**Decisión.** Un asistente de configuración pide las tres cosas que necesita un lead: los mercados, una tarjeta para pagar y un presupuesto.
+
+**Costo.** Una primera sesión más larga.
+
+**En el producto.** Cada inicio de sesión se confirma con un código de un solo uso por correo, y se incentiva una segunda tarjeta con un descuento único en el siguiente lead.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/getsellers/lead-intake.webp", title: "Del formulario de un propietario a un inversionista", caption: "Recepción, alcance, turnos y las validaciones antes de asignar un lead.", width: 3000, height: 1500, light: true }}>
+
+### Un lead, un inversionista, por turnos
+
+**Problema.** Los leads son exclusivos. Enviar cada uno a todos los suscriptores le quitaría su valor, y elegir siempre al mismo inversionista sería injusto.
+
+**Decisión.** Un lead busca suscriptores en su condado, luego en su estado, luego en todo el país. Dentro de cada alcance, lo recibe el inversionista que más tiempo ha esperado, siempre que esté por debajo de su presupuesto mensual y tenga saldo para pagar.
+
+**Costo.** Un lead puede quedar sin asignar cuando nadie en su alcance puede pagar.
+
+**En el producto.** A un inversionista sin saldo suficiente se le pone en espera la suscripción y se intenta con el siguiente, y cuando nadie califica los administradores reciben una alerta de inmediato.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/getsellers/wallet.webp", title: "Una billetera que se recarga sola", caption: "Eventos de recarga, reintentos con otras tarjetas y el tope mensual.", width: 3000, height: 1440, light: true }}>
+
+### La facturación nunca bloquea un lead
+
+**Problema.** Cobrar a una tarjeta en el momento de cada asignación significaba que una tarjeta rechazada detenía el lead, aunque el inversionista tuviera otra tarjeta guardada.
+
+**Decisión.** Los leads se pagan desde un saldo prepagado. Cuando el saldo baja del umbral del inversionista, se crean eventos de recarga que se cobran en segundo plano, intentando con las otras tarjetas guardadas cuando una es rechazada.
+
+**Costo.** Más estados de facturación que modelar y probar, y un inversionista sin fondos se salta hasta que se recarga la billetera.
+
+**En el producto.** Cada cobro tiene su propia llave, así que un reintento nunca cobra dos veces, y el inversionista recibe un correo solo cuando todas las tarjetas han fallado.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/getsellers/flow-refund.webp", title: "Un reembolso por un lead malo", caption: "El inversionista pide, un administrador decide y el lead sigue su camino.", width: 3000, height: 1480, light: true }}>
+
+### Un reembolso que vuelve a poner el lead a trabajar
+
+**Problema.** Un reembolso que solo devuelve el dinero deja el lead quieto, aunque otro inversionista del mercado todavía podría usarlo.
+
+**Decisión.** Completar un reembolso abona a la billetera, desasigna el lead y se lo ofrece al siguiente inversionista del mismo mercado, en un solo paso.
+
+**Costo.** Los reembolsos tocan la facturación, la asignación y las notificaciones a la vez.
+
+**En el producto.** Cada lead permite dos solicitudes como máximo y solo una abierta a la vez, una solicitud rechazada se puede enviar de nuevo con el formulario ya lleno, y cualquiera de las dos partes puede cancelarla mientras está en curso.
+
+</DiagramRow>
+
+### Los datos personales se quedan en el backend
+
+**Problema.** El feed muestra leads a los inversionistas antes de que sean suyos. Enviar los datos completos del propietario al navegador y ocultarlos ahí los dejaría a una inspección de distancia.
+
+**Decisión.** La API enmascara el apellido, el correo, el teléfono, la dirección y la ubicación de cada lead en el feed, y devuelve los datos completos solo para los leads que son del inversionista.
+
+**Costo.** Un mapeo adicional en cada respuesta de leads.
+
+**En el producto.** El mapa muestra una ubicación aproximada por diseño, y los campos sensibles o duplicados se eliminaron por completo del modelo de datos.
+
+</DesignDecisionsSection>
+
+<DesignSystemSection title="Sistema de diseño" nav="Sistema de diseño">
+
+La app para inversionistas y el sitio de administración comparten un sistema de diseño, creado por el diseñador de producto asignado al proyecto en Tres Astronautas.
+
+<DiagramRow item={{ src: "/screenshots/getsellers/design-system-foundations.webp", title: "Fundamentos", caption: "Tipografía, color, colores de estado, radios y espaciado de la app para inversionistas.", width: 3000, height: 1575, light: true }}>
+
+### Fundamentos
+
+- **Dos tipografías.** Poppins para los títulos y Mona Sans para la interfaz, las tablas y los datos.
+- **Una interfaz oscura.** Una página azul marino profundo con tarjetas más oscuras, y tonos gris azulado suaves para el texto y los íconos.
+- **Un violeta para la acción.** Una escala de violetas donde un tono marca la acción principal, con tonos fijos para hover, seleccionado y deshabilitado.
+- **Colores de estado con significados fijos.** Éxito, peligro y advertencia, cada uno con su propia escala.
+- **Radios y espaciado como tokens.** Una escala corta de valores de radio y espaciado compartida por todos los componentes.
+
+</DiagramRow>
+
+</DesignSystemSection>
+
+<ImplementationSection title="Del diseño al código" nav="Diseño a código">
+
+Como Senior Software Engineer, fui responsable del backend: su reestructuración, sus casos de uso y todo lo que corre detrás de las dos apps web. Esta sección explica cómo está organizado, en términos de lo que hace cada parte.
+
+<DiagramRow item={{ src: "/diagrams/getsellers/architecture.webp", title: "Arquitectura", caption: "Quién llama a la API, sus capas hexagonales, y los datos y servicios detrás de ella.", width: 3000, height: 1560, light: true }}>
+
+### Arquitectura
+
+El repositorio es un monorepo con la API, la app para inversionistas, el sitio de administración y paquetes compartidos. Pasé el backend de una estructura por capas a una hexagonal: una solicitud va de una ruta y un controlador delgados a un caso de uso que hace una sola cosa, el dominio contiene las interfaces y las reglas, y los adaptadores hablan con la base de datos y los servicios externos.
+
+Las dependencias se conectan en un solo lugar, así que las pruebas las reemplazan con mocks y cada caso de uso se puede probar por separado. Las tareas programadas y las notificaciones en tiempo real corren en el mismo proceso que la API.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/getsellers/lifecycles.webp", title: "Ciclos de vida", caption: "El pipeline de un lead, los estados de un reembolso y un mercado como lo ve un inversionista.", width: 3000, height: 1560, light: true }}>
+
+### Leads, reembolsos y mercados
+
+Un lead en el pipeline del inversionista puede pasar a cualquier estado, desde lead nuevo hasta cerrado o frío. Un reembolso empieza en curso y termina completado, rechazado o cancelado. Un mercado le muestra a cada inversionista en qué punto está: abierto, asegurado, en espera cuando el saldo no alcanza, lleno o liberado.
+
+</DiagramRow>
+
+### Tareas programadas
+
+Cuatro tareas corren en segundo plano: una limpia los códigos de un solo uso vencidos todos los días, una cobra los eventos de recarga pendientes cada dos minutos, una procesa las comisiones por referidos cada mañana, y una reinicia los presupuestos mensuales el primer día del mes.
+
+### Calidad
+
+El backend tiene 289 archivos de pruebas, 270 unitarias y 19 de integración, con una base de datos en memoria y un umbral de cobertura del 60%. Como cada caso de uso se puede probar por separado, la mayor parte de esa suite son pruebas unitarias.
+
+### Entrega
+
+Los lanzamientos se hacen por tags y por app: el tag dice qué parte sale y a qué ambiente, así que la API, la app para inversionistas y el sitio de administración se pueden lanzar por separado.
+
+### Decisiones técnicas
+
+| Decisión | Por qué | Costo |
+|---|---|---|
+| Backend de capas a hexagonal | Cada caso de uso se puede probar solo, con menos acoplamiento. | Una reestructuración grande al inicio, compensada por la suite de pruebas. |
+| Un solo proveedor de pagos | La billetera y la app para inversionistas comparten un proveedor y un modelo de tarjetas y cobros. | Una migración, con parte del proveedor anterior todavía en el repositorio. |
+| Billetera prepagada con recarga automática | Un lead se paga desde el saldo, y la billetera se recarga después con reintentos. | Más estados de facturación que modelar y probar. |
+| Turnos dentro de cada mercado | Los leads son exclusivos, y los turnos los reparten de forma justa. | Un lead puede quedar sin asignar cuando nadie puede pagar. |
+| Un adaptador para el webhook de leads | Las fuentes nombran los campos de forma distinta, así que un adaptador los mapea todos. | Una fuente con una forma nueva implica extender el adaptador. |
+| Enmascarar los datos de los leads en la API | Los datos personales no salen del backend hasta que se necesitan. | Mapeo adicional en cada respuesta de leads. |
+| Lanzamientos por tags y por app | Cada parte del producto sale por su cuenta. | Los lanzamientos dependen de la disciplina con los tags. |
+
+</ImplementationSection>
+
+<ResultsSection title="Resultados" nav="Resultados">
+
+El producto modernizado está en producción, y el cliente mantuvo un marketplace en vivo durante todo el proceso. Los inversionistas se registran, eligen sus mercados, cargan una billetera que se recarga sola y reciben leads en la app, por correo y por SMS, luego trabajan cada lead en el pipeline y piden un reembolso por uno malo. El equipo que opera el marketplace maneja reembolsos, comunicados, reportes, precios de fuentes y referidos desde su propio sitio de administración.
+
+La integración de reembolsos con el backend propio del cliente nunca se completó, así que esa parte todavía está por cerrar. No se compartieron cifras de ingresos ni de conversión para este proyecto.
+
+</ResultsSection>
+
+<LearningsSection title="Aprendizajes y próximos pasos" nav="Aprendizajes">
+
+### Próximos pasos
+
+- Cerrar la integración de reembolsos con el backend propio del cliente cuando la conexión sea posible.
+- Eliminar lo que queda del proveedor de pagos anterior.
+- Medir el tiempo del webhook a la asignación, y los leads salvados por tarjetas de respaldo, como primera línea base.
+
+### Qué aprendí
+
+- **Leer antes de tocar.** Dedicar el primer sprint solo a revisar un producto en vivo se sintió lento. Es lo que permitió que el resto del proyecto cambiara la facturación y la asignación sin romper la entrega a los inversionistas que ya lo usaban.
+- **Los flujos de dinero merecen sus propios estados.** Pasar de "cobrar ya" a una billetera con eventos de recarga agregó estados, pero cada uno hizo que una falla fuera visible y recuperable en lugar de silenciosa.
+- **La API es donde se encuentra un equipo de dos personas.** Con un ingeniero a cada lado, mantener la API estable y predecible importó más que cualquier código compartido.
+
+</LearningsSection>

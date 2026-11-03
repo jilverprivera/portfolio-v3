@@ -1,22 +1,12 @@
 import Link from "next/link";
 import ScrollReveal from "@/components/ScrollReveal";
 import { SectionLabel } from "@/components/section-label";
+import type { Locale } from "@/i18n/config";
+import { getDictionary } from "@/i18n/dictionaries";
 
-const intro =
-  "I'm a Software Developer and Electronic Engineer with nearly 5 years of experience designing, modernizing and scaling web and mobile platforms, from fintech, real estate and blockchain to enterprise SaaS. Now, based in Floridablanca, CO, I've taken an independent path, working across the entire product lifecycle, from design and architecture to deployment, while building and operating three products of my own.";
-
-const expertise = [
-  "Backend & distributed systems",
-  "Fintech & digital payments products",
-  "Software architecture & system design",
-  "Modern web & mobile development",
-  "Cloud, CI/CD & observability",
-  "AI-powered solutions & automation",
-  "Testing & TDD",
-  "Embedded systems & robotics",
-];
-
-export function AboutContainer() {
+export function AboutContainer({ lang }: { lang: Locale }) {
+  const t = getDictionary(lang).home;
+  const { intro, expertise } = t;
   return (
     <section
       id="who-am-i"
@@ -24,7 +14,7 @@ export function AboutContainer() {
     >
       <div className="grid gap-16 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:gap-24">
         <div className="flex flex-col gap-12">
-          <SectionLabel marks="left">Who am I</SectionLabel>
+          <SectionLabel marks="left">{t.whoAmI}</SectionLabel>
           <ScrollReveal
             scrollContainerRef={undefined}
             baseOpacity={0.12}
@@ -41,12 +31,12 @@ export function AboutContainer() {
             href="/experience"
             className="w-fit text-lg font-bold uppercase tracking-wide text-accent-text underline-offset-8 hover:underline"
           >
-            Explore my professional experience →
+            {t.exploreExperience}
           </Link>
         </div>
 
         <div className="flex flex-col gap-12">
-          <SectionLabel marks="none">Expertise</SectionLabel>
+          <SectionLabel marks="none">{t.expertiseLabel}</SectionLabel>
           <ul className="flex flex-col gap-4">
             {expertise.map((item) => (
               <li key={item}>

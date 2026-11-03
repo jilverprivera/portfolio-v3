@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useDictionary } from "@/i18n/locale-context";
 
 export type ModalImage = { src: string; title: string; width: number; height: number };
 
@@ -10,6 +11,7 @@ export type ModalImage = { src: string; title: string; width: number; height: nu
 const FADE_MS = 220;
 
 export function ImageModal({ image, onClose }: { image: ModalImage; onClose: () => void }) {
+  const t = useDictionary().project;
   const [zoomed, setZoomed] = useState(false);
   // `visible` drives the fade: false while mounting and while closing.
   const [visible, setVisible] = useState(false);
@@ -57,7 +59,7 @@ export function ImageModal({ image, onClose }: { image: ModalImage; onClose: () 
         ref={closeRef}
         type="button"
         onClick={requestClose}
-        aria-label="Close"
+        aria-label={t.close}
         className="fixed right-4 top-4 z-[101] flex h-11 w-11 items-center justify-center rounded-full border border-line-strong bg-paper text-[20px] leading-none text-ink transition-colors hover:border-ink sm:right-6 sm:top-6"
       >
         ✕
@@ -105,6 +107,7 @@ export function ImageThumb({
   className?: string;
   imgClassName?: string;
 }) {
+  const t = useDictionary().project;
   const [open, setOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const img = useRef<HTMLImageElement>(null);
@@ -119,7 +122,7 @@ export function ImageThumb({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label={`Open ${image.title} in a large viewer`}
+        aria-label={t.openLarge(image.title)}
         aria-busy={!loaded}
         data-motion="image"
         data-loaded={loaded}

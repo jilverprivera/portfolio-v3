@@ -20,13 +20,13 @@ const getSize = () =>
     ),
   );
 
-export function ScrollBadge() {
+export function ScrollBadge({ text }: { text: string }) {
   const size = useSyncExternalStore(subscribe, getSize, () => 160);
   const reduceMotion = useReducedMotion();
 
   return (
     <CircularText
-      text="SCROLL TO VIEW MORE • "
+      text={text}
       size={size}
       fontSize={size * 0.1}
       fontWeight={700}

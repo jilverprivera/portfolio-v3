@@ -1,0 +1,279 @@
+---
+title: "Comfandi Digital Products"
+slug: "comfandi-digital"
+summary: "Productos web y móviles para una caja de compensación familiar colombiana: un módulo de salud para agendar citas y descargar resultados de laboratorio, una plataforma de evaluaciones para colegios y los servicios detrás de ellos. Trabajo entregado en OL-Software."
+type: "Proyecto de trabajo · OL-Software"
+date: "2025-10"
+year: "2025"
+status: "Vinculación jun – oct 2025"
+featured: true
+hideCover: true
+stack:
+  - "Next.js"
+  - "Expo y React Native"
+  - "Solito y NativeWind"
+  - "Redux Toolkit"
+  - "Nest.js"
+  - "PostgreSQL y Prisma ORM"
+  - "Jest"
+  - "Turborepo"
+highlights:
+  - value: "3"
+    label: "productos en los que trabajé"
+  - value: "~51%"
+    label: "de los commits del módulo de salud, su mayor contribuidor"
+  - value: "2"
+    label: "plataformas desde un mismo código: web y celular"
+---
+
+<SummarySection title="Resumen" nav="Resumen">
+
+Comfandi es una caja de compensación familiar colombiana: ofrece servicios de salud, educación, recreación, crédito y otros a los trabajadores de sus empresas afiliadas y a sus familias. En OL-Software, una empresa de software, trabajé en tres de sus productos digitales.
+
+- **Un módulo de salud** que permite a los afiliados agendar citas médicas en las clínicas de la caja, consultarlas y cancelarlas, pagarlas y descargar sus resultados de laboratorio. Se escribe una sola vez y funciona en la web y en el celular.
+- **Una plataforma de evaluaciones para colegios**, donde los docentes construyen bancos de preguntas y evaluaciones, y los estudiantes las responden como misiones con tiempo.
+- **Los servicios principales** detrás de la app móvil de la caja, donde las funcionalidades de un monolito anterior se estaban moviendo a servicios agrupados por flujo de negocio.
+
+El hilo principal de mi trabajo fue el módulo de salud, y en particular el flujo de agendamiento de citas, que construí de punta a punta. Trabajé en él como Mid-level Software Engineer, de junio a octubre de 2025. Este caso de estudio muestra los productos a través de sus flujos y diagramas.
+
+</SummarySection>
+
+<ContextSection title="Contexto y rol" nav="Contexto">
+
+- **Cliente:** Comfandi, una caja de compensación familiar colombiana
+- **Empresa:** OL-Software
+- **Productos:** Un módulo de salud para la web y el celular, una plataforma de evaluaciones para colegios y los servicios principales detrás de la app de la caja
+- **Mi rol:** Mid-level Software Engineer
+- **Lo que construí:** El flujo de agendamiento de citas del módulo de salud de punta a punta, los flujos de consulta, cancelación y pago y cambios en los resultados de laboratorio; el detalle de preguntas, la edición, el tipo verdadero o falso y los filtros por fecha en la plataforma de evaluaciones; y la regla de disponibilidad del mismo día en el servicio de salud
+- **Duración:** De junio a octubre de 2025
+
+</ContextSection>
+
+<ProblemSection title="Problema" nav="Problema">
+
+Un afiliado a una caja de compensación usa muchos de sus servicios, y cada producto digital tiende a construirse a su manera. En salud, agendar una cita depende de la cobertura del paciente, la clínica, la especialidad y los horarios disponibles, y un flujo de agendamiento que se equivoque en cualquiera de esos puntos manda al afiliado a la línea telefónica.
+
+El alcance del trabajo muestra dónde duele eso:
+
+- **Los afiliados** necesitan agendar para sí mismos o para un familiar, ver lo que ya tienen agendado, cancelarlo, pagarlo y obtener sus resultados de laboratorio, en el dispositivo que tengan a mano.
+- **La caja** necesita que las reglas del agendamiento, como con cuánta anticipación buscar o qué tan cerca de la hora actual puede estar un horario, cambien sin un despliegue.
+- **Los docentes** necesitan construir y mantener un banco de preguntas de varios tipos, etiquetadas por competencia, y convertirlas en evaluaciones.
+
+El afiliado que agenda una cita carga con la mayor parte de ese peso. Es el flujo con más reglas y más formas de fallar, así que la mayor parte de mi trabajo se diseñó para llevarlo a una cita confirmada en la menor cantidad de pasos posible.
+
+</ProblemSection>
+
+<PersonasSection title="Usuarios y contexto de uso" nav="Usuarios">
+
+Cuatro perfiles dan forma a los productos: los afiliados de la caja que agendan atención, y los docentes, directivos y estudiantes de la plataforma de evaluaciones.
+
+<PersonaCards
+  items={[
+    { name: "Afiliado de la caja", does: "Agenda citas para sí mismo o para un familiar, las consulta, cancela y paga, y descarga resultados de laboratorio.", where: "Módulo de salud en la web y el celular", tool: "coat", hair: "bun", skin: "#e8b48f", shirt: "#4b7bec", hairColor: "#3b2a22" },
+    { name: "Docente", does: "Construye preguntas de varios tipos, las etiqueta, arma evaluaciones y lee los resultados.", where: "Plataforma de evaluaciones, app de docentes", tool: "chart", hair: "short", glasses: true, skin: "#d9a07c", shirt: "#e6a23c", hairColor: "#555" },
+    { name: "Directivo", does: "Gestiona a los docentes del colegio y configura evaluaciones.", where: "Plataforma de evaluaciones, app de docentes", tool: "tie", hair: "long", skin: "#f0c8a0", shirt: "#2f3e5e", hairColor: "#2a1a14" },
+    { name: "Estudiante", does: "Sigue un mapa de materias y responde evaluaciones como misiones con tiempo.", where: "Plataforma de evaluaciones, app de estudiantes", tool: "magnifier", hair: "curly", skin: "#c68863", shirt: "#27a36d", hairColor: "#1c1c1c" },
+  ]}
+/>
+
+### Los momentos que dieron forma al diseño
+
+- **Un afiliado que agenda para un familiar** elige primero al paciente, porque la cobertura, las clínicas y las reglas dependen de para quién es la cita.
+- **Un afiliado que busca en un día congestionado** puede no encontrar horarios. La búsqueda tiene que avanzar por sí sola en lugar de devolver una pantalla vacía.
+- **Un afiliado que ya tiene una cita** para el mismo servicio debe ser avisado antes de agendar una segunda.
+- **Un estudiante en una misión** responde una pregunta a la vez con un temporizador, así que cada tipo de pregunta tiene que funcionar con un toque o un arrastre.
+
+</PersonasSection>
+
+<ObjectivesSection title="Objetivos, métricas de éxito y restricciones" nav="Objetivos">
+
+### Objetivos
+
+1. Permitir que los afiliados agenden una cita médica en pocos pasos guiados, en la web y en el celular.
+2. Escribir cada pantalla y cada regla una sola vez para ambas plataformas.
+3. Permitir que la caja ajuste las reglas de agendamiento sin un despliegue.
+4. Dar a los docentes un banco de preguntas que puedan filtrar, editar y mantener limpio.
+
+### Cómo se mediría el éxito
+
+No se compartieron métricas de éxito para este proyecto. Estas son las que yo propondría:
+
+| Objetivo | Métrica | Qué nos dice |
+|---|---|---|
+| Agendamiento guiado | Porcentaje de búsquedas que terminan en una cita confirmada | Si los afiliados llegan a agendar sin llamar. |
+| Búsquedas que encuentran algo | Búsquedas que necesitaron un reintento, y cuántos | Si avanzar al lunes siguiente salva la búsqueda. |
+| Un mismo código | Pantallas compartidas entre web y celular | Qué tanto del módulo realmente se escribe una sola vez. |
+| Un banco de preguntas limpio | Preguntas editadas o desactivadas por mes | Si los docentes mantienen el banco en lugar de duplicarlo. |
+
+### Restricciones
+
+- **Los sistemas de las clínicas deciden.** Los horarios, los pacientes y las citas viven en el sistema de agendamiento de las clínicas, así que cada paso se valida contra él.
+- **Hora local.** Las citas son en Colombia, y el reloj del servidor no puede decidir qué significa "hoy".
+- **Tres repositorios, cada uno con su propia historia.** El módulo de salud, la plataforma de evaluaciones y los servicios principales ya estaban en curso, con sus propias convenciones.
+
+</ObjectivesSection>
+
+<ProcessSection title="Proceso y priorización" nav="Proceso">
+
+### Del problema al alcance
+
+El trabajo empezó por el flujo de citas, el más usado y el más frágil. Cada paso del agendamiento se convirtió en una pantalla de un stepper, cada regla se convirtió en una validación contra el sistema de las clínicas o en una configuración, y el resto del módulo de salud, consultar, cancelar, pagar y resultados de laboratorio, se construyó alrededor de él.
+
+### Lo que cubrió el trabajo
+
+| Área | Qué permite |
+|---|---|
+| Agendamiento de citas | Un stepper con paciente y cobertura, servicio, lugar y fecha, una búsqueda de horarios con reintentos, un selector de horario y una confirmación. |
+| Control de duplicados | Un aviso cuando el paciente ya tiene una cita para el mismo servicio. |
+| Consultar y cancelar | Citas agendadas por paciente, una vista de detalle y una cancelación con confirmación. |
+| Pago | Una cita agendada con referencia de pago abre el portal de pagos. |
+| Resultados de laboratorio | Órdenes por paciente, y un PDF que se previsualiza en la web y se guarda en el celular. |
+| Interfaz compartida | Toasts, modales de carga y un hook de navegación que funcionan igual en la web y en el celular. |
+| Banco de preguntas | Detalle y edición de preguntas, un tipo verdadero o falso, y filtros por fechas de creación y actualización. |
+| Regla de disponibilidad | Un margen para el mismo día y la zona horaria de Bogotá en el servicio de salud. |
+
+</ProcessSection>
+
+<DesignDecisionsSection title="Decisiones de diseño" nav="Decisiones">
+
+Las decisiones que más dieron forma a los productos, tomadas por el equipo y diseñadas por el diseñador de producto de la empresa. Cada una se muestra como un flujo o un diagrama.
+
+<DiagramRow item={{ src: "/diagrams/comfandi-digital/flow-appointment.webp", title: "Agendar una cita médica", caption: "Los pasos del afiliado, y lo que la plataforma verifica entre ellos.", width: 3000, height: 1520, light: true }}>
+
+### Un agendamiento en pasos guiados
+
+**Problema.** Agendar depende de quién es el paciente, su cobertura, el servicio, la ciudad, la clínica y la fecha. Un formulario largo sería abrumador, y un error en cualquier campo obliga a empezar de nuevo.
+
+**Decisión.** Un stepper pide una cosa a la vez, valida cada paso contra el sistema de las clínicas y limpia lo que depende de un paso cuando el afiliado vuelve atrás para cambiarlo.
+
+**Costo.** Más pantallas, y más llamadas al sistema de las clínicas.
+
+**En el producto.** Un paciente que no está registrado se envía primero a registrarse, y uno sin cobertura igual puede agendar como paciente particular.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/comfandi-digital/availability.webp", title: "Reglas de agendamiento como configuración", caption: "El margen del mismo día y los reintentos, leídos desde la configuración.", width: 3000, height: 1060, light: true }}>
+
+### Reglas que la caja puede ajustar
+
+**Problema.** Qué tan cerca de la hora actual puede estar un horario del mismo día, y cuántas veces debe avanzar una búsqueda, son decisiones de negocio que cambian. En el código, cada cambio necesitaba un despliegue.
+
+**Decisión.** Ambas son configuraciones: el margen del mismo día, dos horas por defecto, y el número de reintentos por especialidad. Las fechas se comparan en hora de Bogotá, no con el reloj del servidor.
+
+**Costo.** Las fechas requieren cuidado en todos los lugares donde se construyen.
+
+**En el producto.** Una búsqueda vacía avanza al lunes siguiente por sí sola, tantas veces como esté configurado, y los horarios de hoy que estén demasiado cerca nunca se ofrecen.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/comfandi-digital/flow-scheduled.webp", title: "Consultar, cancelar y descargar resultados", caption: "Las citas que un afiliado ya tiene, y sus resultados de laboratorio.", width: 3000, height: 1340, light: true }}>
+
+### Un solo lugar para lo que ya está agendado
+
+**Problema.** Un afiliado que ya tiene una cita necesita verla, cancelarla o pagarla, y eso antes implicaba una llamada.
+
+**Decisión.** Las citas agendadas viven junto al flujo de agendamiento, por paciente, con una vista de detalle donde cancelar pide confirmación y pagar abre el portal de pagos.
+
+**Costo.** El pago ocurre fuera del módulo, así que el módulo solo sabe si hay algo por pagar.
+
+**En el producto.** Los resultados de laboratorio siguen el mismo patrón: elegir al paciente, ver las órdenes y descargar un PDF, que se previsualiza en la web y se guarda en el celular.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/comfandi-digital/flow-assessment.webp", title: "De un banco de preguntas a una misión", caption: "El docente construye y arma, el estudiante responde a tiempo.", width: 3000, height: 1480, light: true }}>
+
+### Un banco de preguntas que los docentes pueden mantener
+
+**Problema.** Los docentes construyen preguntas durante meses. Sin una forma de encontrarlas y editarlas, el banco se llena de duplicados.
+
+**Decisión.** Las preguntas se pueden filtrar por grado, materia, competencia, tipo y fechas, abrir en una vista de detalle, editar o desactivar, y el tipo verdadero o falso se sumó a los tipos de pregunta.
+
+**Costo.** Editar una pregunta con respuestas y subpreguntas tiene que actualizarlas todas juntas.
+
+**En el producto.** Guardar una edición actualiza la pregunta, sus respuestas y sus subpreguntas en una sola transacción, y los estudiantes ven las preguntas de verdadero o falso en sus misiones.
+
+</DiagramRow>
+
+</DesignDecisionsSection>
+
+<DesignSystemSection title="Sistema de diseño" nav="Sistema de diseño">
+
+El módulo de salud y la plataforma de evaluaciones siguen la identidad visual de la caja, diseñada por el diseñador de producto de la empresa, y ambos están construidos sobre los kits de componentes propios de la empresa.
+
+<DiagramRow item={{ src: "/screenshots/comfandi-digital/design-system-foundations.webp", title: "Fundamentos", caption: "Tipografía, color, colores de estado, radios y espaciado del módulo de salud.", width: 3000, height: 1575, light: true }}>
+
+### Fundamentos
+
+- **Una sola tipografía.** Outfit para títulos, interfaz y datos, en la web y en el celular.
+- **El azul y el verde de la caja.** Un azul profundo para la marca y las acciones principales, con verde, cian, amarillo y naranja como acentos.
+- **Grises para la estructura.** Una escala de grises para bordes, campos y texto, con un gris oscuro para el cuerpo de texto.
+- **Un kit de la empresa.** Botones, tarjetas, acordeones, selectores de fecha y modales vienen del kit de componentes de la empresa, que actualicé durante el trabajo para que ambas plataformas pudieran usar los componentes más nuevos.
+
+</DiagramRow>
+
+</DesignSystemSection>
+
+<ImplementationSection title="Del diseño al código" nav="Del diseño al código">
+
+Como Mid-level Software Engineer, mi trabajo fue convertir el diseño en flujos funcionales. Esta sección explica cómo están organizados los productos, en términos de lo que hace cada parte.
+
+<DiagramRow item={{ src: "/diagrams/comfandi-digital/architecture-health.webp", title: "El módulo de salud", caption: "Dos apps delgadas, un paquete compartido, y los servicios y sistemas detrás de ellas.", width: 3000, height: 1460, light: true }}>
+
+### Un mismo código, dos plataformas
+
+El módulo de salud es un monorepo con una app web, una app móvil y un paquete compartido. Las dos apps son capas delgadas: cada pantalla, regla y pieza de estado vive en el paquete compartido, organizado en arquitectura limpia con atomic design, y una tabla de rutas asigna cada ruta a una dirección web y a una pantalla nativa.
+
+Detrás, los servicios principales están agrupados por flujo de negocio: salud, configuración principal, ventas, y subsidio y crédito, cada uno con su propio esquema. El servicio de salud se comunica con el sistema de agendamiento de las clínicas y con una capa de integración que registra a los pacientes nuevos.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/comfandi-digital/architecture-assessments.webp", title: "La plataforma de evaluaciones", caption: "Dos apps web y una API con un módulo por concepto.", width: 3000, height: 1260, light: true }}>
+
+### Un modelo de colegio detrás de cada pregunta
+
+La plataforma de evaluaciones tiene una app web para docentes y directivos, una para estudiantes, y una API con un módulo para cada concepto: preguntas, respuestas, evaluaciones, resultados, estudiantes, grupos y materias. El modelo de datos sigue al colegio, desde la ciudad hasta el grupo y sus estudiantes, y a la pedagogía, desde las competencias hasta las evidencias.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/comfandi-digital/lifecycles.webp", title: "Ciclos de vida", caption: "Citas, preguntas y evaluaciones.", width: 3000, height: 1120, light: true }}>
+
+### Estados simples, reglas estrictas
+
+Ninguna de estas entidades tiene una máquina de estados larga. En cambio, las reglas están alrededor de los estados: una cita agendada por servicio, una pregunta que se puede desactivar sin borrarse, y una evaluación que cuenta como completada para un estudiante una vez se guarda su resultado.
+
+</DiagramRow>
+
+### Decisiones técnicas
+
+| Decisión | Por qué | Costo |
+|---|---|---|
+| Un paquete compartido para web y celular | Las pantallas y la lógica se escriben una sola vez. | Las diferencias de plataforma necesitan una abstracción, como el hook de navegación. |
+| Arquitectura limpia con atomic design | Un lugar claro para cada tipo de código. | Más carpetas para funcionalidades pequeñas. |
+| Reglas de agendamiento como configuración | La caja las ajusta sin un despliegue. | Valores por defecto y formatos que hay que mantener válidos. |
+| Una zona horaria explícita | Los horarios coinciden con la hora local sin importar el servidor. | Las fechas requieren cuidado en todos los lugares donde se construyen. |
+| Servicios agrupados por flujo de negocio | Cada flujo puede cambiar por su cuenta. | Lo compartido se mueve a una librería común. |
+
+</ImplementationSection>
+
+<ResultsSection title="Resultados" nav="Resultados">
+
+Los afiliados pueden agendar citas médicas en un flujo guiado, consultarlas, cancelarlas y pagarlas, y descargar sus resultados de laboratorio, en la web y en el celular, desde un mismo código. La caja puede ajustar cómo se comportan las búsquedas y los horarios del mismo día sin un despliegue. Los docentes pueden encontrar, editar y mantener limpio su banco de preguntas, y las preguntas de verdadero o falso llegan a las misiones de los estudiantes.
+
+No se compartieron cifras de uso para este proyecto.
+
+</ResultsSection>
+
+<LearningsSection title="Aprendizajes y próximos pasos" nav="Aprendizajes">
+
+### Próximos pasos
+
+- Medir cuántas búsquedas terminan en una cita confirmada, y cuántas necesitaron un reintento.
+- Pasar más reglas de agendamiento a la configuración a medida que la caja las pida.
+
+### Lo que aprendí
+
+- **Un stepper es un contrato con el usuario.** Limpiar lo que depende de un paso cuando el afiliado vuelve atrás se sintió estricto al principio, y es lo que mantuvo consistente cada agendamiento.
+- **Las zonas horarias son decisiones de producto.** "Hoy" significaba el día del servidor hasta que se fijó en Bogotá, y una regla tan simple como "no demasiado cerca de la hora actual" depende por completo de eso.
+- **Un mismo código necesita un solo lugar para las diferencias.** Compartir pantallas entre web y celular funcionó porque las pocas diferencias reales, como la navegación y la descarga de archivos, tenían un único lugar.
+
+</LearningsSection>

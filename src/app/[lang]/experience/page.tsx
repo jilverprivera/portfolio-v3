@@ -1,29 +1,36 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Reveal } from "@/components/reveal";
-import { education, groupStack, jobs } from "@/content/experience";
+import { groupStack } from "@/content/experience";
+import { getEducation, getJobs } from "@/content/localized";
+import type { Locale } from "@/i18n/config";
+import { getDictionary } from "@/i18n/dictionaries";
 
-export const metadata: Metadata = {
-  title: "Experience · Portfolio",
-  description: "Professional experience, education and honors.",
-};
+export async function generateMetadata({ params }: PageProps<"/[lang]/experience">): Promise<Metadata> {
+  const t = getDictionary((await params).lang as Locale).meta;
+  return { title: t.experience, description: t.experienceDescription };
+}
 
 const label = "font-mono text-[13px] uppercase tracking-[0.1em] text-ink-muted";
 
-export default function ExperiencePage() {
+export default async function ExperiencePage({ params }: PageProps<"/[lang]/experience">) {
+  const lang = (await params).lang as Locale;
+  const t = getDictionary(lang);
+  const jobs = getJobs(lang);
+  const education = getEducation(lang);
   return (
     <>
       <nav aria-label="Breadcrumb" className="w-full px-6 pt-10 text-[15px] md:px-12 md:pt-12">
         <ol className="flex items-center gap-2 text-ink-faint">
           <li>
             <Link href="/" className="transition-colors hover:text-ink">
-              Home
+              {t.nav.home}
             </Link>
           </li>
           <li aria-hidden="true">/</li>
           <li>
             <h1 aria-current="page" className="text-[15px] font-normal text-ink">
-              Experience
+              {t.nav.experience}
             </h1>
           </li>
         </ol>
@@ -35,7 +42,7 @@ export default function ExperiencePage() {
           className="text-accent-text"
           textClassName="!text-[22px] !font-bold uppercase !leading-7 !tracking-[0.12em]"
         >
-          Professional experience
+          {t.experience.professional}
         </Reveal>
 
         <ol className="mt-12 flex flex-col">
@@ -70,7 +77,7 @@ export default function ExperiencePage() {
                 </ul>
 
                 <div className="flex flex-col gap-3 pt-2">
-                  <span className={label}>Stack</span>
+                  <span className={label}>{t.experience.stack}</span>
                   <ul className="flex flex-wrap gap-2">
                     {groupStack(job.stack)
                       .flatMap((g) => g.items)
@@ -87,7 +94,7 @@ export default function ExperiencePage() {
 
                 {job.projects && (
                   <div className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-2">
-                    <span className={label}>Projects</span>
+                    <span className={label}>{t.experience.projects}</span>
                     {job.projects.map((p) => (
                       <Link
                         key={p.slug}
@@ -111,7 +118,7 @@ export default function ExperiencePage() {
           className="text-accent-text"
           textClassName="!text-[22px] !font-bold uppercase !leading-7 !tracking-[0.12em]"
         >
-          Education & honors
+          {t.experience.education}
         </Reveal>
 
         <div className="mt-12 grid gap-6 border-t border-line py-10 md:grid-cols-[minmax(0,1fr)_minmax(0,2.4fr)] md:gap-12">

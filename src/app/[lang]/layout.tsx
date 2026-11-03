@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { Analytics } from "@vercel/analytics/next";
 import { Anton, Space_Grotesk, Space_Mono } from "next/font/google";
 import GlowCursor from "@/components/GlowCursor";
 import { PageTransitions } from "@/components/page-transitions";
-import "./globals.css";
+import { LanguageSwitch } from "@/components/language-switch";
+import { isLocale, locales } from "@/i18n/config";
+import { getDictionary } from "@/i18n/dictionaries";
+import { LocaleProvider } from "@/i18n/locale-context";
+import "../globals.css";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -23,23 +28,31 @@ const spaceMono = Space_Mono({
   weight: ["400", "700"],
 });
 
-export const metadata: Metadata = {
-  title: "Jilver Pacheco | I create my own products and help design yours.",
-  description: "Brand designer & art director portfolio",
-};
+// Both languages are prerendered; the proxy picks one per visitor without changing the URL.
+export function generateStaticParams() {
+  return locales.map((lang) => ({ lang }));
+}
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Promise<Metadata> {
+  const { lang } = await params;
+  if (!isLocale(lang)) return {};
+  const t = getDictionary(lang);
+  return { title: t.meta.title, description: t.meta.description };
+}
+
+export default async function RootLayout({ children, params }: LayoutProps<"/[lang]">) {
+  const { lang } = await params;
+  if (!isLocale(lang)) notFound();
   return (
     <html
-      lang="en"
+      lang={lang}
       className={`${spaceGrotesk.variable} ${anton.variable} ${spaceMono.variable} dark h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        {children}
+        <LocaleProvider locale={lang}>
+          {children}
+          <LanguageSwitch />
+        </LocaleProvider>
         <GlowCursor
           color="#ff1a4d"
           secondaryColor="#4a38f5"

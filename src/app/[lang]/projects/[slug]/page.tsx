@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getAllProjectMeta, getProject, projectSlugs } from "@/content/projects";
+import type { Locale } from "@/i18n/config";
 import { ProjectHero } from "@/components/project/project-hero";
 import { SummarySection } from "@/components/project/sections";
 import { ProjectNav } from "@/components/project/project-nav";
@@ -13,35 +14,36 @@ export function generateStaticParams() {
   return projectSlugs.map((slug) => ({ slug }));
 }
 
-type PageProps = { params: Promise<{ slug: string }> };
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const project = await getProject(slug);
+export async function generateMetadata({ params }: PageProps<"/[lang]/projects/[slug]">): Promise<Metadata> {
+  const { slug, lang } = await params;
+  const project = await getProject(slug, lang as Locale);
   if (!project) return {};
   return {
-    title: `${project.meta.title} · Portfolio`,
+    title: `${project.meta.title} · ${lang === "es" ? "Portafolio" : "Portfolio"}`,
     description: project.meta.summary,
   };
 }
 
-export default async function ProjectPage({ params }: PageProps) {
-  const { slug } = await params;
-  const project = await getProject(slug);
+export default async function ProjectPage({ params }: PageProps<"/[lang]/projects/[slug]">) {
+  const { slug, lang: raw } = await params;
+  const lang = raw as Locale;
+  const project = await getProject(slug, lang);
   if (!project) notFound();
 
-  const all = await getAllProjectMeta();
+  const all = await getAllProjectMeta(lang);
   const { Content, meta } = project;
 
   return (
     <article className="lg:pl-64">
-      <ProjectMotion key={meta.slug} />
-      <ProjectSidebar />
-      <ProjectHero meta={meta} />
+      <ProjectMotion key={`${meta.slug}-${lang}`} />
+      {/* Remounted per language, since it reads the section titles from the page once. */}
+      <ProjectSidebar key={lang} />
+      <ProjectHero meta={meta} lang={lang} />
       <div className="pb-8">
         <Content components={{ SummarySection: (props) => <SummarySection {...props} highlights={meta.highlights} /> }} />
       </div>
-      <ProjectNav current={meta} all={all} />
+      <ProjectNav current={meta} all={all} lang={lang} />
     </article>
   );
 }
