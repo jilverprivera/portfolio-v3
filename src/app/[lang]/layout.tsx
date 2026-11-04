@@ -31,6 +31,10 @@ const spaceMono = Space_Mono({
 });
 
 // Both languages are prerendered; the proxy picks one per visitor without changing the URL.
+// Any other first segment is a 404, so a file request that misses, such as a stale service worker asking for
+// /sw.js, never renders the pages with a language that does not exist.
+export const dynamicParams = false;
+
 export function generateStaticParams() {
   return locales.map((lang) => ({ lang }));
 }
