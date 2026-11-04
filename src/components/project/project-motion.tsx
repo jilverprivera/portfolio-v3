@@ -129,12 +129,26 @@ export function ProjectMotion() {
         });
       }
 
-      // Lazy images change the page height as they load, so positions are measured again.
-      const refresh = () => ScrollTrigger.refresh();
+      // Lazy images change the page height as they load, so positions are measured again. A refresh resets the
+      // scroll position, which cuts a smooth scroll short (the sidebar links), so it waits until scrolling stops.
+      let lastScroll = 0;
+      let timer = 0;
+      const onScroll = () => {
+        lastScroll = performance.now();
+      };
+      const refresh = () => {
+        window.clearTimeout(timer);
+        const idle = performance.now() - lastScroll;
+        if (idle < 200) timer = window.setTimeout(refresh, 200 - idle);
+        else ScrollTrigger.refresh();
+      };
+      window.addEventListener("scroll", onScroll, { passive: true });
       window.addEventListener("load", refresh);
       const images = q<HTMLImageElement>("img");
       images.forEach((img) => img.addEventListener("load", refresh, { once: true }));
       return () => {
+        window.clearTimeout(timer);
+        window.removeEventListener("scroll", onScroll);
         window.removeEventListener("load", refresh);
         images.forEach((img) => img.removeEventListener("load", refresh));
       };

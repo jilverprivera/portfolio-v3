@@ -17,7 +17,7 @@ export function DiagramGallery({ items }: { items: Item[] }) {
           <ImageThumb
             image={item}
             className={`rounded-[8px] border border-line ${stage(item)} p-4 hover:border-line-strong`}
-            imgClassName="mx-auto h-auto max-h-[720px] w-auto max-w-full object-contain"
+            imgClassName="block h-auto max-h-[720px] w-full object-contain"
           />
           <figcaption className="flex flex-col gap-1">
             <span className="text-[16px] font-medium text-ink">{item.title}</span>
@@ -40,7 +40,7 @@ export function DiagramRow({ item, children }: { item: Item; children: React.Rea
         <ImageThumb
           image={item}
           className={`rounded-[8px] border border-line ${stage(item)} p-4 hover:border-line-strong`}
-          imgClassName="mx-auto h-auto max-h-[720px] w-auto max-w-full object-contain"
+          imgClassName="block h-auto max-h-[720px] w-full object-contain"
         />
         <figcaption className="flex flex-col gap-1">
           <span className="text-[16px] font-medium text-ink">{item.title}</span>

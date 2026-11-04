@@ -36,6 +36,7 @@ export function ProjectSidebar() {
   const [active, setActive] = useState(SECTIONS[0].id);
   // After a click the chosen section stays active until the reader scrolls by hand.
   const locked = useRef(false);
+  const scrolling = useRef(0);
   // The menu that replaces the sidebar on small screens.
   const [open, setOpen] = useState(false);
 
@@ -96,6 +97,7 @@ export function ProjectSidebar() {
     window.addEventListener("keydown", release);
     return () => {
       cancelAnimationFrame(first);
+      cancelAnimationFrame(scrolling.current);
       window.removeEventListener("scroll", update);
       window.removeEventListener("resize", update);
       window.removeEventListener("wheel", release);
@@ -111,12 +113,31 @@ export function ProjectSidebar() {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     // Land on the section title, not on the empty space above it.
     const title = section.querySelector("h2") ?? section;
-    const top = title.getBoundingClientRect().top + window.scrollY - 48;
+    const target = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      return Math.min(max, title.getBoundingClientRect().top + window.scrollY - 48);
+    };
     locked.current = true;
     setActive(id);
     setOpen(false);
-    window.scrollTo({ top, behavior: reduce ? "auto" : "smooth" });
-    history.replaceState(null, "", `#${id}`);
+    cancelAnimationFrame(scrolling.current);
+    if (reduce) return window.scrollTo(0, target());
+
+    // Scrolled frame by frame instead of with the browser's smooth scroll: the scroll animations re-measure
+    // the page as images load, which would cut a native smooth scroll short. The target is read again on
+    // every frame, so it still lands on the title if something above it changes size on the way.
+    // A wheel, touch or key from the user releases the lock and stops it.
+    const from = window.scrollY;
+    const duration = Math.min(1400, 500 + Math.abs(target() - from) / 12);
+    const start = performance.now();
+    const ease = (t: number) => (t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2);
+    const step = (now: number) => {
+      if (!locked.current) return;
+      const t = Math.min(1, (now - start) / duration);
+      window.scrollTo(0, from + (target() - from) * ease(t));
+      if (t < 1) scrolling.current = requestAnimationFrame(step);
+    };
+    scrolling.current = requestAnimationFrame(step);
   };
 
   const sections = (

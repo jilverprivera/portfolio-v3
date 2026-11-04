@@ -50,6 +50,13 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
       className={`${spaceGrotesk.variable} ${anton.variable} ${spaceMono.variable} dark h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        {/* Loading a page always starts at the top instead of where it was left or at a #section in the URL.
+            It runs before the browser would restore the position or jump to the section, and drops the #section. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `history.scrollRestoration="manual";if(location.hash)history.replaceState(history.state,"",location.pathname+location.search);scrollTo(0,0)`,
+          }}
+        />
         <LocaleProvider locale={lang}>
           {children}
           <LanguageSwitch />

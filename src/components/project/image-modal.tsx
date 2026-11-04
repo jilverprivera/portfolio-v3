@@ -111,15 +111,31 @@ export function ImageThumb({
   const [open, setOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const img = useRef<HTMLImageElement>(null);
+  const frame = useRef<HTMLButtonElement>(null);
 
-  // An image already in the cache can finish before React attaches onLoad.
   useEffect(() => {
-    if (img.current?.complete && img.current.naturalWidth > 0) setLoaded(true);
+    const el = img.current;
+    if (!el) return;
+    // An image already in the cache can finish before React attaches onLoad.
+    if (el.complete && el.naturalWidth > 0) return setLoaded(true);
+    // The scroll animation keeps the image clipped until it loads, and the browser never lazy-loads a clipped
+    // image. So the frame around it, which is never clipped, starts the download as it gets near the screen.
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        el.loading = "eager";
+        observer.disconnect();
+      },
+      { rootMargin: "600px 0px" },
+    );
+    if (frame.current) observer.observe(frame.current);
+    return () => observer.disconnect();
   }, []);
 
   return (
     <>
       <button
+        ref={frame}
         type="button"
         onClick={() => setOpen(true)}
         aria-label={t.openLarge(image.title)}
@@ -137,6 +153,8 @@ export function ImageThumb({
           height={image.height}
           loading="lazy"
           onLoad={() => setLoaded(true)}
+          // A failed image hides the loader too, instead of spinning forever.
+          onError={() => setLoaded(true)}
           className={`${imgClassName} transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
         />
         {!loaded && (
