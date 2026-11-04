@@ -1,272 +1,382 @@
 ---
 title: "Vigía"
 slug: "vigia"
-summary: "A multi-tenant PWA for pharmacies and pharmacy chains in Colombia: batch-level inventory with FEFO, a point of sale with offline mode, cash register, store credit, web catalog, prescriptions, controlled-substance logs, product recalls and cold chain."
+summary: "A multi-tenant SaaS for neighborhood pharmacies and chains in Colombia: batch inventory with FEFO, pricing, purchasing, a point of sale that keeps selling offline, cash and store credit, plus a console to run the platform."
 type: "Side project"
 date: "2026-10"
 year: "2026"
 status: "In development"
 featured: true
-cover: "/screenshots/vigia/dashboard.png"
+cover: "/screenshots/vigia/cover.webp"
 stack:
   - "Go"
   - "Next.js"
   - "React"
-  - "Supabase Postgres, Auth and Storage"
+  - "Postgres with Row-Level Security"
   - "Redis and asynq"
-  - "IndexedDB (Dexie)"
-  - "Prisma ORM and pgx"
-  - "Twilio and SendGrid"
-  - "OpenTelemetry and Grafana"
-  - "Docker and GitHub Actions"
+  - "IndexedDB"
+  - "Tailwind CSS"
+  - "TanStack Query"
+  - "OpenTelemetry"
+  - "Docker"
 highlights:
-  - value: "46"
-    label: "product capabilities"
   - value: "205"
     label: "features in the backlog"
-  - value: "129"
-    label: "Go test files"
+  - value: "99"
+    label: "features already complete"
+  - value: "5"
+    label: "pharmacy segments with their own rules"
 ---
 
 <SummarySection title="Summary">
 
-Vigía is a progressive web app that unifies the operation of a pharmacy: batch-level inventory with FEFO dispatch (first expired, first out), expiry tracking, pricing, supplier purchasing, point of sale, cash register and reconciliation, and store credit. It also serves customers with a web catalog showing stock and price per branch, and covers health-regulation obligations: the controlled-substance log, product recalls and batch traceability.
+Vigía is a progressive web app that runs the day of a pharmacy: the catalog with its presentations and regulatory flags, one price per branch, batch-level inventory dispatched by FEFO (first expired, first out), purchasing, the point of sale, cash shifts and store credit. It also handles the team, with roles per branch and a second person for sensitive operations.
 
-It serves two customer profiles: the neighborhood pharmacy, where the same person sells, receives goods and closes the register, and the multi-branch chain, which needs consolidated stock, transfers and central promotions.
+It is made of two apps on the same API:
+
+- **The pharmacy panel**, where owners, pharmacists, cashiers and warehouse staff do their work, branch by branch.
+- **The platform console**, on its own domain, where the platform onboards pharmacies, sets their plans and segments, and answers support.
+
+Vigía is a private SaaS: every page needs a session, and there is no public storefront. It is one of my own products, and the case study shows both apps through their screens, flows and diagrams.
 
 </SummarySection>
 
-<ChallengeSection title="Challenge & strategy">
+<ContextSection title="Context & role">
 
-### Challenge
+- **Product:** My own SaaS for pharmacies, with a pharmacy panel and a platform console
+- **My role:** Product, architecture, backend and both web apps
+- **What I built:** The Go API and its worker, both PWAs, the offline mode, the contracts and the documentation
+- **Language:** Spanish, the language of its users
+- **Status:** In development
 
-The story starts at the counter of a neighborhood pharmacy. Dozens of WhatsApp messages and phone calls a day ask the same thing: do you have this, and how much is it? Meanwhile, medicines expire on the shelf and fast-moving products run out without warning. Shelf, register and web show different prices, prescriptions arrive as blurry photos, controlled substances are sold without validation, and finding the batches affected by a recall means searching by hand.
+</ContextSection>
 
-The context makes each of those problems harder. Margins are thin, staff turns over, internet connectivity is unstable, and health and data-protection obligations leave no room for improvisation. About 40% of SKUs are sold in fractions (a box, a blister, a tablet), which does not fit an inventory counted by package. And in many pharmacies one person does everything, so the interface had to be simple enough for anyone on the team to sell without long training.
+<ProblemSection title="Problem">
 
-### Strategy
+The story starts at the counter of a neighborhood pharmacy. Medicines expire on the shelf, fast-moving products run out without warning, and the shelf, the register and the price list say different things. Counting what is left of a batch, or finding who bought it, means searching by hand.
 
-The base specification turned those pains into five goals: spend less staff time answering repetitive questions, avoid losses from expiry and stockouts, eliminate price differences between shelf, register and catalog, trace every unit sold, damaged, returned or lost, and retain customers with recurring purchases, such as chronic patients, older adults and families.
+The context makes each of those problems harder:
 
-Each pain got a direct answer. A web catalog with real-time stock and price replaces the repetitive questions. Batch-level control with FEFO and alerts takes care of expiry. A single price master per SKU and branch, with history and auditing, ends the price mismatch. Pharmacist validation before dispensing and exportable control logs cover compliance.
+- **About 40% of products are sold in fractions**, a box, a blister or a tablet, which does not fit an inventory counted by package.
+- **The internet goes down**, and a counter that cannot sell loses the customer.
+- **One person often does everything.** The same software has to serve a pharmacy of one and a chain with a role for every task.
+- **Health and data-protection rules** leave no room for improvisation, from controlled substances to patient data.
 
-Two rules were set as constraints from the start. The counter never stops: no network, Redis or external-provider failure may prevent selling, charging or closing the register. And all patient and prescription data is treated as sensitive from the moment it is captured, in line with Colombian Law 1581 of 2012.
+So the product had to be simple enough for anyone on the team to sell without long training, and strict enough that every unit can be traced.
 
-</ChallengeSection>
+</ProblemSection>
 
-<PersonasSection title="User persona">
+<PersonasSection title="Users & context of use" nav="Users">
 
-Eight personas drive the design. Each one has a different way of using the product, from a neighborhood counter to the platform team.
+Seven profiles use Vigía, six inside a pharmacy and one on the platform.
 
 <PersonaCards
   items={[
-    { name: "Customer or patient", does: "Looks up products, stock and prices, uploads prescriptions, receives reminders and buys. Includes older adults and families managing dependents.", where: "Public store, WhatsApp, SMS and email", tool: "bag", hair: "bun", skin: "#e8b48f", shirt: "#4b7bec", hairColor: "#3b2a22" },
-    { name: "Counter staff", does: "Sells, charges, handles returns and store credit and closes the register. In a neighborhood pharmacy, often has other roles too.", where: "Point of sale and panel", tool: "register", hair: "cap", skin: "#c68863", shirt: "#e0566b", hairColor: "#222" },
-    { name: "Warehouse staff", does: "Receives goods, adjusts stock, counts and transfers.", where: "Panel: receipts, batches and counts", tool: "box", hair: "short", skin: "#f0c8a0", shirt: "#e6a23c", hairColor: "#5a3a22" },
-    { name: "Pharmacist-in-charge", does: "Validates prescriptions, authorizes controlled substances, signs the logs and answers for the cold chain and recalls.", where: "Panel and counter authorization", tool: "coat", hair: "long", skin: "#d9a07c", shirt: "#f4f4f7", hairColor: "#2a1a14" },
-    { name: "Owner or administrator", does: "Sets prices, suppliers, purchasing, users, reports and the configuration of their branches.", where: "Panel", tool: "tie", hair: "short", glasses: true, skin: "#e2ad88", shirt: "#2f3e5e", hairColor: "#555" },
-    { name: "Chain administrator", does: "Manages the central catalog, transfers, promotions and central purchasing across branches.", where: "Multi-branch panel", tool: "map", hair: "curly", skin: "#a8704d", shirt: "#27a36d", hairColor: "#1c1c1c" },
-    { name: "Platform operator", does: "Onboards pharmacies, manages plans, operations and support.", where: "Platform console, on a separate domain", tool: "headset", hair: "bob", skin: "#f0c8a0", shirt: "#8e5be0", hairColor: "#7a3b2a" },
-    { name: "Catalog visitor", does: "An anonymous person checking availability, price and opening hours.", where: "Public store, no sign-in", tool: "magnifier", hair: "short", skin: "#cf9468", shirt: "#7a7f8c", hairColor: "#2a2a2a" },
+    { name: "Owner", does: "Sets prices, suppliers, purchasing, users and branches. In a small pharmacy also works the counter.", where: "Pharmacy panel", tool: "tie", hair: "short", glasses: true, skin: "#e2ad88", shirt: "#2f3e5e", hairColor: "#555" },
+    { name: "Counter staff", does: "Opens the shift, sells, charges, handles store credit and closes the register.", where: "Point of sale", tool: "register", hair: "cap", skin: "#c68863", shirt: "#e0566b", hairColor: "#222" },
+    { name: "Warehouse staff", does: "Receives goods, adjusts stock, counts and transfers between branches.", where: "Receipts, batches and counts", tool: "box", hair: "short", skin: "#f0c8a0", shirt: "#e6a23c", hairColor: "#5a3a22" },
+    { name: "Pharmacist-in-charge", does: "Answers for controlled products, quarantines and the cold chain, and signs what only a pharmacist can sign.", where: "Pharmacy panel", tool: "coat", hair: "long", skin: "#d9a07c", shirt: "#f4f4f7", hairColor: "#2a1a14" },
+    { name: "Branch or chain administrator", does: "Runs a branch, or the whole chain with its central catalog, transfers and promotions.", where: "Pharmacy panel, across branches", tool: "map", hair: "curly", skin: "#a8704d", shirt: "#27a36d", hairColor: "#1c1c1c" },
+    { name: "Accountant", does: "Reads sales, valuation, taxes and cost centers without touching the counter.", where: "Reports", tool: "magnifier", hair: "bun", skin: "#cf9468", shirt: "#7a7f8c", hairColor: "#2a2a2a" },
+    { name: "Platform operator", does: "Onboards pharmacies, manages plans, segments, modules and support. Never sees sales or patient data.", where: "Platform console", tool: "headset", hair: "bob", skin: "#f0c8a0", shirt: "#8e5be0", hairColor: "#7a3b2a" },
   ]}
 />
+
+### The moments that shaped the design
+
+- **Opening the shift.** Nothing is sold until a register is picked and the float is counted, bill by bill.
+- **A batch about to expire.** The system has to say it before the shelf does, and the counter has to sell it first.
+- **The internet drops mid-sale.** The counter keeps selling, and the sale is reconciled later without duplicates.
+- **A void or an adjustment.** In a team, a second person authorizes it; in a pharmacy of one, it is logged instead.
 
 </PersonasSection>
 
-<FeaturesSection title="Features">
+<ObjectivesSection title="Goals, success metrics & constraints" nav="Goals & constraints">
 
-The backlog defines 46 capabilities and 205 features, grouped into six blocks:
+### Goals
 
-| Block | Capabilities | Main content |
+1. Avoid losses from expiry and stockouts with batch-level control.
+2. Have one price per product, branch and presentation, the same everywhere.
+3. Trace every unit sold, damaged, returned or lost.
+4. Keep the counter selling without a connection.
+5. Serve a pharmacy of one and a chain with the same product.
+
+### How success would be measured
+
+There is no pilot yet, so there are no usage figures. These are the metrics set for it:
+
+| Goal | Metric | What it tells us |
 |---|---|---|
-| Cross-cutting | 001 to 008 | Platform console, users, branches and roles, audit log, data privacy, notifications, initial import, reports and PWA operation. |
-| Catalog, pricing and inventory | 009 to 013 | Products with units and presentations, price master with validity dates, batch-level inventory, physical counts and alerts for expiry and minimum stock. |
-| Purchasing and supply | 014 to 016 | Suppliers, purchase orders, purchase suggestions and goods receipt. |
-| Sales, cash and credit | 017 to 023 | Counter sales, returns and exchanges, offline sales, shifts and cash reconciliation, store credit, promotions and electronic documents (proposed). |
-| Customers, prescriptions and compliance | 024 to 030 | Web store, customers and patients, pharmacist-validated prescriptions, reminders for chronic patients, controlled-substance log, product recalls and cold chain. |
-| Multi-branch and loyalty | 031 to 033 | Consolidated dashboard, transfers between branches and a points program. |
-| Commercial and accounting extensions | 034 to 046 | Taxes and withholdings, sales documents and receivables, per-customer pricing, richer product records, cost centers, sales reports, warehouses, expenses, accounting and payroll (the last two proposed). |
+| Fewer expiry losses | Value of stock expired per month, at cost | Whether alerts and FEFO work. |
+| One price | Price differences found in counts and audits | Whether the price master is trusted. |
+| Traceability | Share of movements with a batch and a reason | Whether every unit can be followed. |
+| Offline counter | Sales made offline that sync without a conflict | Whether the offline mode holds. |
+| Fast counter | Time to complete a sale, p95 | Whether the POS is fast enough at peak hours. |
 
-### Product screenshots
+### Constraints
 
-Screenshots of the running application with its demo data. The interface is in Spanish, the language of its users. Each one shows what the screen is for and what it brings. Click a screenshot to open it larger.
+- **The counter never stops.** No network, cache or provider failure may prevent selling, charging or closing the register.
+- **Sensitive data from the start.** Patient and health data are encrypted and every access is logged, in line with Colombian data-protection law.
+- **One database for every pharmacy**, where the database itself refuses a query that has no pharmacy.
+- **Thin margins.** The product has to run cheaply, so there is one API and one worker to deploy.
 
-<ScreenshotGallery
-  items={[
-    {
-      src: "/screenshots/vigia/dashboard.png",
-      title: "Pharmacy panel",
-      caption: "The home of the staff panel. After signing in, the person chooses a branch and the role they will work with, and the panel adapts to that choice.",
-      features: [
-        "Branch and role selector in the top bar, so the same person can switch context without signing out.",
-        "Modules grouped by product, stock, purchasing and sales, each with a short description.",
-        "Menu and cards limited to what the active role is allowed to do.",
-        "Notification bell with the number of open alerts.",
-      ],
-      width: 2160,
-      height: 1350,
-    },
-    {
-      src: "/screenshots/vigia/inventory-lots.png",
-      title: "Inventory by batch",
-      caption: "Every unit of stock belongs to a batch, listed in dispatch order: the batch that expires first comes first (FEFO).",
-      features: [
-        "Expiry badges that show expired batches and the days left on the rest.",
-        "Filters by status, location and expiry window, and a switch to hide empty batches.",
-        "Actions per batch: adjust stock, send to quarantine and move to another location.",
-        "Stock, cost per base unit and total value for each batch, with tabs for stock, movements, warehouses and valuation.",
-      ],
-      width: 2160,
-      height: 1350,
-    },
-    {
-      src: "/screenshots/vigia/expiry-alerts.png",
-      title: "Expiry and stock alerts",
-      caption: "The process engine generates alerts so nobody has to look for them: soon-to-expire, expired, low stock and overstock.",
-      features: [
-        "Counters by alert type and filters by state, expiry window and category.",
-        "Each alert shows the batch, the quantity and its value at cost.",
-        "A suggested action for each one, such as returning to the supplier or transferring to another branch.",
-        "Acknowledge or resolve an alert, and configure when alerts are generated.",
-      ],
-      width: 2160,
-      height: 1350,
-    },
-    {
-      src: "/screenshots/vigia/pricing.png",
-      title: "Single price master",
-      caption: "One price per product, branch and presentation. The register, the web store and the shelf label all read the same value.",
-      features: [
-        "Current price and scheduled price next to each presentation.",
-        "Change a price or set one where it is missing, with the change kept in the history.",
-        "Tools for rounding rules, customer lists, customer discounts, promotions and label printing.",
-        "Search by name, SKU, active ingredient or code.",
-      ],
-      width: 2160,
-      height: 1350,
-    },
-    {
-      src: "/screenshots/vigia/storefront.png",
-      title: "Public storefront",
-      caption: "The public page of each pharmacy, with no sign-in. Customers can check if it is open and how to reach it.",
-      features: [
-        "An open-now status calculated in the time zone of the pharmacy, refreshed every minute.",
-        "Weekly opening hours, with today highlighted.",
-        "Contact options: write on WhatsApp, call the branch or get directions.",
-        "Accessibility controls for larger text and high contrast, plus a light and dark theme.",
-      ],
-      width: 2160,
-      height: 1350,
-    },
-  ]}
-/>
+</ObjectivesSection>
 
-</FeaturesSection>
+<ProcessSection title="Process & prioritization" nav="Process">
 
-<ImplementationSection title="Implementation & final design">
+### From problem to scope
+
+The work started with a written base specification: goals, pain points, requirements, the data model, compliance and a phased plan. From it came a functional backlog of 46 capabilities and 146 features, a domain model, a C4 architecture, quality attributes and a decision record for every important choice. A second backlog of gaps added 59 features, and a unified backlog checks all 205 against the code.
+
+### What the product covers
+
+| Area | What it enables |
+|---|---|
+| Platform | Pharmacies, plans, segments, modules per pharmacy, support requests and failed jobs. |
+| Team and access | Invitations, several roles per branch, an active role, restricted role pairs and dual control. |
+| Catalog | Products with presentations, barcodes, equivalences, photos, taxes and regulatory flags. |
+| Pricing | One price per presentation and branch, history, rounding, customer lists, discounts, promotions and labels. |
+| Inventory | Batches with FEFO, warehouses, movements, counts, transfers, valuation and alerts. |
+| Purchasing | Suppliers, purchase orders with approval, nightly purchase suggestions and receipts. |
+| Sales and cash | Point of sale by unit, box or fraction, offline sales, shifts, counts, store credit and loyalty. |
+| Compliance | An audit log chained by hash, privacy requests and consents, and encrypted health data. |
+
+### What waited
+
+- **Prescriptions, controlled-substance logs, recalls and most of the cold chain** are designed but not built yet.
+- **Electronic invoicing** is only a proposal, and expenses, accounting and payroll come after it.
+- **The public storefront** was removed: Vigía stays a private tool for the people who work in the pharmacy.
+
+</ProcessSection>
+
+<DesignDecisionsSection title="Design decisions">
+
+The decisions that most shaped the product. Click any image to open it larger. The screens are in Spanish, and every one of them exists in a light and a dark theme.
+
+<DiagramRow item={{ src: "/screenshots/vigia/apps.webp", title: "Two apps", caption: "The platform console and the pharmacy panel.", width: 3000, height: 1500, light: true }}>
+
+### The platform apart from the pharmacies
+
+**Problem.** The people who run the platform need to see every pharmacy, but they must never see a sale, a customer or a patient.
+
+**Decision.** Two PWAs on the same API. The platform console lives on its own domain and only shows pharmacies, plans, usage and support.
+
+**Trade-off.** Two apps to build and deploy, sharing their shell, sign-in and design system through common packages.
+
+**In the product.** The console says it on its list of pharmacies: from there, no operational data can be seen.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/vigia/flow-onboarding.webp", title: "Onboarding a pharmacy", caption: "Register it, pick its plan and segment, then follow it.", width: 3000, height: 1250, light: true }}>
+
+### One step to a working pharmacy
+
+**Problem.** A pharmacy that waits days to be set up never starts using the product.
+
+**Decision.** One form creates the pharmacy, its first branch and the owner's invitation. The owner gets an email to set a password and enters with the owner role.
+
+**Trade-off.** The plan and segment are chosen at sign-up, so moving a pharmacy later has its own action.
+
+**In the product.** The pharmacy page shows its branches, owner, modules and usage against the plan, with actions to change its segment or suspend it.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/diagrams/vigia/segments.webp", title: "Five segments", caption: "How many branches and people, and who authorizes.", width: 3000, height: 1000, light: true }}>
+
+### A pharmacy of one is not a small chain
+
+**Problem.** Dual control protects a chain, but in a pharmacy where one person does everything, nobody else could approve a void.
+
+**Decision.** Five segments fix the branches, the people, the roles that exist and whether a second person must authorize. In single-person segments, the request is granted to the person who made it and left in the audit log.
+
+**Trade-off.** Every permission check has to read the segment, and moving a pharmacy between segments needs care with roles already assigned.
+
+**In the product.** The pharmacist's signature is never self-service, in any segment.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/vigia/flow-team.webp", title: "Building the team", caption: "Invite, give roles per branch and set which pairs need a second person.", width: 3000, height: 1250, light: true }}>
+
+### Roles per branch, and an active role
+
+**Problem.** In a small chain the same person is a cashier in one branch and covers the warehouse in another.
+
+**Decision.** A person can hold several roles, different in each branch, and works with one active branch and role at a time, switched from the top bar.
+
+**Trade-off.** One more choice after signing in, so the panel remembers the last one.
+
+**In the product.** Role rules define which combinations need a second user for adjustments, voids, returns, discounts and price changes.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/vigia/flow-product.webp", title: "From a product to its price", caption: "Create it, complete its record and set its price.", width: 3000, height: 1250, light: true }}>
+
+### One price everyone reads
+
+**Problem.** When the shelf, the register and the price list disagree, the customer pays whichever is wrong.
+
+**Decision.** One price per product, branch and presentation. The point of sale and the shelf labels read the same value, and every change keeps who, when, from what and why.
+
+**Trade-off.** A price can only change in one place, so large changes above a threshold need a second person.
+
+**In the product.** The price at any past date and hour can be looked up, in Colombian time.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/vigia/lots-annotated.webp", title: "Inventory by batch", caption: "Every unit belongs to a batch, listed in dispatch order.", width: 3000, height: 1475, light: true }}>
+
+### First to expire, first out
+
+**Problem.** A box that expires next month is lost if the counter keeps selling the one that expires next year.
+
+**Decision.** Every unit of stock belongs to a batch. The counter discounts the batch that expires first, and quarantined or expired batches are never sold.
+
+**Trade-off.** Selling has to lock the batch it takes from, which adds contention on fast-moving products at peak hours.
+
+**In the product.** Each batch shows its days to expiry, and a nightly job expires old batches and opens alerts for the rest.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/vigia/flow-stock.webp", title: "From stock to the batch", caption: "Stock per product, its batches and where they are.", width: 3000, height: 1250, light: true }}>
+
+### Sell a tablet without opening a box
+
+**Problem.** Many medicines are sold by the blister or the tablet, and an inventory counted by box loses track.
+
+**Decision.** Stock is kept in the base unit, such as a tablet, and every presentation is a multiple of it. Warehouses separate the sales floor from storage and quarantine.
+
+**Trade-off.** Every screen has to show quantities in a unit people understand, like "8 boxes (800 tablets)".
+
+**In the product.** What can be sold, what is blocked and the minimum of the branch are shown side by side.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/vigia/pos-annotated.webp", title: "Opening a shift", caption: "Pick a register and count the float before selling.", width: 3000, height: 1475, light: true }}>
+
+### The register is counted, not typed
+
+**Problem.** A cash difference found at closing is hard to explain if nobody counted at the start.
+
+**Decision.** No sale without an open shift. The shift starts by picking a register and counting the float by denomination, and closes with a guided count.
+
+**Trade-off.** A few seconds more at the start of the day.
+
+**In the product.** Differences are explained by the cashier and approved where the segment asks for a second person.
+
+</DiagramRow>
+
+</DesignDecisionsSection>
+
+<DesignSystemSection title="Design system">
+
+Both apps share one design system, packaged once and used by the panel and the console. It is built on an existing set of tokens and components from a previous project, and I completed what it did not have, such as tables, dialogs, breadcrumbs, empty states and the app shell, with the same tokens.
+
+<DiagramRow item={{ src: "/screenshots/vigia/themes-panel.webp", title: "Light and dark", caption: "The catalog of the pharmacy panel in both themes.", width: 3000, height: 1500, light: true }}>
+
+### Two themes from one set of tokens
+
+- **One family, Inter,** with a closed type scale for headlines, body and labels.
+- **A teal brand** for actions and focus, with tinted surfaces for the active item.
+- **Status colors with fixed meanings** for available, blocked, expired and controlled.
+- **Tokens that invert on their own,** so a screen is designed once and checked for contrast in both themes.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/vigia/themes-admin.webp", title: "The console too", caption: "The platform console in both themes.", width: 3000, height: 1500, light: true }}>
+
+### One shell for both apps
+
+The sidebar, the header with its breadcrumbs, the user menu and the sign-in screens come from a shared package, so the console and the panel feel like one product while serving very different people.
+
+</DiagramRow>
+
+</DesignSystemSection>
+
+<ImplementationSection title="From design to code" nav="Design to code">
+
+This section explains how the platform is organized, in terms of what each part does.
+
+<DiagramRow item={{ src: "/diagrams/vigia/architecture.webp", title: "Architecture", caption: "The two PWAs, the Go API and worker, and the infrastructure behind them.", width: 3000, height: 1560, light: true }}>
 
 ### Architecture
 
-A Go modular monolith with two executables, the API and a worker, and one Next.js PWA that serves the public store, the pharmacy panel with the POS and the platform console. Each module is a vertical slice with hexagonal architecture inside. Click a diagram to open it at full size.
+The API is a Go modular monolith with two executables, the API and a worker. Each business module is a vertical slice with hexagonal architecture inside, and architecture tests keep them from depending on each other's insides.
 
-<DiagramGallery
-  items={[
-    { src: "/diagrams/vigia/architecture.svg", title: "Architecture", caption: "The PWA, the Go API and worker, and the services behind them.", width: 1200, height: 640 },
-  ]}
-/>
+Every pharmacy shares one Postgres database. Row-Level Security makes the database itself reject any query that carries no pharmacy, and modules a pharmacy has turned off answer with a clear error and disappear from the panel.
 
-### Stock and sales
+</DiagramRow>
 
-Inventory is the heart of the model: every change is an immutable movement per batch.
+<DiagramRow item={{ src: "/diagrams/vigia/offline-sale.webp", title: "An offline sale", caption: "From the branch package to a synced sale, or a conflict for a person.", width: 3000, height: 1380, light: true }}>
 
-<DiagramGallery
-  items={[
-    { src: "/diagrams/vigia/stock-to-sale-flow.svg", title: "From purchase to sale", caption: "Batches in, FEFO out, and alerts when stock is about to expire or run out.", width: 1200, height: 520 },
-  ]}
-/>
+### The counter never stops
 
-### Offline point of sale
+The panel keeps a package of the branch on the device. Without a connection, sales get a provisional ticket and wait in order in IndexedDB with every other write. When the network is back they are replayed with the same idempotency key, so a sale is applied once, and one that no longer fits the stock goes to a person instead of being fixed silently.
 
-The counter never stops, even without a connection.
+</DiagramRow>
 
-<DiagramGallery
-  items={[
-    { src: "/diagrams/vigia/offline-sync.svg", title: "Offline sales and sync", caption: "Sales queue on the device and replay without duplicates, and conflicts go to a person.", width: 1200, height: 560 },
-  ]}
-/>
+<DiagramRow item={{ src: "/diagrams/vigia/lifecycles.webp", title: "Life cycles", caption: "The states of a batch, a cash shift and an offline sale.", width: 3000, height: 1560, light: true }}>
 
-### Multi-tenancy and security
+### Movements, never edits
 
-<DiagramGallery
-  items={[
-    { src: "/diagrams/vigia/tenancy.svg", title: "One database, many pharmacies", caption: "Row-Level Security rejects any query that has no tenant.", width: 1200, height: 520 },
-  ]}
-/>
+Stock is never overwritten: every change is an immutable movement per batch, with a reason. That is what makes it possible to sell fractions, rebuild the stock ledger and follow a batch to the customer.
 
-### Asynchronous work
+</DiagramRow>
 
-<DiagramGallery
-  items={[
-    { src: "/diagrams/vigia/async.svg", title: "Outbox and providers", caption: "Events are written with the change and delivered later, so a sale never waits on a message.", width: 1200, height: 520 },
-  ]}
-/>
+### Quality
 
-### Pharmacy segments
+The backend has 151 Go test files, including isolation tests between pharmacies. The API is described first, in 34 OpenAPI contracts, and the typed client and its hooks for both apps are generated from them. Messages and integrations always go through a transactional outbox and a job queue, so a sale never waits on a provider.
 
-<DiagramGallery
-  items={[
-    { src: "/diagrams/vigia/segments.svg", title: "Five segments", caption: "Each segment fixes branches, people, roles and dual control.", width: 1200, height: 520 },
-  ]}
-/>
+### Technical decisions
 
-### Domain model
-
-The domain is split into bounded contexts. The first diagram shows how they depend on each other, and the rest are the life cycles of the entities with the most rules.
-
-<DiagramGallery
-  items={[
-    { src: "/diagrams/vigia/domain-contexts.svg", title: "Domain contexts", caption: "The bounded contexts of the domain and their main dependencies.", width: 1640, height: 1230 },
-    { src: "/diagrams/vigia/state-sale.png", title: "Sale life cycle", caption: "From a counter sale or a synced offline sale to returns and voids with a second authorization.", width: 1568, height: 1390 },
-    { src: "/diagrams/vigia/state-batch.png", title: "Batch life cycle", caption: "A batch moves from receipt to available, quarantined, expired or depleted.", width: 1568, height: 816 },
-    { src: "/diagrams/vigia/state-prescription.png", title: "Prescription life cycle", caption: "From upload to validation by the pharmacist and dispensing.", width: 1568, height: 1238 },
-    { src: "/diagrams/vigia/state-cash-shift.png", title: "Cash shift life cycle", caption: "Opening, selling, counting and closing, with approval of the reconciliation.", width: 1312, height: 1192 },
-    { src: "/diagrams/vigia/state-offline-sync.png", title: "Offline synchronization", caption: "The state of each sale in the offline queue until it is synced or sent to review.", width: 1024, height: 1208 },
-    { src: "/diagrams/vigia/state-sync-conflict.png", title: "Sync conflict", caption: "How a conflict is detected and resolved by a person, never hidden.", width: 432, height: 840 },
-    { src: "/diagrams/vigia/state-product-recall.png", title: "Product recall", caption: "From the recall notice to locating affected batches and closing the case.", width: 1568, height: 1128 },
-    { src: "/diagrams/vigia/state-temperature-alert.png", title: "Temperature alert", caption: "Cold-chain readings out of range, acknowledged and resolved.", width: 1244, height: 1248 },
-  ]}
-/>
-
-### Decisions
-
-| Decision | Why |
-|---|---|
-| A single PWA instead of a native app | One codebase serves the public store, the staff dashboard and the POS, and it runs in the browser with no installation on each machine. |
-| Modular monolith with vertical slices | There are two deployables and a small team. Each use case is isolated in its own directory, and dependency rules are verified in CI. |
-| Multi-tenancy with RLS and own roles | Three hundred pharmacies are projected on the same database. Filtering only in the application would be a health-data incident, so the database rejects queries without context. |
-| Inventory by immutable movements and FEFO with locking | It allows selling fractions without opening boxes, rebuilding the stock ledger and tracing every unit to the customer for a recall. The cost is contention on heavily sold batches at peak hours. |
-| Offline POS with IndexedDB | Internet outages at the store were a high risk. The counter must keep selling for eight hours or five hundred sales without a connection. |
-| Integrations always asynchronous | An outage at Twilio, SendGrid or the billing provider cannot prevent charging. |
-| Compliance in the same transaction | A controlled substance sold without pharmacist validation, or a recalled batch that keeps being sold, is not fixed with a later report. The control-log entry is written together with the sale. |
-| Five pharmacy segments | A one-person pharmacy and a chain cannot share the same rules. The segment fixes branches, people, roles and whether a second person must authorize sensitive operations. | A segment limit no plan can exceed, and a role the segment does not have cannot be assigned. In single-person segments, authorizations are granted to the requester and left in the audit log. |
-| Prisma Client Go with pgx for critical operations | Prisma gives a declarative schema and diff detection in CI. Since that library is archived and does not support interactive transactions, operations that read and decide together (FEFO, sequence numbers, changing an operation type) use pgx directly. |
-
-The data-access decision changed during phase 0. The original ADR-004 set sqlc with goose; ADR-014 revised it to Prisma Client Go and it was logged as a risk, because the project has been archived since July 2025.
-
-### Documentation consulted
-
-- **Base specification** (15 sections): goals, pain points, functional and non-functional requirements, technical decisions, data model, compliance and the phased plan.
-- **Master identifier catalog**, the source for the five main documents: capabilities, entities, containers, decisions and risks.
-- **Solution architecture 1.0**, **C4 architecture**, **domain model**, **functional backlog** and **quality attributes**, with 21 architecture decisions.
-- **Gap backlog and unified backlog** (features 147 to 205), which contrast every feature against the code.
-- **Pharmacy segments**, with the roles and limits of each segment.
+| Decision | Why | Trade-off |
+|---|---|---|
+| A modular monolith in Go | Two deployables and simple transactions for a small team. | Workloads cannot scale independently. |
+| One database with Row-Level Security | Hundreds of pharmacies on one database, where a missing filter would be a health-data incident. | Every query has to carry its pharmacy, and isolation needs its own tests. |
+| Immutable movements and FEFO with locks | Fractions, a rebuildable ledger and traceability to the customer. | Contention on batches that sell a lot at peak hours. |
+| Offline POS with IndexedDB | Outages at the store were a high risk. | Conflicts must be reviewed by a person. |
+| Integrations always asynchronous | A provider outage cannot prevent charging. | Messages arrive a moment later. |
+| A PWA instead of a native app | One codebase, installable, with no setup on each machine. | Fewer device features than a native app. |
 
 </ImplementationSection>
 
 <ResultsSection title="Results">
 
-For a pharmacy, the result is a system that is already taking the place of WhatsApp answers, loose spreadsheets and paper logs. Users, branches, roles and segments, the public store, the dashboard with the point of sale, catalog, pricing, batch inventory, counts, alerts, cash and sales are working, and the API has grown to 31 contracts and 25 migrations.
+For a pharmacy, the result is a system that is already taking the place of loose spreadsheets and paper logs: platform onboarding, users, roles and segments, catalog, pricing, batch inventory with counts, transfers and alerts, purchasing with approval, the point of sale with its offline mode, cash, store credit, customers, loyalty and reports work in both apps.
 
-The unified backlog compares each of the 205 features with the code: 80 are done, 30 are partial, 82 are missing and 13 have no evidence yet. Still to build are prescriptions, recalls, most of the cold chain, expenses, accounting and payroll, and electronic invoicing is only a proposal. The public store can take up to a minute to show a stock change. No pilot results are reported yet.
+The unified backlog compares each of the 205 features with the code: 99 are complete, 31 partial, 69 missing and 6 out of scope. No pilot results are reported yet.
 
 </ResultsSection>
+
+<LearningsSection title="Learnings & next steps" nav="Learnings">
+
+### Next steps
+
+- Build prescriptions validated by the pharmacist, the controlled-substance log, recalls and the cold chain.
+- Choose an authorized provider for electronic invoicing.
+- Put the product in front of its first pharmacies.
+
+### What I learned
+
+- **The segment is part of the domain.** Treating a pharmacy of one like a small chain broke dual control, and modeling the segment explicitly fixed permissions, plans and screens at once.
+- **Offline is a product decision.** Deciding up front that conflicts go to a person, never hidden, made the sync simpler and the counter more trustworthy.
+- **Check the backlog against the code.** Comparing every feature with what was built kept the status honest and showed what to build next.
+
+</LearningsSection>
+
+<FinalProductSection title="Final product">
+
+A few screens of both apps, with demo data.
+
+<ImageGrid
+  items={[
+    { src: "/screenshots/vigia/views-panel.webp", title: "The pharmacy panel", caption: "Catalog, inventory valuation and prices.", width: 3000, height: 1688 },
+    { src: "/screenshots/vigia/views-panel-light.webp", title: "Panel in light theme", caption: "Batches, users and the price of a product.", width: 3000, height: 1688 },
+    { src: "/screenshots/vigia/views-ops.webp", title: "Running a branch", caption: "Opening hours, alert settings and loyalty.", width: 3000, height: 1688 },
+    { src: "/screenshots/vigia/views-admin.webp", title: "The platform console", caption: "Pharmacies, the summary and plans.", width: 3000, height: 1688 },
+    { src: "/screenshots/vigia/views-admin-light.webp", title: "Console in light theme", caption: "A pharmacy, the summary and plans.", width: 3000, height: 1688 },
+    { src: "/screenshots/vigia/tenant-annotated.webp", title: "A pharmacy at a glance", caption: "Segment, plan, owner, branches and usage.", width: 3000, height: 1475 },
+    { src: "/screenshots/vigia/flow-signin.webp", title: "Getting in", caption: "Sign-in, password recovery and the work session.", width: 3000, height: 1250 },
+  ]}
+/>
+
+</FinalProductSection>
