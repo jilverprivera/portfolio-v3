@@ -1,13 +1,13 @@
 ---
 title: "Telemetrix"
 slug: "telemetrix"
-summary: "Una plataforma IoT para recibir, guardar, visualizar y reaccionar a la telemetría de dispositivos, con dashboards en tiempo real, reglas, acciones salientes, tareas programadas y comandos a dispositivos."
+summary: "Una plataforma IoT donde los makers conectan sus dispositivos, ven sus datos en vivo en tableros y los automatizan con reglas y programaciones, en la web y en el celular."
 type: "Proyecto propio"
 date: "2026-10"
 year: "2026"
 status: "En desarrollo"
 featured: true
-cover: "/screenshots/telemetrix/workspace-home.png"
+cover: "/screenshots/telemetrix/cover.webp"
 stack:
   - "Go"
   - "Next.js"
@@ -22,249 +22,365 @@ stack:
 highlights:
   - value: "16"
     label: "capacidades del producto"
-  - value: "85"
-    label: "funcionalidades en el backlog"
-  - value: "50"
-    label: "archivos de prueba en Go"
+  - value: "29"
+    label: "modelos de dispositivo en el catálogo"
+  - value: "3"
+    label: "formas de conectarse: HTTP, WebSocket y MQTT"
 ---
 
 <SummarySection title="Resumen" nav="Resumen">
 
-Telemetrix recibe lecturas de dispositivos por HTTP, WebSocket y MQTT, las guarda como series de tiempo, las muestra en gráficas y dashboards en tiempo real, y permite reaccionar a ellas con reglas, acciones salientes, tareas programadas, comandos a dispositivos y análisis en un entorno aislado.
+Telemetrix es una plataforma IoT para makers y desarrolladores. Registras tus dispositivos, como un ESP32, un Arduino o una Raspberry Pi, describes sus sensores y actuadores, y ves lo que reportan en tableros en vivo, desde la web o desde el celular.
 
-Los datos se organizan en canales: un canal agrupa hasta ocho campos de datos, además de ubicación y estado. Es un producto propio, diseñado desde cero para makers y para equipos que lo integran en sus propios sistemas.
+Los dispositivos se agrupan en espacios, como un invernadero, una oficina o un cuarto de equipos, o en experimentos para las pruebas que todavía no pertenecen a un lugar. Cada espacio es un tablero de widgets que se mueven a medida que llegan las lecturas. Las reglas envían una alerta o mueven un actuador cuando un valor cruza un límite, dejan de llegar datos o un dispositivo se desconecta, y las programaciones envían un valor a un actuador a una hora definida. Los espacios se pueden compartir con amigos.
+
+El producto tiene tres partes:
+
+- **Una consola web** con cada dispositivo, espacio, regla y programación.
+- **Una app móvil** para iOS y Android con las mismas funcionalidades.
+- **Una API** con la que los dispositivos hablan usando una sola clave, por HTTP, WebSocket o MQTT.
+
+Es uno de mis productos propios: lo diseñé, lo construí y lo opero de punta a punta. El caso de estudio lo muestra a través de sus pantallas, flujos y diagramas.
 
 </SummarySection>
 
-<ChallengeSection title="Reto y estrategia" nav="Reto">
+<ContextSection title="Contexto y rol" nav="Contexto y rol">
 
-### Reto
+- **Producto:** Mi propia plataforma IoT, con una consola web, una app móvil y una API para dispositivos
+- **Mi rol:** Producto, sistema de diseño, backend, web y móvil
+- **Lo que construí:** Todo, desde la API en Go y su pipeline en tiempo real hasta las dos apps y la librería para dispositivos
+- **Idiomas:** Español e inglés
+- **Estado:** En desarrollo
 
-Empezó con un vacío. De un lado están las herramientas para aficionados, buenas para un prototipo de fin de semana; del otro, las plataformas industriales hechas para empresas con un equipo que las opere. Los makers y los equipos pequeños quedan en medio: necesitan recoger datos de sus dispositivos, verlos en vivo y reaccionar a ellos, pero no quieren armar y operar un stack de brokers, bases de datos y dashboards solo para lograrlo.
+</ContextSection>
 
-El modelo de negocio hizo el problema más difícil. Telemetrix se planeó como un SaaS con un plan gratuito masivo para makers, y clientes de pago que integran la plataforma en sus propios sistemas. Con cerca del 80% de los dispositivos esperados en el plan Free, cada dispositivo gratuito tenía que costar casi nada de servir, así que el diseño no podía permitirse desperdicio en la ruta crítica.
+<ProblemSection title="Problema" nav="Problema">
 
-### Estrategia
+Los makers están entre dos tipos de herramientas. Las herramientas para aficionados sirven para un prototipo de fin de semana, pero se quedan en una sola gráfica. Las plataformas industriales hacen de todo, pero están hechas para empresas con un equipo que las opere. Para recolectar datos de unos pocos dispositivos, verlos en vivo y reaccionar a ellos, un maker normalmente termina armando un broker, una base de datos y una herramienta de tableros, y manteniéndolos funcionando.
 
-El plan partió del dispositivo. Un dispositivo solo debería necesitar una API key y sus identificadores para empezar a enviar lecturas, ya sea por HTTP, MQTT o WebSocket. A partir de ahí, la decisión más importante fue mantener la ingesta independiente de la base de datos: una lectura se confirma cuando está segura en el buffer de eventos, no cuando llega al almacenamiento de series de tiempo, con una meta de diseño de confirmación p99 de 50 ms o menos. Luego una lectura debe llegar al dashboard en menos de 2 segundos (p95), para que las personas vean lo que hacen sus dispositivos en el momento en que pasa.
+El alcance de la plataforma muestra dónde duele:
 
-El costo y la seguridad definieron el resto. Los límites de cada plan se aplican en el borde, antes de tocar cualquier recurso costoso, lo que mantiene sostenible el plan gratuito. Los canales son privados al crearse, las API keys se guardan solo como un HMAC, TLS es un requisito en producción y cada recurso está aislado por su dueño. Todo esto se dimensionó para 100.000 dispositivos activos en el primer año, un supuesto de planeación, con margen para 250.000 conexiones MQTT simultáneas.
+- **Conectar un dispositivo** debería tomar una clave de API y unas pocas líneas de código, no un servidor.
+- **Ver lo que está pasando** debería ser en vivo, también en el celular, sin construir un tablero a mano.
+- **Reaccionar** a una lectura, o a un dispositivo que se quedó en silencio, debería ser una regla, no un script corriendo en algún lado.
+- **Compartir** un invernadero o un cuarto con alguien más no debería significar compartir una cuenta.
 
-</ChallengeSection>
+El maker carga con la mayor parte de ese peso. Construye el dispositivo, escribe su firmware y quiere verlo funcionar en minutos, así que la mayor parte del producto se diseñó alrededor de la primera hora: desde crear una cuenta hasta ver la primera lectura mover un widget.
 
-<PersonasSection title="Usuarios" nav="Usuarios">
+</ProblemSection>
 
-Cuatro perfiles guían el diseño. La plataforma tiene roles globales, así que no hay organizaciones: cada recurso pertenece a su dueño.
+<PersonasSection title="Usuarios y contexto de uso" nav="Usuarios">
+
+Tres perfiles usan Telemetrix, además de los propios dispositivos, que hablan con la API usando la clave de la cuenta.
 
 <PersonaCards
   items={[
-    { name: "Maker o desarrollador IoT", does: "Construye dispositivos (ESP32, Arduino, Raspberry Pi, PLCs detrás de un gateway), crea canales, integra la API y automatiza.", where: "Consola web, app móvil y la API REST", tool: "chip", hair: "cap", glasses: true, skin: "#e2ad88", shirt: "#e8743b", hairColor: "#2a2a2a" },
-    { name: "Analista de monitoreo", does: "Lee dashboards y series de tiempo y recibe alertas para reaccionar.", where: "Consola web y app móvil", tool: "chart", hair: "bob", glasses: true, skin: "#c68863", shirt: "#4b7bec", hairColor: "#2a1a14" },
-    { name: "Operador de la plataforma", does: "Personal interno que gestiona planes, opera la plataforma y atiende soporte.", where: "Back-office y la plataforma de observabilidad", tool: "headset", hair: "curly", skin: "#a8704d", shirt: "#8e5be0", hairColor: "#1c1c1c" },
-    { name: "Visitante de canales públicos", does: "Una persona anónima que mira canales públicos y gráficas embebidas.", where: "Páginas públicas y widgets embebibles", tool: "magnifier", hair: "short", skin: "#f0c8a0", shirt: "#7a7f8c", hairColor: "#5a3a22" },
+    { name: "Maker", does: "Construye un dispositivo, lo registra con sus sensores y actuadores, y lo observa y automatiza desde un espacio.", where: "Consola web y app móvil", tool: "chip", hair: "cap", glasses: true, skin: "#e2ad88", shirt: "#e8743b", hairColor: "#2a2a2a" },
+    { name: "Amigo", does: "Recibe un espacio compartido con acceso para ver, interactuar o editar, y lo sigue desde su propia cuenta.", where: "Consola web y app móvil", tool: "map", hair: "curly", skin: "#a8704d", shirt: "#27a36d", hairColor: "#1c1c1c" },
+    { name: "Dueño de la plataforma", does: "Observa la plataforma en conjunto y gestiona a los desarrolladores, sin ver los datos de los dispositivos de nadie.", where: "Consola de dueño en la web", tool: "headset", hair: "bun", skin: "#f0c8a0", shirt: "#8e5be0", hairColor: "#5a3a22" },
   ]}
 />
+
+### Los momentos que dieron forma al diseño
+
+- **La primera lectura.** Un maker que acaba de flashear una placa quiere ver moverse un número. La librería da el código para copiar, y la página del dispositivo muestra la lectura en el momento en que llega.
+- **Lejos del escritorio.** El invernadero se revisa desde el celular, así que la app tenía que tener los mismos tableros, reglas y programaciones, no una vista reducida.
+- **Un dispositivo que se queda callado.** El silencio también es una señal, así que una regla puede dispararse cuando dejan de llegar datos o el dispositivo se desconecta, no solo por un valor.
+- **Un espacio compartido con alguien.** Un amigo ve el mismo tablero en su propia cuenta, con el acceso que eligió el dueño.
 
 </PersonasSection>
 
-<FeaturesSection title="Funcionalidades" nav="Funcionalidades">
+<ObjectivesSection title="Objetivos, métricas de éxito y restricciones" nav="Objetivos">
 
-La documentación del backlog define 16 capacidades y 85 funcionalidades. Las principales:
+### Objetivos
 
-| Capacidad | Qué permite |
+1. Pasar de una cuenta nueva a una primera lectura en un tablero en minutos.
+2. Mostrar las lecturas en vivo en la web y en el celular.
+3. Reaccionar a las lecturas, y a su ausencia, con reglas y programaciones.
+4. Permitir compartir un espacio sin compartir una cuenta.
+5. Mantener casi gratis el costo de servir cada dispositivo gratuito.
+
+### Cómo se mediría el éxito
+
+El producto sigue en desarrollo, así que todavía no hay cifras de uso. Estas son las métricas que definí para él:
+
+| Objetivo | Métrica | Qué nos dice |
+|---|---|---|
+| Una primera hora rápida | Tiempo desde el registro hasta la primera lectura | Si la librería y el flujo de dispositivos cumplen su función. |
+| Datos en vivo | Tiempo desde una lectura hasta el widget, p95 | Si los tableros se sienten en vivo. |
+| Automatización | Porcentaje de dispositivos con al menos una regla o programación | Si las personas pasan de observar a reaccionar. |
+| Compartir | Espacios compartidos por usuario activo | Si se usa el modelo de amigos. |
+| Costo | Costo por dispositivo activo al mes | Si el plan gratuito es sostenible. |
+
+### Restricciones
+
+- **Una sola persona.** Producto, diseño, backend, web y móvil, así que cada pieza tenía que ser simple de operar.
+- **Sin servidores que cuidar.** Postgres y autenticación administrados, y un solo binario de Go en lugar de una flota de servicios.
+- **Barato por dispositivo.** Los límites se revisan en el borde, antes de tocar cualquier cosa costosa.
+- **Tres transportes.** HTTP, WebSocket y MQTT tenían que comportarse igual para cada funcionalidad.
+
+</ObjectivesSection>
+
+<ProcessSection title="Proceso y priorización" nav="Proceso">
+
+### Del problema al alcance
+
+El trabajo empezó con especificaciones escritas: un backlog funcional de 16 capacidades y 83 funcionalidades, un modelo de dominio y contratos de API, y un registro de decisiones para cada elección importante. La primera versión seguía un modelo basado en canales. A medida que el producto tomó forma, los registros de decisiones lo reemplazaron por lo que muestran hoy las pantallas: dispositivos con componentes, agrupados en espacios y experimentos, que pertenecen a una cuenta y se comparten a través de amigos.
+
+### Lo que cubre la plataforma
+
+| Área | Qué permite |
 |---|---|
-| Identidad y acceso | Registro e inicio de sesión con contraseña, roles globales (owner y developer), tokens personales de API y cierre de las sesiones activas. |
-| Dispositivos y credenciales | Registrar dispositivos, generar una API key por cuenta con tres encabezados por dispositivo, y ver el último contacto y el estado de conexión. |
-| Ingesta | Lecturas individuales y por lote por HTTP, publicación por MQTT y WebSocket, validación y normalización del payload, idempotencia por mensaje y límites de tasa según el plan. |
-| Canales y datos | Crear canales de hasta ocho campos, editarlos, consultar feeds con filtros y agregaciones por intervalo, exportar a CSV, JSON o XML, e importar historial desde CSV. |
-| Visualización | Gráficas en tiempo real por campo, indicadores, medidores y lámparas, dashboards con varios canales, un mapa de ubicación y canales públicos embebibles. |
-| Móvil | Inicio de sesión, navegación por canales y dashboards, datos en tiempo real y notificaciones push. |
-| Reglas y acciones | Umbrales y condiciones compuestas, detección de datos faltantes, tiempo de espera entre disparos, y acciones salientes: webhooks, correo, SMS, push y solicitudes HTTP. |
-| Programación y análisis | Tareas únicas o recurrentes con zonas horarias, y scripts de análisis en un entorno aislado que escriben resultados en canales derivados. |
-| Comandos | Colas de comandos hacia los dispositivos por HTTP y MQTT, con confirmación de ejecución. |
-| Operación y auditoría | Registro de auditoría inmutable, una consola de owner con lecturas auditadas, un dashboard de salud y trazas de extremo a extremo. |
+| Cuentas | Registro con términos, inicio de sesión con un código una vez por dispositivo, perfil, desactivación y eliminación con un periodo de gracia. |
+| Dispositivos y componentes | Un catálogo de 29 modelos de dispositivo y 46 tipos de componente: sensores, controles y actuadores. |
+| Espacios y experimentos | Lugares y entornos de prueba con tableros en vivo, historial, exportación y plantillas. |
+| Tableros | Una cuadrícula de widgets, que se edita arrastrando y cambiando el tamaño, con diseños separados para web y móvil. |
+| Reglas | Umbrales, sin datos o dispositivo desconectado, con frecuencia, tiempo de espera, correo, push y acciones sobre actuadores. |
+| Programaciones | Un valor enviado a un actuador una vez, todos los días o en los días de la semana elegidos, en la zona horaria del usuario. |
+| Conexión | Una clave de API, tres transportes, comandos con confirmación y una librería para Arduino y MicroPython. |
+| Amigos | Solicitudes y espacios compartidos con acceso para ver, interactuar o editar. |
+| Actividad y notificaciones | Un registro de auditoría de cada acción y una bandeja de alertas y solicitudes. |
 
-### Capturas del producto
+### Lo que quedó para después
 
-Capturas de la consola en funcionamiento con datos de demostración locales. La interfaz está en español, el idioma de sus usuarios. Cada una muestra para qué sirve la pantalla y qué aporta. Haz clic en una captura para verla más grande.
+- **Los canales derivados y el análisis**, planeados en el backlog, todavía no están construidos.
+- **Los webhooks y las acciones por SMS**, y las reglas escritas como expresiones, vienen después del correo, el push y las acciones sobre actuadores.
+- **El destino del despliegue en producción** todavía se está definiendo.
 
-<ScreenshotGallery
-  items={[
-    {
-      src: "/screenshots/telemetrix/workspace-home.png",
-      title: "Inicio del espacio de trabajo",
-      caption: "Un resumen de lo que el desarrollador ha construido, apenas inicia sesión.",
-      features: [
-        "Contadores de espacios, experimentos, dispositivos y componentes.",
-        "Una gráfica de componentes por dispositivo, y totales de sensores, controles y actuadores.",
-        "Los dispositivos más recientes con su modelo, número de componentes y estado de conexión.",
-        "Una barra lateral organizada en espacio de trabajo, conexión, sistema, y amigos y notificaciones.",
-      ],
-      width: 2160,
-      height: 1350,
-    },
-    {
-      src: "/screenshots/telemetrix/devices.png",
-      title: "Dispositivos",
-      caption: "Las placas que el desarrollador ha registrado. Cada una tiene un identificador que la placa envía con sus lecturas.",
-      features: [
-        "Registrar una placa con hasta ocho componentes.",
-        "Identificador del dispositivo con botón para copiar, modelo, espacio y estado de conexión.",
-        "Búsqueda por dispositivo, identificador, modelo o espacio, y orden por cualquier columna.",
-        "Acciones por dispositivo y paginación.",
-      ],
-      width: 2160,
-      height: 1350,
-    },
-    {
-      src: "/screenshots/telemetrix/components.png",
-      title: "Componentes",
-      caption: "Cada sensor, control y actuador de cada dispositivo, en una sola lista.",
-      features: [
-        "Clase de cada componente: sensor, control o actuador.",
-        "Tipo, unidad y rango válido, por ejemplo una temperatura en grados o un slider de 0 a 100.",
-        "Filtros por clase y por dispositivo, y un buscador.",
-        "Estado habilitado o deshabilitado de cada componente.",
-      ],
-      width: 2160,
-      height: 1350,
-    },
-    {
-      src: "/screenshots/telemetrix/device-library.png",
-      title: "Librería de dispositivos",
-      caption: "La página que le explica a un desarrollador cómo conectar una placa a la API.",
-      features: [
-        "Los tres encabezados que lleva cada solicitud: la API key, el identificador del desarrollador y el identificador del dispositivo.",
-        "Las operaciones que usa un dispositivo: enviar una lectura, pedir el siguiente comando en cola y confirmarlo.",
-        "Pestañas con ejemplos en Arduino y MicroPython para cada tipo de componente.",
-        "Accesos directos a la página de la API key y a la lista de dispositivos.",
-      ],
-      width: 2160,
-      height: 1350,
-    },
-    {
-      src: "/screenshots/telemetrix/login.jpg",
-      title: "Inicio de sesión",
-      caption: "La puerta de entrada a la consola.",
-      features: [
-        "Inicio de sesión con correo y contraseña, con creación de cuenta y recuperación de contraseña.",
-        "En el primer inicio de sesión desde cada navegador o instalación, se envía por correo un código de seis dígitos para verificar ese dispositivo.",
-        "La app móvil admite solo desarrolladores, mientras que la consola web admite ambos roles.",
-        "Un fondo animado tipo radar y un selector de tema claro y oscuro.",
-      ],
-      width: 2160,
-      height: 1350,
-    },
-  ]}
-/>
+</ProcessSection>
 
-</FeaturesSection>
+<DesignDecisionsSection title="Decisiones de diseño" nav="Decisiones">
 
-<ImplementationSection title="Implementación y diseño final" nav="Implementación">
+Las decisiones que más dieron forma al producto. Haz clic en cualquier imagen para abrirla más grande. Las pantallas están en español, y cada una también existe en inglés y en tema claro.
+
+<DiagramRow item={{ src: "/screenshots/telemetrix/flow-auth.webp", title: "Primeros pasos", caption: "Registro con términos explícitos y luego inicio de sesión.", width: 3000, height: 1250, light: true }}>
+
+### Un código una vez por dispositivo, no cada vez
+
+**Problema.** Un segundo factor en cada inicio de sesión es seguro, pero un maker que revisa la consola diez veces al día deja de volver.
+
+**Decisión.** El código por correo se pide una vez por navegador o celular. Después de eso, el dispositivo queda como confiable e iniciar sesión solo requiere la contraseña.
+
+**Costo.** Borrar los datos del navegador implica un código nuevo.
+
+**En el producto.** El registro muestra cada requisito de la contraseña a medida que se cumple, y los términos y la privacidad se aceptan de forma explícita antes de que exista la cuenta.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/telemetrix/flow-device.webp", title: "Agregar un dispositivo", caption: "Le pones un nombre, eliges un modelo y sus componentes vienen incluidos.", width: 3000, height: 1250, light: true }}>
+
+### Un catálogo en lugar de un formulario en blanco
+
+**Problema.** Describir una placa campo por campo es donde la mayoría de los makers se rendiría.
+
+**Decisión.** Un catálogo de placas comunes trae sus sensores y actuadores ya configurados. Cada componente tiene su propio campo, unidad y tipo, y se puede agregar o editar después.
+
+**Costo.** El catálogo hay que mantenerlo al día a medida que aparecen placas nuevas.
+
+**En el producto.** Cuando se crea el dispositivo, su ID se muestra de inmediato, listo para pegarlo en el firmware.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/telemetrix/space-annotated.webp", title: "Un espacio", caption: "Un tablero en vivo de widgets para cada dispositivo de un lugar.", width: 3000, height: 1475, light: true }}>
+
+### Lugares, no solo dispositivos
+
+**Problema.** Las personas piensan en su invernadero o en su oficina, no en el dispositivo número cuatro.
+
+**Decisión.** Los dispositivos viven en espacios, y cada espacio es un tablero. Los widgets se ubican en una cuadrícula y se actualizan en vivo, y los interruptores y sliders envían valores de vuelta a los actuadores.
+
+**Costo.** Un tablero necesita un diseño para la web y otro para el celular.
+
+**En el producto.** Las plantillas crean un invernadero, una sala inteligente, una oficina o un cuarto de equipos con sus dispositivos y su tablero en un solo paso.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/telemetrix/flow-rule.webp", title: "Crear una regla", caption: "Un dispositivo, una condición y lo que pasa cuando se cumple.", width: 3000, height: 1250, light: true }}>
+
+### El silencio también es una condición
+
+**Problema.** La alerta más importante muchas veces es que no está llegando nada, y una regla de umbral nunca lo nota.
+
+**Decisión.** Una regla puede observar un valor, un hueco en los datos o un dispositivo que se desconecta. Elige con qué frecuencia avisar, puede esperar entre alertas y puede enviar un valor a hasta tres actuadores.
+
+**Costo.** Más opciones en un solo formulario, así que el formulario explica cada una en palabras simples.
+
+**En el producto.** Una regla se puede probar con un valor de ejemplo antes de activarla, y cada alerta y recuperación queda en su historial.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/telemetrix/flow-schedule.webp", title: "Programar un actuador", caption: "Qué enviar, a qué actuador y cuándo.", width: 3000, height: 1250, light: true }}>
+
+### Zonas horarias que el usuario entiende
+
+**Problema.** Regar a las seis significa a las seis en la ciudad del usuario, todos los días, incluido el día en que cambia la hora.
+
+**Decisión.** Una programación se define en la zona horaria del propio usuario, una vez, todos los días o en los días de la semana elegidos. El servidor ejecuta cada ocurrencia una sola vez y la omite si ya es demasiado tarde para que sirva.
+
+**Costo.** Por ahora no hay expresiones libres.
+
+**En el producto.** Cada programación muestra su próxima ejecución, y su historial muestra lo que se envió, lo que falló y lo que se omitió.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/telemetrix/flow-device-detail.webp", title: "De un dispositivo a su historial", caption: "El dispositivo, uno de sus componentes y la exportación.", width: 3000, height: 1250, light: true }}>
+
+### Historial sin una herramienta aparte
+
+**Problema.** Los valores en vivo dicen lo que está pasando ahora, pero no si hoy hizo más calor que ayer.
+
+**Decisión.** Cada componente tiene una gráfica por hora, día o semana, se puede comparar con el periodo anterior y cualquier rango se puede exportar.
+
+**Costo.** Los rangos largos se leen de agregados, no de cada lectura individual.
+
+**En el producto.** Las exportaciones salen en CSV, Excel o PDF, hasta por noventa días.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/telemetrix/views-tools.webp", title: "Para desarrolladores", caption: "La librería para dispositivos, la clave de API y el registro de actividad.", width: 3000, height: 1688, light: true }}>
+
+### Una clave, tres formas de entrar
+
+**Problema.** Cada dispositivo necesita credenciales, y administrar una clave por dispositivo es lo primero en lo que se equivoca un maker.
+
+**Decisión.** Una clave de API por cuenta, enviada junto con los IDs del desarrollador y del dispositivo, funciona igual por HTTP, WebSocket y MQTT. La librería da código listo para Arduino y MicroPython.
+
+**Costo.** Una clave filtrada expone todos los dispositivos de la cuenta, así que se muestra una sola vez y se puede revocar en cualquier momento.
+
+**En el producto.** El registro de actividad guarda cada acción en la cuenta, desde dónde se hizo y con qué resultado.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/telemetrix/phones-core.webp", title: "En el celular", caption: "Inicio, dispositivos, un espacio, un componente y Explorar en la app nativa.", width: 3000, height: 1880, light: true }}>
+
+### Todo el producto en el celular
+
+**Problema.** Un invernadero se revisa desde el jardín, no desde un escritorio. Una vista móvil reducida mandaría a las personas de vuelta al computador.
+
+**Decisión.** Una app nativa para iOS y Android con los mismos espacios, tableros, reglas, programaciones, amigos y clave de API que la consola web.
+
+**Costo.** Dos clientes que mantener sincronizados, algo que los tokens compartidos y el cliente de API generado hacen más barato.
+
+**En el producto.** Los tableros tienen su propio diseño para el celular, y las reglas y programaciones se crean y editan desde la app.
+
+</DiagramRow>
+
+</DesignDecisionsSection>
+
+<DesignSystemSection title="Sistema de diseño" nav="Sistema de diseño">
+
+La consola web y la app móvil comparten un mismo conjunto de tokens, así que un widget, un botón o un estado se ven igual en ambas.
+
+<DiagramRow item={{ src: "/screenshots/telemetrix/design-system-foundations.webp", title: "Fundamentos", caption: "Tipografía, color, colores de estado, radios y espaciado para la web y la app.", width: 3000, height: 1575, light: true }}>
+
+### Fundamentos
+
+- **Dos tipografías.** Space Grotesk para los títulos y Satoshi para la interfaz, los controles y los datos.
+- **Una marca violeta azulado.** Un color primario para acciones y foco, y un glifo cian en el logotipo.
+- **Dos temas a partir de una paleta.** Las escalas oscuras son las escalas claras invertidas, y cada rol de texto alcanza contraste AA en ambos.
+- **Colores de estado con significados fijos.** Éxito, advertencia, destructivo e información, cada uno con un tono suave.
+- **Escalas cerradas.** Diez pasos de radio y un paso de espaciado de 4 px, iguales en la web y en la app.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/telemetrix/themes.webp", title: "Claro y oscuro", caption: "La misma pantalla en ambos temas.", width: 3000, height: 1500, light: true }}>
+
+### Integrado en las dos apps
+
+Los tokens se generan una vez para la web y se usan directamente en la app. Los componentes web se construyen sobre shadcn y Radix, y la app reimplementa los mismos componentes, variantes y estados para React Native. Ambas tienen un catálogo en vivo del sistema de diseño.
+
+</DiagramRow>
+
+</DesignSystemSection>
+
+<ImplementationSection title="Del diseño al código" nav="Diseño a código">
+
+Esta sección explica cómo está organizada la plataforma, en términos de lo que hace cada parte.
+
+<DiagramRow item={{ src: "/diagrams/telemetrix/architecture.webp", title: "Arquitectura", caption: "Las apps y los dispositivos, la API en Go y la infraestructura detrás.", width: 3000, height: 1560, light: true }}>
 
 ### Arquitectura
 
-Un monorepo contiene la API en Go, la app web en Next.js, la app móvil en Expo y paquetes compartidos. Los contratos van primero: archivos OpenAPI y AsyncAPI generan el cliente que comparten web y móvil. Haz clic en un diagrama para verlo en tamaño completo.
+La API es un solo binario de Go organizado como un monolito modular: veinte módulos, cada uno una porción hexagonal con su propio esquema de base de datos. La ingesta, el almacenamiento, las reglas, las programaciones y las actualizaciones en tiempo real corren como workers dentro de él, así que hay una sola cosa que desplegar y las transacciones siguen siendo simples.
 
-<DiagramGallery
-  items={[
-    { src: "/diagrams/telemetrix/architecture.svg", title: "Arquitectura", caption: "Los clientes, el monolito modular y los servicios detrás de él.", width: 1200, height: 640 },
-  ]}
-/>
+Postgres guarda las lecturas en particiones diarias con agregados por minuto, hora y día. Redis Streams es a la vez el buffer contra el que se confirma una lectura y el bus de eventos entre módulos, y un broker MQTT atiende a los dispositivos y a las apps, con el acceso validado por la API.
 
-### Vida de una lectura
+</DiagramRow>
 
-Una lectura se confirma cuando está segura en el buffer de eventos, no cuando Postgres la guarda.
+<DiagramRow item={{ src: "/diagrams/telemetrix/reading.webp", title: "La vida de una lectura", caption: "De un dispositivo al tablero, las reglas y el historial.", width: 3000, height: 1380, light: true }}>
 
-<DiagramGallery
-  items={[
-    { src: "/diagrams/telemetrix/value-flow.svg", title: "Del dispositivo al dashboard", caption: "Validación, límites y deduplicación, y luego el stream, el almacenamiento, el tiempo real y las reglas.", width: 1200, height: 600 },
-  ]}
-/>
+### El dispositivo nunca espera a la base de datos
 
-### Lecturas y escrituras
+Una lectura se confirma apenas está segura en el stream, no cuando llega a la base de datos. El almacenamiento ocurre en lotes, los tableros se mueven en cuanto llega, y las reglas de ese dispositivo la evalúan justo después. Las lecturas repetidas se ignoran por su ID de mensaje.
 
-Los comandos escriben con un outbox, y las consultas leen proyecciones y una caché.
+</DiagramRow>
 
-<DiagramGallery
-  items={[
-    { src: "/diagrams/telemetrix/cqrs.svg", title: "Lecturas y escrituras (CQRS)", caption: "Los eventos construyen el modelo de lectura e invalidan la caché.", width: 1200, height: 520 },
-  ]}
-/>
+<DiagramRow item={{ src: "/diagrams/telemetrix/lifecycles.webp", title: "Ciclos de vida", caption: "Los estados de una regla, una programación y un comando.", width: 3000, height: 1560, light: true }}>
 
-### Almacenamiento
+### Comandos que llegan una sola vez
 
-<DiagramGallery
-  items={[
-    { src: "/diagrams/telemetrix/persistence.svg", title: "Dónde viven los datos", caption: "Redis para velocidad, Postgres para historial y agregados, almacenamiento de objetos para archivos.", width: 1200, height: 560 },
-  ]}
-/>
+Un comando a un actuador se pone en cola, lo entrega el primer transporte que lo tome y luego el dispositivo lo confirma. Nunca se entrega dos veces, y uno que nadie toma a tiempo expira en lugar de llegar tarde.
 
-### Autenticación y dispositivos
+</DiagramRow>
 
-<DiagramGallery
-  items={[
-    { src: "/diagrams/telemetrix/auth.svg", title: "Quién está llamando", caption: "Las personas inician sesión con Supabase Auth, y los dispositivos se identifican con una key verificada por HMAC.", width: 1200, height: 560 },
-  ]}
-/>
+### Calidad
 
-### Carga y rendimiento
+El backend tiene 76 archivos de prueba en Go, la mayoría en identidad, reglas, dispositivos y espacios, y las reglas de arquitectura se verifican automáticamente para que los módulos no dependan de las partes internas de otros. La API está descrita por 15 contratos OpenAPI y dos AsyncAPI, y los clientes de las apps se generan a partir de ellos.
 
-<DiagramGallery
-  items={[
-    { src: "/diagrams/telemetrix/load.svg", title: "Decisiones de carga", caption: "Cinco medidas que evitan que Postgres sea el cuello de botella.", width: 1200, height: 430 },
-  ]}
-/>
+### Decisiones técnicas
 
-### Modelo de dominio
-
-El dominio se divide en contextos delimitados. El primer diagrama muestra cómo dependen entre sí, y el resto son los ciclos de vida de las entidades con más reglas.
-
-<DiagramGallery
-  items={[
-    { src: "/diagrams/telemetrix/domain-contexts.svg", title: "Contextos del dominio", caption: "Los contextos delimitados del dominio y sus dependencias principales.", width: 1640, height: 830 },
-    { src: "/diagrams/telemetrix/state-channel.png", title: "Ciclo de vida del canal", caption: "Cómo pasa un canal entre sus estados, desde la creación hasta la eliminación.", width: 1560, height: 1640 },
-    { src: "/diagrams/telemetrix/state-device.png", title: "Ciclo de vida del dispositivo", caption: "Registro, credenciales y conexión de un dispositivo.", width: 1242, height: 1624 },
-    { src: "/diagrams/telemetrix/state-rule.png", title: "Ciclo de vida de la regla", caption: "Una regla es un borrador, pasa a activa, y puede pausarse, suspenderse por un límite del plan o eliminarse.", width: 1568, height: 1486 },
-    { src: "/diagrams/telemetrix/state-action.png", title: "Ciclo de vida de la acción", caption: "Las acciones salientes que puede disparar una regla o una tarea programada.", width: 762, height: 1176 },
-    { src: "/diagrams/telemetrix/state-delivery.png", title: "Ciclo de vida de la entrega", caption: "Desde que se solicita una acción hasta su entrega, reintentos y manejo de dead-letter.", width: 1568, height: 1188 },
-    { src: "/diagrams/telemetrix/state-command.png", title: "Ciclo de vida del comando", caption: "Un comando en cola para un dispositivo hasta que se entrega y se confirma.", width: 1568, height: 1028 },
-    { src: "/diagrams/telemetrix/state-scheduled-task.png", title: "Ciclo de vida de la tarea programada", caption: "Tareas únicas y recurrentes, desde la creación hasta cada ejecución.", width: 1488, height: 1224 },
-    { src: "/diagrams/telemetrix/state-export.png", title: "Ciclo de vida de la exportación", caption: "Una exportación asíncrona desde la solicitud hasta un archivo descargable.", width: 940, height: 1480 },
-  ]}
-/>
-
-### Decisiones
-
-| Decisión | Por qué | Qué cambió frente al plan 1.0 |
+| Decisión | Por qué | Costo |
 |---|---|---|
-| Monolito modular en lugar de servicios separados | El equipo es pequeño, y dividir por dominio multiplica la operación y la consistencia distribuida sin beneficio. La separación se mantuvo solo donde el perfil de carga es distinto, y esos casos viven como módulos del mismo proceso. | De siete servicios por perfil de carga (ADR-002) a un monolito modular (ADR-021). |
-| Supabase Postgres en lugar de RDS | Un servicio administrado reduce la operación de la base de datos. | Reemplaza RDS (ADR-018). |
-| Postgres particionado sin TimescaleDB | Supabase dejó de ofrecer la extensión en Postgres 17. | Se pierde la compresión columnar de cerca de diez veces. Con la carga nominal, el volumen bruto pasa de unos 1,3 TB a unos 13 TB por mes (ADR-019). |
-| Supabase Auth en lugar de Keycloak | Evita operar un proveedor de identidad propio, y ya está integrado con la base de datos. | Reemplaza Keycloak (ADR-020). |
-| Redis Streams en lugar de NATS JetStream | Redis ya estaba en el stack para caché, así que evita otra pieza de infraestructura. | Reemplaza NATS (ADR-022). Menor durabilidad y capacidad de buffer que JetStream replicado. |
-| Roles globales sin organizaciones | El aislamiento de recursos por dueño basta para el caso de uso real y simplifica permisos y facturación. | Elimina el modelo multiorganización de la versión 1.0 (ADR-023). |
-| API key por cuenta con HMAC, sin Argon2 | Con 256 bits de entropía un hash lento es innecesario, y pesaría sobre la ruta crítica de ingesta. | Decisión nueva para dispositivos (ADR-025). |
-| MQTT también para las apps | El producto debe soportar los tres transportes de extremo a extremo. Los comandos siguen pasando por la API para validar, auditar y entregar. | Excepción a ADR-012, que daba MQTT solo a los dispositivos (ADR-025). |
-| Sin APISIX, Terraform ni AWS | El producto se simplificó y solo existe el entorno local, así que no vale la pena elegir un proveedor antes de tener datos reales de carga y costo. | Reemplaza el plan de AWS y EKS (ADR-030). Todavía no hay camino a producción: ni Dockerfile de la API, ni CI, ni borde TLS, ni observabilidad. |
-| Escrituras por lotes y caché de lectura | El cuello de botella era Postgres, con muchos lectores de dashboards y muchos dispositivos escribiendo. | Decisión nueva de carga (ADR-029). |
-
-Dos cosas se documentaron como evolución, no como errores. La versión 1.0 menciona Go 1.23, Next.js 15 y Expo SDK 52, mientras que el README actual indica Go 1.26, Next.js 16 y Expo SDK 57. ADR-024 (un código de un solo uso por dispositivo) fue reemplazada: el inicio de sesión es solo con contraseña.
-
-### Documentación consultada
-
-- **Arquitectura de la solución 1.0** (§1 a §9): objetivos, principios, restricciones, atributos de calidad, y las vistas funcional, de integración, de información y de tecnología, más 17 decisiones iniciales (ADR-001 a ADR-017).
-- **Arquitectura C4, modelo de dominio y atributos de calidad**, que definen contenedores, componentes, entidades y criterios medibles.
-- **Backlog funcional**: 16 capacidades y 85 funcionalidades con historias, reglas de negocio y criterios de aceptación.
-- **Contratos OpenAPI y AsyncAPI** para la API HTTP, los eventos y MQTT.
-- **Decisiones posteriores** (ADR-018 a ADR-030) que reemplazaron partes de la arquitectura 1.0.
+| Un monolito modular en Go | Un solo despliegue y transacciones simples para una sola persona. | Las cargas de trabajo no pueden escalar de forma independiente. |
+| Postgres simple con particiones | Menos piezas móviles que una base de datos de series de tiempo dedicada. | Menos compresión, así que las tablas de agregados hacen el trabajo pesado. |
+| Redis Streams como buffer y bus | Un sistema menos que un broker dedicado. | Menos durabilidad, así que los consumidores son idempotentes. |
+| Una clave de API por cuenta | Simple para los makers, igual por los tres transportes. | Una clave filtrada expone todos los dispositivos de la cuenta. |
+| Roles globales, sin organizaciones | Un modelo más simple, con el compartir a través de espacios. | No hay espacios de trabajo de equipo. |
+| Reglas evaluadas a medida que llegan las lecturas | Alertas en segundos, no según un temporizador. | El correo y el push se envían como máximo una vez. |
 
 </ImplementationSection>
 
 <ResultsSection title="Resultados" nav="Resultados">
 
-Para un maker o un equipo pequeño, el resultado es una plataforma que ya cubre el camino del dispositivo a la decisión. Los dispositivos envían lecturas por HTTP, MQTT o WebSocket y las ven en dashboards en vivo, y las personas pueden reaccionar a ellas con reglas, acciones salientes, tareas programadas, comandos a dispositivos y análisis en un entorno aislado, desde una consola web y una app móvil. Una lectura está diseñada para llegar al dashboard en menos de 2 segundos.
+La plataforma cubre todo su ciclo: una cuenta, un dispositivo del catálogo, un tablero en vivo, reglas, programaciones, historial y exportación, amigos y espacios compartidos, en la web y en el celular, en español e inglés, con tema claro y oscuro.
 
-El producto sigue en desarrollo, y no todas las 85 funcionalidades del backlog están verificadas como completas. Algunas piezas pendientes son TLS en producción, terminar la retención de telemetría y permitir que los espacios compartidos envíen valores a los dispositivos. Las metas de rendimiento son objetivos de diseño, no resultados medidos.
+Todavía está en desarrollo, así que aún no hay cifras de uso. Los siguientes pasos son un despliegue en producción, más tipos de acciones y análisis sobre los datos guardados.
 
 </ResultsSection>
+
+<LearningsSection title="Aprendizajes y siguientes pasos" nav="Aprendizajes">
+
+### Siguientes pasos
+
+- Elegir un destino de producción y poner la plataforma frente a sus primeros makers.
+- Agregar webhooks y SMS a las acciones, y reglas escritas como expresiones.
+- Permitir que los usuarios con espacios compartidos envíen comandos con el acceso que se les dio.
+
+### Lo que aprendí
+
+- **Escribir la decisión antes del código.** El modelo cambió de canales a dispositivos y espacios a mitad de camino. Como cada elección tenía una razón escrita, cambiarlo fue cuestión de actualizar los registros y seguirlos.
+- **La primera hora es el producto.** El catálogo, la librería y la página del dispositivo en vivo existen porque un maker que no ve moverse un número en minutos no vuelve.
+- **Un solo sistema de diseño paga dos veces.** Con los mismos tokens en la web y en la app, un widget nuevo se vio bien en ambas desde el primer intento.
+
+</LearningsSection>
+
+<FinalProductSection title="Producto final" nav="Producto final">
+
+Algunas pantallas del producto, con datos de demostración.
+
+<ImageGrid
+  items={[
+    { src: "/screenshots/telemetrix/views-light.webp", title: "Tema claro", caption: "El historial de un componente, con los dispositivos y las reglas detrás.", width: 3000, height: 1688 },
+    { src: "/screenshots/telemetrix/pair-space.webp", title: "Web y móvil", caption: "El mismo tablero del invernadero en el portátil y en el celular.", width: 3000, height: 1720 },
+    { src: "/screenshots/telemetrix/views-web.webp", title: "La consola web", caption: "Inicio, dispositivos y reglas.", width: 3000, height: 1688 },
+    { src: "/screenshots/telemetrix/views-spaces.webp", title: "Espacios y experimentos", caption: "El tablero de un experimento, con las listas de espacios y experimentos.", width: 3000, height: 1688 },
+    { src: "/screenshots/telemetrix/views-data.webp", title: "Dispositivos y alertas", caption: "Un dispositivo con su historial, todos los componentes y las notificaciones.", width: 3000, height: 1688 },
+    { src: "/screenshots/telemetrix/phones-core.webp", title: "En el celular", caption: "Inicio, dispositivos, un espacio, un componente y Explorar.", width: 3000, height: 1880 },
+    { src: "/screenshots/telemetrix/phones-spaces.webp", title: "Espacios en el celular", caption: "Espacios, dos tableros en vivo, experimentos y un dispositivo.", width: 3000, height: 1880 },
+    { src: "/screenshots/telemetrix/phones-automation.webp", title: "Automatización", caption: "Reglas, edición de una regla, programaciones, notificaciones y actividad.", width: 3000, height: 1880 },
+    { src: "/screenshots/telemetrix/phones-social.webp", title: "Compartir y herramientas", caption: "Amigos, lo que se comparte, un espacio compartido, la clave de API y la librería.", width: 3000, height: 1880 },
+    { src: "/screenshots/telemetrix/phones-auth.webp", title: "Cuenta", caption: "Inicio de sesión, registro, perfil, desactivación y eliminación.", width: 3000, height: 1880 },
+  ]}
+/>
+
+</FinalProductSection>

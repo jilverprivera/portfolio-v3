@@ -1,13 +1,13 @@
 ---
 title: "Telemetrix"
 slug: "telemetrix"
-summary: "An IoT platform to ingest, store, visualize and react to device telemetry, with real-time dashboards, rules, outbound actions, scheduled tasks and device commands."
+summary: "An IoT platform where makers connect their devices, watch their data live on dashboards and automate them with rules and schedules, on the web and on the phone."
 type: "Side project"
 date: "2026-10"
 year: "2026"
 status: "In development"
 featured: true
-cover: "/screenshots/telemetrix/workspace-home.png"
+cover: "/screenshots/telemetrix/cover.webp"
 stack:
   - "Go"
   - "Next.js"
@@ -22,249 +22,365 @@ stack:
 highlights:
   - value: "16"
     label: "product capabilities"
-  - value: "85"
-    label: "features in the backlog"
-  - value: "50"
-    label: "Go test files"
+  - value: "29"
+    label: "device models in the catalog"
+  - value: "3"
+    label: "ways to connect: HTTP, WebSocket and MQTT"
 ---
 
 <SummarySection title="Summary">
 
-Telemetrix receives device readings over HTTP, WebSocket and MQTT, stores them as time series, shows them in real-time charts and dashboards, and lets you react to them with rules, outbound actions, scheduled tasks, device commands and sandboxed analysis.
+Telemetrix is an IoT platform for makers and developers. You register your devices, such as an ESP32, an Arduino or a Raspberry Pi, describe their sensors and actuators, and watch what they report on live dashboards, from the web or from the phone.
 
-Data is organized in channels: a channel groups up to eight data fields, plus location and status. It is a product of its own, designed from scratch for makers and for teams that integrate it into their own systems.
+Devices are grouped into spaces, such as a greenhouse, an office or an equipment room, or into experiments for the tests that do not belong to a place yet. Each space is a board of widgets that move as the readings arrive. Rules send an alert or move an actuator when a value crosses a limit, data stops arriving or a device goes offline, and schedules send a value to an actuator at a set time. Spaces can be shared with friends.
+
+The product is made of three parts:
+
+- **A web console** with every device, space, rule and schedule.
+- **A mobile app** for iOS and Android with the same features.
+- **An API** that devices talk to with one key, over HTTP, WebSocket or MQTT.
+
+It is one of my own products: I designed it, built it and run it end to end. The case study shows it through its screens, flows and diagrams.
 
 </SummarySection>
 
-<ChallengeSection title="Challenge & strategy">
+<ContextSection title="Context & role">
 
-### Challenge
+- **Product:** My own IoT platform, with a web console, a mobile app and a device API
+- **My role:** Product, design system, backend, web and mobile
+- **What I built:** All of it, from the Go API and its real-time pipeline to both apps and the device library
+- **Languages:** Spanish and English
+- **Status:** In development
 
-It began with a gap. On one side are hobby-grade tools, fine for a weekend prototype; on the other, industrial platforms built for companies with a team to run them. Makers and small teams sit in between: they need to collect data from their devices, watch it live and react to it, but they do not want to assemble and operate a stack of brokers, databases and dashboards just to get there.
+</ContextSection>
 
-The business model made the problem harder. Telemetrix was planned as a SaaS with a massive free plan for makers, and paying customers who integrate the platform into their own systems. With roughly 80% of devices expected on the Free plan, every free device had to cost almost nothing to serve, so the design could not afford waste on the hot path.
+<ProblemSection title="Problem">
 
-### Strategy
+Makers sit between two kinds of tools. Hobby tools are fine for a weekend prototype but stop at a single chart. Industrial platforms do everything, but they are built for companies with a team to run them. To collect data from a few devices, see it live and react to it, a maker usually ends up assembling a broker, a database and a dashboard tool, and keeping them alive.
 
-The plan started from the device. A device should only need an API key and its identifiers to begin sending readings, whether over HTTP, MQTT or WebSocket. From there, the most important choice was to keep ingestion independent of the database: a reading is acknowledged once it is safely in the event buffer, not when it lands in the time-series store, with a design target of a p99 acknowledgement of 50 ms or less. A reading then has to reach the dashboard within 2 seconds (p95), so people see what their devices are doing as it happens.
+The scope of the platform shows where that hurts:
 
-Cost and safety shaped the rest. Plan limits are enforced at the edge, before any expensive resource is touched, which keeps the free plan sustainable. Channels are private when created, API keys are stored only as an HMAC, TLS is a production requirement and every resource is isolated by its owner. All of this was sized for 100,000 active devices in the first year, a planning assumption, with room for 250,000 simultaneous MQTT connections.
+- **Connecting a device** should take an API key and a few lines of code, not a server.
+- **Seeing what is happening** should be live, on the phone too, without building a dashboard by hand.
+- **Reacting** to a reading, or to a device that went silent, should be a rule, not a script running somewhere.
+- **Sharing** a greenhouse or a room with someone else should not mean sharing an account.
 
-</ChallengeSection>
+The maker carries most of that weight. They build the device, write its firmware and want to see it work in minutes, so most of the product was designed around the first hour: from creating an account to watching the first reading move a widget.
 
-<PersonasSection title="User persona">
+</ProblemSection>
 
-Four personas drive the design. The platform has global roles, so there are no organizations: every resource belongs to its owner.
+<PersonasSection title="Users & context of use" nav="Users">
+
+Three profiles use Telemetrix, plus the devices themselves, which talk to the API with the account's key.
 
 <PersonaCards
   items={[
-    { name: "Maker or IoT developer", does: "Builds devices (ESP32, Arduino, Raspberry Pi, PLCs behind a gateway), creates channels, integrates the API and automates.", where: "Web console, mobile app and the REST API", tool: "chip", hair: "cap", glasses: true, skin: "#e2ad88", shirt: "#e8743b", hairColor: "#2a2a2a" },
-    { name: "Monitoring analyst", does: "Reads dashboards and time series and receives alerts to react to.", where: "Web console and mobile app", tool: "chart", hair: "bob", glasses: true, skin: "#c68863", shirt: "#4b7bec", hairColor: "#2a1a14" },
-    { name: "Platform operator", does: "Internal staff who manage plans, operate the platform and handle support.", where: "Back-office and the observability platform", tool: "headset", hair: "curly", skin: "#a8704d", shirt: "#8e5be0", hairColor: "#1c1c1c" },
-    { name: "Public channel visitor", does: "An anonymous person looking at public channels and embedded charts.", where: "Public pages and embeddable widgets", tool: "magnifier", hair: "short", skin: "#f0c8a0", shirt: "#7a7f8c", hairColor: "#5a3a22" },
+    { name: "Maker", does: "Builds a device, registers it with its sensors and actuators, and watches and automates it from a space.", where: "Web console and mobile app", tool: "chip", hair: "cap", glasses: true, skin: "#e2ad88", shirt: "#e8743b", hairColor: "#2a2a2a" },
+    { name: "Friend", does: "Gets a space shared with view, interact or edit access, and follows it from their own account.", where: "Web console and mobile app", tool: "map", hair: "curly", skin: "#a8704d", shirt: "#27a36d", hairColor: "#1c1c1c" },
+    { name: "Platform owner", does: "Watches the platform as a whole and manages developers, without seeing anyone's device data.", where: "Owner console on the web", tool: "headset", hair: "bun", skin: "#f0c8a0", shirt: "#8e5be0", hairColor: "#5a3a22" },
   ]}
 />
+
+### The moments that shaped the design
+
+- **The first reading.** A maker who just flashed a board wants to see a number move. The library gives the code to copy, and the device page shows the reading the moment it lands.
+- **Away from the desk.** The greenhouse is checked from the phone, so the app had to have the same boards, rules and schedules, not a reduced view.
+- **A device that goes quiet.** Silence is a signal too, so a rule can fire when data stops arriving or the device disconnects, not only on a value.
+- **A space shared with someone.** A friend sees the same board in their own account, with the access the owner chose.
 
 </PersonasSection>
 
-<FeaturesSection title="Features">
+<ObjectivesSection title="Goals, success metrics & constraints" nav="Goals & constraints">
 
-The backlog documentation defines 16 capabilities and 85 features. The main ones:
+### Goals
 
-| Capability | What it enables |
+1. Go from a new account to a first reading on a board in minutes.
+2. Show readings live on the web and on the phone.
+3. React to readings, and to their absence, with rules and schedules.
+4. Let people share a space without sharing an account.
+5. Keep each free device almost free to serve.
+
+### How success would be measured
+
+The product is still in development, so there are no usage figures yet. These are the metrics I set for it:
+
+| Goal | Metric | What it tells us |
+|---|---|---|
+| A fast first hour | Time from sign-up to the first reading | Whether the library and the device flow do their job. |
+| Live data | Time from a reading to the widget, p95 | Whether boards feel live. |
+| Automation | Share of devices with at least one rule or schedule | Whether people move from watching to reacting. |
+| Sharing | Spaces shared per active user | Whether the friends model is used. |
+| Cost | Cost per active device per month | Whether the free tier is sustainable. |
+
+### Constraints
+
+- **One person.** Product, design, backend, web and mobile, so every piece had to be simple to run.
+- **No servers to babysit.** Managed Postgres and authentication, and one Go binary instead of a fleet of services.
+- **Cheap per device.** Limits are checked at the edge, before anything expensive is touched.
+- **Three transports.** HTTP, WebSocket and MQTT had to behave the same way for every feature.
+
+</ObjectivesSection>
+
+<ProcessSection title="Process & prioritization" nav="Process">
+
+### From problem to scope
+
+The work started with written specs: a functional backlog of 16 capabilities and 83 features, a domain model and API contracts, and a decision record for every important choice. The first version followed a channel-based model. As the product took shape, the decision records replaced it with what the screens show today: devices with components, grouped into spaces and experiments, owned by one account and shared through friends.
+
+### What the platform covers
+
+| Area | What it enables |
 |---|---|
-| Identity and access | Sign-up and password login, global roles (owner and developer), personal API tokens and sign-out of active sessions. |
-| Devices and credentials | Register devices, generate one API key per account with three headers per device, and check last contact and connection status. |
-| Ingestion | Single and batch readings over HTTP, publishing over MQTT and WebSocket, payload validation and normalization, per-message idempotency and plan-based rate limits. |
-| Channels and data | Create channels of up to eight fields, edit them, query feeds with filters and interval aggregations, export to CSV, JSON or XML, and import history from CSV. |
-| Visualization | Real-time charts per field, indicators, gauges and lamps, multi-channel dashboards, a location map and embeddable public channels. |
-| Mobile | Sign-in, channel and dashboard browsing, real-time data and push notifications. |
-| Rules and actions | Thresholds and compound conditions, missing-data detection, cooldown between triggers, and outbound actions: webhooks, email, SMS, push and HTTP requests. |
-| Scheduling and analysis | One-off or recurring tasks with time zones, and sandboxed analysis scripts that write results to derived channels. |
-| Commands | Command queues to devices over HTTP and MQTT, with execution acknowledgement. |
-| Operations and audit | Immutable audit log, an owner console with audited reads, a health dashboard and end-to-end traces. |
+| Accounts | Sign-up with terms, sign-in with a code once per device, profile, deactivation and deletion with a grace period. |
+| Devices and components | A catalog of 29 device models and 46 component types: sensors, controls and actuators. |
+| Spaces and experiments | Places and playgrounds with live boards, history, export and templates. |
+| Boards | A grid of widgets, edited by dragging and resizing, with separate layouts for web and mobile. |
+| Rules | Thresholds, no data or device offline, with frequency, cooldown, email, push and actions on actuators. |
+| Schedules | A value sent to an actuator once, every day or on chosen weekdays, in the user's time zone. |
+| Connection | One API key, three transports, commands with acknowledgement and a library for Arduino and MicroPython. |
+| Friends | Requests, shared spaces with view, interact or edit access. |
+| Activity and notifications | An audit log of every action and an inbox of alerts and requests. |
 
-### Product screenshots
+### What waited
 
-Screenshots of the running console with local demo data. The interface is in Spanish, the language of its users. Each one shows what the screen is for and what it brings. Click a screenshot to open it larger.
+- **Derived channels and analysis**, planned in the backlog, are not built yet.
+- **Webhooks and SMS actions**, and rules written as expressions, come after email, push and actuator actions.
+- **A production deployment target** is still being decided.
 
-<ScreenshotGallery
-  items={[
-    {
-      src: "/screenshots/telemetrix/workspace-home.png",
-      title: "Workspace home",
-      caption: "A summary of what the developer has built, as soon as they sign in.",
-      features: [
-        "Counters for spaces, experiments, devices and components.",
-        "A chart of components per device, and totals of sensors, controls and actuators.",
-        "The most recent devices with their model, number of components and connection status.",
-        "A sidebar organized into workspace, connection, system, and friends and notifications.",
-      ],
-      width: 2160,
-      height: 1350,
-    },
-    {
-      src: "/screenshots/telemetrix/devices.png",
-      title: "Devices",
-      caption: "The boards the developer has registered. Each one has an identifier that the board sends with its readings.",
-      features: [
-        "Register a board with up to eight components.",
-        "Device identifier with a copy button, model, space and connection status.",
-        "Search by device, identifier, model or space, and sort by any column.",
-        "Per-device actions and pagination.",
-      ],
-      width: 2160,
-      height: 1350,
-    },
-    {
-      src: "/screenshots/telemetrix/components.png",
-      title: "Components",
-      caption: "Every sensor, control and actuator of every device, in one list.",
-      features: [
-        "Class of each component: sensor, control or actuator.",
-        "Type, unit and valid range, for example a temperature in degrees or a slider from 0 to 100.",
-        "Filters by class and by device, and a search box.",
-        "Enabled or disabled state for each component.",
-      ],
-      width: 2160,
-      height: 1350,
-    },
-    {
-      src: "/screenshots/telemetrix/device-library.png",
-      title: "Device library",
-      caption: "The page that tells a developer how to connect a board to the API.",
-      features: [
-        "The three headers every request carries: the API key, the developer identifier and the device identifier.",
-        "The operations a device uses: send a reading, ask for the next queued command and confirm it.",
-        "Tabs with Arduino and MicroPython examples for each kind of component.",
-        "Shortcuts to the API key page and to the list of devices.",
-      ],
-      width: 2160,
-      height: 1350,
-    },
-    {
-      src: "/screenshots/telemetrix/login.jpg",
-      title: "Sign-in",
-      caption: "The entry point of the console.",
-      features: [
-        "Email and password sign-in, with account creation and password recovery.",
-        "On the first sign-in from each browser or installation, a six-digit code is sent by email to verify that device.",
-        "The mobile app admits developers only, while the web console admits both roles.",
-        "A radar-style animated background and a light and dark theme switch.",
-      ],
-      width: 2160,
-      height: 1350,
-    },
-  ]}
-/>
+</ProcessSection>
 
-</FeaturesSection>
+<DesignDecisionsSection title="Design decisions">
 
-<ImplementationSection title="Implementation & final design">
+The decisions that most shaped the product. Click any image to open it larger. The screens are in Spanish, and every one of them also exists in English and in a light theme.
+
+<DiagramRow item={{ src: "/screenshots/telemetrix/flow-auth.webp", title: "Getting started", caption: "Sign-up with explicit terms, then sign-in.", width: 3000, height: 1250, light: true }}>
+
+### A code once per device, not every time
+
+**Problem.** A second factor on every sign-in is safe, but a maker who checks the console ten times a day stops coming back.
+
+**Decision.** The email code is asked once per browser or phone. After that, the device is trusted and signing in only needs the password.
+
+**Trade-off.** Clearing the browser's data means a new code.
+
+**In the product.** Sign-up shows each password requirement as it is met, and terms and privacy are accepted explicitly before the account exists.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/telemetrix/flow-device.webp", title: "Adding a device", caption: "Name it, pick a model, and its components come with it.", width: 3000, height: 1250, light: true }}>
+
+### A catalog instead of a blank form
+
+**Problem.** Describing a board field by field is where most makers would give up.
+
+**Decision.** A catalog of common boards brings their sensors and actuators already set up. Each component gets its own field, unit and type, and can be added or edited later.
+
+**Trade-off.** The catalog has to be kept up to date as new boards appear.
+
+**In the product.** When the device is created, its ID is shown right away, ready to be pasted into the firmware.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/telemetrix/space-annotated.webp", title: "A space", caption: "A live board of widgets for every device in a place.", width: 3000, height: 1475, light: true }}>
+
+### Places, not just devices
+
+**Problem.** People think about their greenhouse or their office, not about device number four.
+
+**Decision.** Devices live in spaces, and each space is a board. Widgets are placed on a grid and update live, and switches and sliders send values back to the actuators.
+
+**Trade-off.** A board needs one layout for the web and another for the phone.
+
+**In the product.** Templates create a greenhouse, a smart living room, an office or an equipment room with their devices and board in one step.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/telemetrix/flow-rule.webp", title: "Creating a rule", caption: "A device, a condition and what happens when it is met.", width: 3000, height: 1250, light: true }}>
+
+### Silence is a condition too
+
+**Problem.** The most important alert is often that nothing is arriving, and a threshold rule never notices that.
+
+**Decision.** A rule can watch a value, a gap in the data or a device going offline. It chooses how often to warn, can wait between alerts, and can send a value to up to three actuators.
+
+**Trade-off.** More options in one form, so the form explains each one in plain words.
+
+**In the product.** A rule can be tested with a sample value before it is activated, and every alert and recovery stays in its history.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/telemetrix/flow-schedule.webp", title: "Scheduling an actuator", caption: "What to send, to which actuator, and when.", width: 3000, height: 1250, light: true }}>
+
+### Time zones the user understands
+
+**Problem.** Watering at six means six in the user's city, every day, including the day the clock changes.
+
+**Decision.** A schedule is set in the user's own time zone, once, every day or on chosen weekdays. The server runs each occurrence once and skips it if it is too late to be useful.
+
+**Trade-off.** No free-form expressions for now.
+
+**In the product.** Each schedule shows its next run, and its history shows what was sent, what failed and what was skipped.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/telemetrix/flow-device-detail.webp", title: "From a device to its history", caption: "The device, one of its components and the export.", width: 3000, height: 1250, light: true }}>
+
+### History without a separate tool
+
+**Problem.** Live values tell what is happening now, but not whether today was hotter than yesterday.
+
+**Decision.** Every component has a chart by hour, day or week, can be compared with the previous period, and any range can be exported.
+
+**Trade-off.** Long ranges are read from rollups, not from every single reading.
+
+**In the product.** Exports come as CSV, Excel or PDF, for up to ninety days.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/telemetrix/views-tools.webp", title: "For developers", caption: "The device library, the API key and the activity log.", width: 3000, height: 1688, light: true }}>
+
+### One key, three ways in
+
+**Problem.** Every device needs credentials, and managing a key per device is the first thing a maker gets wrong.
+
+**Decision.** One API key per account, sent with the developer and device IDs, works the same over HTTP, WebSocket and MQTT. The library gives ready code for Arduino and MicroPython.
+
+**Trade-off.** A leaked key exposes every device of the account, so it is shown once and can be revoked at any time.
+
+**In the product.** The activity log records every action on the account, from where and with what result.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/telemetrix/phones-core.webp", title: "On the phone", caption: "Home, devices, a space, a component and Explore in the native app.", width: 3000, height: 1880, light: true }}>
+
+### The whole product on the phone
+
+**Problem.** A greenhouse is checked from the garden, not from a desk. A reduced mobile view would send people back to the laptop.
+
+**Decision.** A native app for iOS and Android with the same spaces, boards, rules, schedules, friends and API key as the web console.
+
+**Trade-off.** Two clients to keep in step, which the shared tokens and generated API client make cheaper.
+
+**In the product.** Boards have their own layout for the phone, and rules and schedules are created and edited from the app.
+
+</DiagramRow>
+
+</DesignDecisionsSection>
+
+<DesignSystemSection title="Design system">
+
+The web console and the mobile app share one set of tokens, so a widget, a button or a status looks the same on both.
+
+<DiagramRow item={{ src: "/screenshots/telemetrix/design-system-foundations.webp", title: "Foundations", caption: "Typography, color, status colors, radius and spacing for the web and the app.", width: 3000, height: 1575, light: true }}>
+
+### Foundations
+
+- **Two typefaces.** Space Grotesk for headings and Satoshi for the interface, controls and data.
+- **A violet-blue brand.** One primary for actions and focus, and a cyan glyph in the brand mark.
+- **Two themes from one palette.** The dark ramps are the light ramps reversed, and every text role reaches AA contrast in both.
+- **Status colors with fixed meanings.** Success, warning, destructive and info, each with a soft tint.
+- **Closed scales.** Ten radius steps and a 4 px spacing step, the same on the web and in the app.
+
+</DiagramRow>
+
+<DiagramRow item={{ src: "/screenshots/telemetrix/themes.webp", title: "Light and dark", caption: "The same screen in both themes.", width: 3000, height: 1500, light: true }}>
+
+### Built into both apps
+
+The tokens are generated once for the web and used directly in the app. The web components build on shadcn and Radix, and the app reimplements the same components, variants and states for React Native. Both have a live catalog of the design system.
+
+</DiagramRow>
+
+</DesignSystemSection>
+
+<ImplementationSection title="From design to code" nav="Design to code">
+
+This section explains how the platform is organized, in terms of what each part does.
+
+<DiagramRow item={{ src: "/diagrams/telemetrix/architecture.webp", title: "Architecture", caption: "The apps and devices, the Go API and the infrastructure behind it.", width: 3000, height: 1560, light: true }}>
 
 ### Architecture
 
-One monorepo holds the Go API, the Next.js web app, the Expo mobile app and shared packages. The contracts come first: OpenAPI and AsyncAPI files generate the client that web and mobile share. Click a diagram to open it at full size.
+The API is a single Go binary organized as a modular monolith: twenty modules, each a hexagonal slice with its own database schema. Ingestion, storage, rules, schedules and real-time updates run as workers inside it, so there is one thing to deploy and transactions stay simple.
 
-<DiagramGallery
-  items={[
-    { src: "/diagrams/telemetrix/architecture.svg", title: "Architecture", caption: "Clients, the modular monolith and the services behind it.", width: 1200, height: 640 },
-  ]}
-/>
+Postgres holds the readings in daily partitions with minute, hour and day rollups. Redis Streams is both the buffer a reading is acknowledged against and the event bus between modules, and an MQTT broker serves devices and apps, with access checked by the API.
 
-### Life of a reading
+</DiagramRow>
 
-A reading is acknowledged once it is safe in the event buffer, not when Postgres stores it.
+<DiagramRow item={{ src: "/diagrams/telemetrix/reading.webp", title: "The life of a reading", caption: "From a device to the board, the rules and the history.", width: 3000, height: 1380, light: true }}>
 
-<DiagramGallery
-  items={[
-    { src: "/diagrams/telemetrix/value-flow.svg", title: "From device to dashboard", caption: "Validation, limits and deduplication, then the stream, storage, real time and rules.", width: 1200, height: 600 },
-  ]}
-/>
+### The device never waits for the database
 
-### Reads and writes
+A reading is acknowledged as soon as it is safe in the stream, not when it reaches the database. Storage happens in batches, the boards move as it lands, and the rules of that device evaluate it right after. Repeated readings are ignored by their message ID.
 
-Commands write with an outbox, and queries read projections and a cache.
+</DiagramRow>
 
-<DiagramGallery
-  items={[
-    { src: "/diagrams/telemetrix/cqrs.svg", title: "Reads and writes (CQRS)", caption: "Events build the read model and invalidate the cache.", width: 1200, height: 520 },
-  ]}
-/>
+<DiagramRow item={{ src: "/diagrams/telemetrix/lifecycles.webp", title: "Life cycles", caption: "The states of a rule, a schedule and a command.", width: 3000, height: 1560, light: true }}>
 
-### Storage
+### Commands that arrive once
 
-<DiagramGallery
-  items={[
-    { src: "/diagrams/telemetrix/persistence.svg", title: "Where data lives", caption: "Redis for speed, Postgres for history and aggregates, object storage for files.", width: 1200, height: 560 },
-  ]}
-/>
+A command to an actuator is queued, delivered by whichever transport picks it up first and then acknowledged by the device. It is never delivered twice, and one that nobody picks up in time expires instead of arriving late.
 
-### Authentication and devices
+</DiagramRow>
 
-<DiagramGallery
-  items={[
-    { src: "/diagrams/telemetrix/auth.svg", title: "Who is calling", caption: "People sign in with Supabase Auth, and devices prove themselves with an HMAC-checked key.", width: 1200, height: 560 },
-  ]}
-/>
+### Quality
 
-### Load and performance
+The backend has 76 Go test files, most of them in identity, rules, devices and spaces, and architecture rules are checked automatically so modules do not depend on each other's insides. The API is described by 15 OpenAPI contracts and two AsyncAPI ones, and the clients for the apps are generated from them.
 
-<DiagramGallery
-  items={[
-    { src: "/diagrams/telemetrix/load.svg", title: "Load decisions", caption: "Five measures that keep Postgres from being the bottleneck.", width: 1200, height: 430 },
-  ]}
-/>
+### Technical decisions
 
-### Domain model
-
-The domain is split into bounded contexts. The first diagram shows how they depend on each other, and the rest are the life cycles of the entities with the most rules.
-
-<DiagramGallery
-  items={[
-    { src: "/diagrams/telemetrix/domain-contexts.svg", title: "Domain contexts", caption: "The bounded contexts of the domain and their main dependencies.", width: 1640, height: 830 },
-    { src: "/diagrams/telemetrix/state-channel.png", title: "Channel life cycle", caption: "How a channel moves between its states, from creation to deletion.", width: 1560, height: 1640 },
-    { src: "/diagrams/telemetrix/state-device.png", title: "Device life cycle", caption: "Registration, credentials and connection of a device.", width: 1242, height: 1624 },
-    { src: "/diagrams/telemetrix/state-rule.png", title: "Rule life cycle", caption: "A rule is a draft, becomes active, and can be paused, suspended by a plan limit or deleted.", width: 1568, height: 1486 },
-    { src: "/diagrams/telemetrix/state-action.png", title: "Action life cycle", caption: "The outbound actions that a rule or a scheduled task can trigger.", width: 762, height: 1176 },
-    { src: "/diagrams/telemetrix/state-delivery.png", title: "Delivery life cycle", caption: "From an action being requested to its delivery, retries and dead-letter handling.", width: 1568, height: 1188 },
-    { src: "/diagrams/telemetrix/state-command.png", title: "Command life cycle", caption: "A command queued for a device until it is delivered and acknowledged.", width: 1568, height: 1028 },
-    { src: "/diagrams/telemetrix/state-scheduled-task.png", title: "Scheduled task life cycle", caption: "One-off and recurring tasks, from creation to each execution.", width: 1488, height: 1224 },
-    { src: "/diagrams/telemetrix/state-export.png", title: "Export life cycle", caption: "An asynchronous export from request to a downloadable file.", width: 940, height: 1480 },
-  ]}
-/>
-
-### Decisions
-
-| Decision | Why | What changed from the 1.0 plan |
+| Decision | Why | Trade-off |
 |---|---|---|
-| Modular monolith instead of separate services | The team is small, and splitting by domain multiplies operations and distributed consistency with no benefit. Separation was kept only where the load profile differs, and those cases live as modules of the same process. | From seven services by load profile (ADR-002) to a modular monolith (ADR-021). |
-| Supabase Postgres instead of RDS | A managed service reduces database operations. | Replaces RDS (ADR-018). |
-| Partitioned Postgres without TimescaleDB | Supabase stopped offering the extension on Postgres 17. | The roughly tenfold columnar compression is lost. At nominal load, raw volume goes from about 1.3 TB to about 13 TB per month (ADR-019). |
-| Supabase Auth instead of Keycloak | Avoids running our own identity provider, and it is already integrated with the database. | Replaces Keycloak (ADR-020). |
-| Redis Streams instead of NATS JetStream | Redis was already in the stack for caching, so it avoids another piece of infrastructure. | Replaces NATS (ADR-022). Lower durability and buffer capacity than replicated JetStream. |
-| Global roles without organizations | Per-owner resource isolation is enough for the real use case and simplifies permissions and billing. | Removes the multi-organization model of version 1.0 (ADR-023). |
-| API key per account with HMAC, no Argon2 | With 256 bits of entropy a slow hash is unnecessary, and it would weigh on the hot ingestion path. | New decision for devices (ADR-025). |
-| MQTT for the apps too | The product must support all three transports end to end. Commands still go through the API to validate, audit and deliver. | Exception to ADR-012, which gave MQTT only to devices (ADR-025). |
-| No APISIX, Terraform or AWS | The product was simplified and only the local environment exists, so a provider is not worth choosing before real load and cost data. | Replaces the AWS and EKS plan (ADR-030). There is no production path yet: no API Dockerfile, CI, TLS edge or observability. |
-| Batched writes and read cache | The bottleneck was Postgres, with many dashboard readers and many devices writing. | New load decision (ADR-029). |
-
-Two things were documented as evolution, not as mistakes. Version 1.0 mentions Go 1.23, Next.js 15 and Expo SDK 52, while the current README states Go 1.26, Next.js 16 and Expo SDK 57. ADR-024 (a one-time code per device) was replaced: sign-in is password only.
-
-### Documentation consulted
-
-- **Solution architecture 1.0** (§1 to §9): goals, principles, constraints, quality attributes, and the functional, integration, information and technology views, plus 17 initial decisions (ADR-001 to ADR-017).
-- **C4 architecture, domain model and quality attributes**, which set containers, components, entities and measurable criteria.
-- **Functional backlog**: 16 capabilities and 85 features with stories, business rules and acceptance criteria.
-- **OpenAPI and AsyncAPI contracts** for the HTTP API, events and MQTT.
-- **Later decisions** (ADR-018 to ADR-030) that replaced parts of the 1.0 architecture.
+| A modular monolith in Go | One deploy and simple transactions for one person. | Workloads cannot scale independently. |
+| Plain partitioned Postgres | Fewer moving parts than a dedicated time-series database. | Less compression, so rollup tables do the heavy lifting. |
+| Redis Streams as buffer and bus | One system fewer than a dedicated broker. | Less durability, so consumers are idempotent. |
+| One API key per account | Simple for makers, the same over three transports. | A leaked key exposes every device of the account. |
+| Global roles, no organizations | A simpler model, with sharing through spaces. | No team workspaces. |
+| Rules evaluated as readings arrive | Alerts in seconds, not on a timer. | Email and push are sent at most once. |
 
 </ImplementationSection>
 
 <ResultsSection title="Results">
 
-For a maker or a small team, the result is a platform that already covers the path from device to decision. Devices send readings over HTTP, MQTT or WebSocket and see them on live dashboards, and people can react to them with rules, outbound actions, scheduled tasks, device commands and sandboxed analysis, through a web console and a mobile app. A reading is designed to reach the dashboard within 2 seconds.
+The platform covers its whole loop: an account, a device from the catalog, a live board, rules, schedules, history and export, friends and shared spaces, on the web and on the phone, in Spanish and English, with a light and a dark theme.
 
-The product is still in development, and not every one of the 85 features in the backlog is verified as complete. Some pieces still to come are production TLS, finishing telemetry retention, and letting shared spaces send values to devices. The performance targets are design goals, not measured results.
+It is still in development, so there are no usage figures yet. The next steps are a production deployment, more kinds of actions and analysis over the stored data.
 
 </ResultsSection>
+
+<LearningsSection title="Learnings & next steps" nav="Learnings">
+
+### Next steps
+
+- Choose a production target and put the platform in front of its first makers.
+- Add webhooks and SMS to the actions, and rules written as expressions.
+- Let shared users send commands with the access they were given.
+
+### What I learned
+
+- **Write the decision before the code.** The model changed from channels to devices and spaces halfway through. Because every choice had a written reason, changing it was a matter of updating the records and following them.
+- **The first hour is the product.** The catalog, the library and the live device page exist because a maker who does not see a number move in minutes does not come back.
+- **One design system pays twice.** With the same tokens on the web and in the app, a new widget looked right on both from the first try.
+
+</LearningsSection>
+
+<FinalProductSection title="Final product">
+
+A few screens of the product, with demo data.
+
+<ImageGrid
+  items={[
+    { src: "/screenshots/telemetrix/views-light.webp", title: "Light theme", caption: "A component's history, with the devices and rules behind it.", width: 3000, height: 1688 },
+    { src: "/screenshots/telemetrix/pair-space.webp", title: "Web and mobile", caption: "The same greenhouse board on the laptop and the phone.", width: 3000, height: 1720 },
+    { src: "/screenshots/telemetrix/views-web.webp", title: "The web console", caption: "Home, devices and rules.", width: 3000, height: 1688 },
+    { src: "/screenshots/telemetrix/views-spaces.webp", title: "Spaces and experiments", caption: "An experiment board, with the spaces and experiments lists.", width: 3000, height: 1688 },
+    { src: "/screenshots/telemetrix/views-data.webp", title: "Devices and alerts", caption: "A device with its history, every component and the notifications.", width: 3000, height: 1688 },
+    { src: "/screenshots/telemetrix/phones-core.webp", title: "On the phone", caption: "Home, devices, a space, a component and Explore.", width: 3000, height: 1880 },
+    { src: "/screenshots/telemetrix/phones-spaces.webp", title: "Spaces on the phone", caption: "Spaces, two live boards, experiments and a device.", width: 3000, height: 1880 },
+    { src: "/screenshots/telemetrix/phones-automation.webp", title: "Automation", caption: "Rules, editing a rule, schedules, notifications and activity.", width: 3000, height: 1880 },
+    { src: "/screenshots/telemetrix/phones-social.webp", title: "Sharing and tools", caption: "Friends, what is shared, a shared space, the API key and the library.", width: 3000, height: 1880 },
+    { src: "/screenshots/telemetrix/phones-auth.webp", title: "Account", caption: "Sign-in, sign-up, profile, deactivation and deletion.", width: 3000, height: 1880 },
+  ]}
+/>
+
+</FinalProductSection>
