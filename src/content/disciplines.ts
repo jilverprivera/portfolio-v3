@@ -54,7 +54,7 @@ export const disciplines: Discipline[] = [
     title: "Mobile development",
     subtitle: "iOS and Android with Expo",
     lead: "React Native apps for daily use, designed to keep working when the connection does not.",
-    tags: ["React Native", "Expo", "NativeWind"],
+    tags: ["React Native", "Expo", "NativeWind", "Skia"],
     covers: [
       "Expo and React Native for iOS and Android",
       "Offline registration and sync",
@@ -68,7 +68,7 @@ export const disciplines: Discipline[] = [
     title: "Architecture",
     subtitle: "System design and documentation",
     lead: "Architecture that is written down: C4 diagrams, quality attributes and domain models, with each decision recorded next to its trade-off.",
-    tags: ["C4", "Hexagonal", "DDD"],
+    tags: ["C4", "Hexagonal", "SDD"],
     covers: [
       "C4 diagrams from context to components",
       "Domain models and system flows",
