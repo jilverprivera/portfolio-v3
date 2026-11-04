@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { gsap } from "gsap";
 import { useDictionary } from "@/i18n/locale-context";
 
 const SECTIONS = [
@@ -39,6 +40,13 @@ export function ProjectSidebar() {
   const scrolling = useRef(0);
   // The menu that replaces the sidebar on small screens.
   const [open, setOpen] = useState(false);
+
+  // The dot of the section that becomes active pops in.
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const dots = document.querySelectorAll("[data-dot=on]");
+    if (dots.length) gsap.fromTo(dots, { scale: 0 }, { scale: 1, duration: 0.5, ease: "back.out(3)", overwrite: true });
+  }, [active, open]);
 
   useEffect(() => {
     if (!open) return;
@@ -150,15 +158,15 @@ export function ProjectSidebar() {
               href={`#${s.id}`}
               onClick={goTo(s.id)}
               aria-current={isActive ? "true" : undefined}
+              data-shift="6"
               className={`flex items-center gap-3 text-[17px] transition-colors ${
                 isActive ? "text-ink" : "text-ink-faint hover:text-ink-soft"
               }`}
             >
               <span
                 aria-hidden="true"
-                className={`h-1.5 w-1.5 rounded-full transition-opacity ${
-                  isActive ? "bg-accent opacity-100" : "opacity-0"
-                }`}
+                data-dot={isActive ? "on" : undefined}
+                className={`h-1.5 w-1.5 rounded-full ${isActive ? "bg-accent" : "scale-0"}`}
               />
               {s.label}
             </a>
@@ -176,7 +184,7 @@ export function ProjectSidebar() {
           href="/"
           className="mb-8 inline-flex items-center gap-2 text-[17px] text-ink-muted transition-colors hover:text-ink"
         >
-          <span aria-hidden="true">←</span> {t.backHome}
+          <span aria-hidden="true" data-nudge="w" className="inline-block">←</span> {t.backHome}
         </Link>
         <nav aria-label={t.projectSections}>{sections}</nav>
       </aside>
@@ -184,7 +192,7 @@ export function ProjectSidebar() {
       {/* Below the large breakpoint the sidebar becomes a bar with a menu button that stays at the top. */}
       <div className="sticky top-0 z-30 flex items-center justify-between gap-4 border-b border-line bg-paper/90 px-6 py-3 backdrop-blur lg:hidden">
         <Link href="/" className="inline-flex items-center gap-2 text-[15px] text-ink-muted transition-colors hover:text-ink">
-          <span aria-hidden="true">←</span> {t.home}
+          <span aria-hidden="true" data-nudge="w" className="inline-block">←</span> {t.home}
         </Link>
         <button
           type="button"

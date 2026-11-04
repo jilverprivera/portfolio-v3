@@ -67,8 +67,8 @@ const en = {
     openSections: "Open the sections menu",
     closeSections: "Close the sections menu",
     projects: "Projects",
-    previous: "← Previous",
-    next: "Next →",
+    previous: "Previous",
+    next: "Next",
   },
   project: {
     year: "Year",
@@ -161,8 +161,8 @@ const es: Dictionary = {
     openSections: "Abrir el menú de secciones",
     closeSections: "Cerrar el menú de secciones",
     projects: "Proyectos",
-    previous: "← Anterior",
-    next: "Siguiente →",
+    previous: "Anterior",
+    next: "Siguiente",
   },
   project: {
     year: "Año",

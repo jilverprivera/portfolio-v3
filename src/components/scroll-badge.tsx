@@ -1,7 +1,7 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
+import { gsap } from "gsap";
 import CircularText from "@/components/CircularText";
 
 const MIN_SIZE = 112;
@@ -22,7 +22,16 @@ const getSize = () =>
 
 export function ScrollBadge({ text }: { text: string }) {
   const size = useSyncExternalStore(subscribe, getSize, () => 160);
-  const reduceMotion = useReducedMotion();
+  const arrow = useRef<SVGSVGElement>(null);
+
+  // The arrow fades in after the ring has started turning.
+  useEffect(() => {
+    const mm = gsap.matchMedia();
+    mm.add("(prefers-reduced-motion: no-preference)", () => {
+      gsap.from(arrow.current, { autoAlpha: 0, duration: 1.4, delay: 0.5, ease: "power1.out" });
+    });
+    return () => mm.revert();
+  }, []);
 
   return (
     <CircularText
@@ -35,14 +44,12 @@ export function ScrollBadge({ text }: { text: string }) {
       onHover="slowDown"
       color="#0a0a0a"
     >
-      <motion.svg
+      <svg
+        ref={arrow}
         viewBox="0 0 64 64"
         fill="none"
         aria-hidden
         style={{ width: size * 0.34, height: size * 0.34 }}
-        initial={reduceMotion ? false : { opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1.4, delay: 0.5, ease: "easeOut" }}
       >
         {/* Tail node */}
         <rect x="5" y="5" width="7" height="7" stroke="currentColor" strokeWidth="2" />
@@ -56,7 +63,7 @@ export function ScrollBadge({ text }: { text: string }) {
         <path d="M50 32V50H32" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.45" />
         {/* Tip accent */}
         <rect x="55" y="55" width="6" height="6" fill="currentColor" />
-      </motion.svg>
+      </svg>
     </CircularText>
   );
 }

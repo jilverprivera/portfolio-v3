@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { cancelFrame, frame, motion, useMotionValue, useReducedMotion, useSpring } from 'motion/react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { gsap } from 'gsap';
 
 import './CircularText.css';
 
@@ -11,6 +11,19 @@ const MAX_FLING = 1440;
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+
+const REDUCE = '(prefers-reduced-motion: reduce)';
+const subscribeReduced = onChange => {
+  const query = window.matchMedia(REDUCE);
+  query.addEventListener('change', onChange);
+  return () => query.removeEventListener('change', onChange);
+};
+const useReducedMotion = () =>
+  useSyncExternalStore(subscribeReduced, () => window.matchMedia(REDUCE).matches, () => false);
+
+const follow = (ref, prop, vars) => ({
+  set: value => ref.current && gsap.to(ref.current, { [prop]: value, overwrite: 'auto', ...vars })
+});
 
 const CircularText = ({
   text,
@@ -34,6 +47,8 @@ const CircularText = ({
   className = ''
 }) => {
   const rootRef = useRef(null);
+  const tiltRef = useRef(null);
+  const ringRef = useRef(null);
   const glyphRefs = useRef([]);
   const stateRef = useRef({
     dragging: false,
@@ -48,11 +63,29 @@ const CircularText = ({
   const [settled, setSettled] = useState(false);
   const [dragging, setDragging] = useState(false);
   const reduceMotion = useReducedMotion();
-  const rotation = useMotionValue(0);
-  const speed = useSpring(1, { stiffness: 60, damping: 18 });
-  const scale = useSpring(1, { stiffness: 300, damping: 20 });
-  const tiltX = useSpring(0, { stiffness: 150, damping: 18 });
-  const tiltY = useSpring(0, { stiffness: 150, damping: 18 });
+  // The ring's angle and its speed multiplier live outside React: GSAP eases the speed, and the ticker turns the ring.
+  const motionRef = useRef({ rotation: 0, speed: 1 });
+  const rotation = useMemo(
+    () => ({
+      get: () => motionRef.current.rotation,
+      set: value => {
+        motionRef.current.rotation = value;
+        if (ringRef.current) gsap.set(ringRef.current, { rotation: value });
+      }
+    }),
+    []
+  );
+  const speed = useMemo(
+    () => ({
+      get: () => motionRef.current.speed,
+      set: value => gsap.to(motionRef.current, { speed: value, duration: 0.9, ease: 'power2.out', overwrite: true })
+    }),
+    []
+  );
+  // Scale and tilt follow the pointer with short eased tweens, which feel like the springs they replace.
+  const scale = useMemo(() => follow(tiltRef, 'scale', { duration: 0.45, ease: 'back.out(2.2)' }), []);
+  const tiltX = useMemo(() => follow(tiltRef, 'rotationX', { duration: 0.6, ease: 'power3.out' }), []);
+  const tiltY = useMemo(() => follow(tiltRef, 'rotationY', { duration: 0.6, ease: 'power3.out' }), []);
 
   const glyphs = useMemo(() => Array.from(text ?? ''), [text]);
   const copies = Math.max(1, Math.round(repeat) || 1);
@@ -111,7 +144,7 @@ const CircularText = ({
     state.cruise = spinDuration > 0 && !reduceMotion ? (360 / spinDuration) * turn : 0;
     if (!root || reduceMotion) return undefined;
 
-    const spin = ({ delta }) => {
+    const spin = (_time, delta) => {
       if (state.dragging) return;
       const dt = Math.min(delta, 100) / 1000;
       state.fling *= Math.exp(-dt / 0.7);
@@ -124,14 +157,14 @@ const CircularText = ({
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting === running) return;
       running = entry.isIntersecting;
-      if (running) frame.update(spin, true);
-      else cancelFrame(spin);
+      if (running) gsap.ticker.add(spin);
+      else gsap.ticker.remove(spin);
     });
     observer.observe(root);
 
     return () => {
       observer.disconnect();
-      cancelFrame(spin);
+      gsap.ticker.remove(spin);
     };
   }, [spinDuration, direction, reduceMotion, rotation, speed]);
 
@@ -250,7 +283,7 @@ const CircularText = ({
       onPointerUp={handleUp}
       onPointerCancel={handleUp}
     >
-      <motion.div className="circular-text__tilt" style={{ rotateX: tiltX, rotateY: tiltY, scale }}>
+      <div ref={tiltRef} className="circular-text__tilt">
         <div className="circular-text__plane" style={{ transform: tilt ? `rotateX(${tilt}deg)` : undefined }}>
           <span
             className="circular-text__line"
@@ -260,7 +293,7 @@ const CircularText = ({
               opacity: ring ? 1 : 0
             }}
           />
-          <motion.div className="circular-text__ring" role="img" aria-label={text} style={{ rotate: rotation }}>
+          <div ref={ringRef} className="circular-text__ring" role="img" aria-label={text}>
             {letters.map((letter, i) => (
               <span key={i} className="circular-text__letter" style={{ transform: `rotate(${angles[i] ?? 0}deg)` }}>
                 <span
@@ -276,10 +309,10 @@ const CircularText = ({
                 </span>
               </span>
             ))}
-          </motion.div>
+          </div>
         </div>
         {children != null && children !== false ? <div className="circular-text__center">{children}</div> : null}
-      </motion.div>
+      </div>
     </div>
   );
 };

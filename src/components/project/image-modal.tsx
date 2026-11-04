@@ -2,33 +2,43 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { gsap } from "gsap";
 import { useDictionary } from "@/i18n/locale-context";
 
 export type ModalImage = { src: string; title: string; width: number; height: number };
 
 // Large viewer for project images. It closes with the button, the Esc key or a click outside the image.
 // Clicking the image toggles between fitting the screen and its full size.
-const FADE_MS = 220;
+// It opens with the backdrop fading in while the image rises and grows into place, and closes by playing that backwards.
 
 export function ImageModal({ image, onClose }: { image: ModalImage; onClose: () => void }) {
   const t = useDictionary().project;
   const [zoomed, setZoomed] = useState(false);
-  // `visible` drives the fade: false while mounting and while closing.
-  const [visible, setVisible] = useState(false);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const backdrop = useRef<HTMLDivElement>(null);
+  const frame = useRef<HTMLDivElement>(null);
+  const motion = useRef<gsap.core.Timeline | null>(null);
   const closing = useRef(false);
+
+  useEffect(() => {
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    motion.current = gsap
+      .timeline({ defaults: { duration: still ? 0 : 0.5 } })
+      .fromTo(backdrop.current, { autoAlpha: 0 }, { autoAlpha: 1, duration: still ? 0 : 0.3, ease: "power2.out" })
+      .fromTo(frame.current, { y: 24, scale: 0.94 }, { y: 0, scale: 1, ease: "expo.out" }, 0)
+      .fromTo(closeRef.current, { scale: 0, rotate: -90 }, { scale: 1, rotate: 0, ease: "back.out(2.5)" }, 0.12);
+    return () => {
+      motion.current?.kill();
+    };
+  }, []);
 
   const requestClose = useCallback(() => {
     if (closing.current) return;
     closing.current = true;
-    setVisible(false);
-    window.setTimeout(onClose, FADE_MS);
+    const timeline = motion.current;
+    if (!timeline) return onClose();
+    timeline.eventCallback("onReverseComplete", onClose).timeScale(1.6).reverse();
   }, [onClose]);
-
-  useEffect(() => {
-    const frame = requestAnimationFrame(() => setVisible(true));
-    return () => cancelAnimationFrame(frame);
-  }, []);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => event.key === "Escape" && requestClose();
@@ -46,13 +56,11 @@ export function ImageModal({ image, onClose }: { image: ModalImage; onClose: () 
   // trap a fixed element inside it instead of letting it cover the screen.
   return createPortal(
     <div
+      ref={backdrop}
       role="dialog"
       aria-modal="true"
       aria-label={image.title}
-      className={`fixed inset-0 z-[100] flex items-center justify-center bg-stage/90 p-4 transition-opacity ease-out sm:p-8 ${
-        visible ? "opacity-100" : "opacity-0"
-      }`}
-      style={{ transitionDuration: `${FADE_MS}ms` }}
+      className="invisible fixed inset-0 z-[100] flex items-center justify-center bg-stage/90 p-4 sm:p-8"
       onClick={requestClose}
     >
       <button
@@ -60,16 +68,15 @@ export function ImageModal({ image, onClose }: { image: ModalImage; onClose: () 
         type="button"
         onClick={requestClose}
         aria-label={t.close}
+        data-press
         className="fixed right-4 top-4 z-[101] flex h-11 w-11 items-center justify-center rounded-full border border-line-strong bg-paper text-[20px] leading-none text-ink transition-colors hover:border-ink sm:right-6 sm:top-6"
       >
         ✕
       </button>
 
       <div
-        className={`max-h-full max-w-full rounded-[8px] transition-transform ease-out ${zoomed ? "overflow-auto" : "overflow-hidden"} ${
-          visible ? "scale-100" : "scale-[0.97]"
-        }`}
-        style={{ transitionDuration: `${FADE_MS}ms` }}
+        ref={frame}
+        className={`max-h-full max-w-full rounded-[8px] ${zoomed ? "overflow-auto" : "overflow-hidden"}`}
         onClick={(event) => event.stopPropagation()}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -142,6 +149,7 @@ export function ImageThumb({
         aria-busy={!loaded}
         data-motion="image"
         data-loaded={loaded}
+        data-press
         className={`relative cursor-zoom-in text-left transition-colors ${className}`}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}

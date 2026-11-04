@@ -42,6 +42,7 @@ export function Footer({ lang }: { lang: Locale }) {
               </Reveal>
               <a
                 href={`mailto:${EMAIL}`}
+                data-magnetic="0.12"
                 className="border-b-[0.05em] border-current pb-[0.02em] transition-colors hover:text-accent-text"
               >
                 <Reveal as="span" textClassName={headline}>
@@ -63,13 +64,12 @@ export function Footer({ lang }: { lang: Locale }) {
                   rel="noopener noreferrer"
                   className="group flex items-center justify-between py-6 text-lg text-ink-muted transition-colors hover:text-ink"
                 >
-                  <Reveal as="span" textClassName="!text-lg !font-medium !leading-normal">
-                    {label}
-                  </Reveal>
-                  <span
-                    aria-hidden
-                    className="translate-x-[-4px] opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100"
-                  >
+                  <span data-shift="12">
+                    <Reveal as="span" textClassName="!text-lg !font-medium !leading-normal">
+                      {label}
+                    </Reveal>
+                  </span>
+                  <span aria-hidden data-nudge="ne" className="inline-block">
                     ↗
                   </span>
                 </a>

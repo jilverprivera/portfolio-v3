@@ -40,12 +40,17 @@ function buildItems(lang: Locale): AccordionItem[] {
             <li key={proof.slug}>
               <Link
                 href={`/projects/${proof.slug}`}
+                data-lift
+                data-press
                 className="grid grid-cols-[2rem_minmax(0,1fr)] gap-3 border border-ink bg-surface p-4 transition-colors hover:bg-surface-2"
               >
                 <span className={`${label} pt-1 font-bold`}>{String(i + 1).padStart(2, "0")}</span>
                 <span className="flex flex-col gap-1">
                   <span className="text-[17px] font-medium leading-snug">
-                    {proof.title}, {proof.context} ↗
+                    {proof.title}, {proof.context}{" "}
+                    <span aria-hidden="true" data-nudge="ne" className="inline-block">
+                      ↗
+                    </span>
                   </span>
                   <span className="text-[15px] leading-[1.5] text-ink-muted">{proof.text}</span>
                 </span>
@@ -57,6 +62,8 @@ function buildItems(lang: Locale): AccordionItem[] {
 
       <Link
         href="#projects"
+        data-lift
+        data-press
         className="flex h-fit flex-col gap-3 bg-ink p-6 text-paper transition-colors hover:bg-ink-soft"
       >
         <span className={`${label} text-highlight`}>{t.ownProducts}</span>

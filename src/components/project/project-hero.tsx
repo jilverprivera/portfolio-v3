@@ -32,7 +32,7 @@ export function ProjectHero({ meta, lang }: { meta: ProjectMeta; lang: Locale })
             rel="noreferrer"
             className="text-ink underline decoration-ink-faint underline-offset-4 transition-colors hover:decoration-ink"
           >
-            {t.project.visit} {new URL(meta.url).hostname.replace(/^www\./, "")} <span aria-hidden="true">↗</span>
+            {t.project.visit} {new URL(meta.url).hostname.replace(/^www\./, "")} <span aria-hidden="true" data-nudge="ne" className="inline-block">↗</span>
           </a>
         )}
       </div>
@@ -74,7 +74,7 @@ export function ProjectHero({ meta, lang }: { meta: ProjectMeta; lang: Locale })
                       rel="noreferrer"
                       className="text-ink underline decoration-ink-faint underline-offset-4 transition-colors hover:decoration-ink"
                     >
-                      {new URL(meta.url).hostname.replace(/^www\./, "")} <span aria-hidden="true">↗</span>
+                      {new URL(meta.url).hostname.replace(/^www\./, "")} <span aria-hidden="true" data-nudge="ne" className="inline-block">↗</span>
                     </a>
                   </dd>
                 </>

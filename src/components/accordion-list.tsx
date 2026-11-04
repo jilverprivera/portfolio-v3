@@ -1,9 +1,12 @@
 "use client";
 
-import { motion } from "motion/react";
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { HoverImagePreview } from "@/components/hover-image-preview";
 import { labelClass } from "@/components/section-label";
+
+gsap.registerPlugin(ScrollTrigger);
 
 export type AccordionItem = {
   id: string;
@@ -16,6 +19,7 @@ export type AccordionItem = {
   image?: string;
 };
 
+// The vertical stroke of the plus folds away when the row opens (animated by the list).
 function Toggle({ open }: { open: boolean }) {
   return (
     <span
@@ -25,7 +29,7 @@ function Toggle({ open }: { open: boolean }) {
       }`}
     >
       <span className="absolute h-[2px] w-4 bg-current" />
-      <span className={`absolute h-4 w-[2px] bg-current transition-transform duration-300 ${open ? "scale-y-0 rotate-90" : ""}`} />
+      <span data-accordion="plus" className="absolute h-4 w-[2px] bg-current" />
     </span>
   );
 }
@@ -38,9 +42,45 @@ export function AccordionList({ items }: { items: AccordionItem[] }) {
   const [hovered, setHovered] = useState<string | null>(null);
   const images = Object.fromEntries(items.filter((item) => item.image).map((item) => [item.id, item.image as string]));
   const hasImages = Object.keys(images).length > 0;
+  const list = useRef<HTMLUListElement>(null);
+
+  // Rows rise into place as they scroll in.
+  useEffect(() => {
+    const rows = list.current?.querySelectorAll(":scope > li");
+    if (!rows?.length) return;
+    const mm = gsap.matchMedia();
+    mm.add("(prefers-reduced-motion: no-preference)", () => {
+      gsap.set(rows, { y: 48, autoAlpha: 0 });
+      ScrollTrigger.batch(rows, {
+        start: "top 85%",
+        once: true,
+        onEnter: (batch) => gsap.to(batch, { y: 0, autoAlpha: 1, duration: 0.7, ease: "power3.out", stagger: 0.09, clearProps: "transform" }),
+      });
+    });
+    return () => mm.revert();
+  }, []);
+
+  // Opening a row draws the marker under its title, folds the plus into a minus and brings its columns up
+  // one after the other. Closing reverses the marker and the plus.
+  useEffect(() => {
+    const root = list.current;
+    if (!root) return;
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    for (const row of root.querySelectorAll<HTMLElement>(":scope > li")) {
+      const isOpen = row.dataset.id === open;
+      const marker = row.querySelector("[data-accordion=marker]");
+      const plus = row.querySelector("[data-accordion=plus]");
+      gsap.to(marker, { scaleX: isOpen ? 1 : 0, duration: still ? 0 : 0.6, ease: "expo.out", overwrite: true });
+      gsap.to(plus, { rotate: isOpen ? 90 : 0, scaleY: isOpen ? 0 : 1, duration: still ? 0 : 0.5, ease: "back.out(2)", overwrite: true });
+      const columns = row.querySelectorAll("[data-accordion=columns] > *");
+      if (isOpen && !still) {
+        gsap.fromTo(columns, { y: 24, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.7, delay: 0.12, stagger: 0.1, ease: "power3.out", overwrite: true });
+      }
+    }
+  }, [open]);
 
   return (
-    <ul className="border-t border-ink" onPointerLeave={() => setHovered(null)}>
+    <ul ref={list} className="border-t border-ink" onPointerLeave={() => setHovered(null)}>
       {hasImages && <HoverImagePreview images={images} active={hovered} />}
       {items.map((item, index) => {
         const isOpen = open === item.id;
@@ -48,14 +88,7 @@ export function AccordionList({ items }: { items: AccordionItem[] }) {
         // and a row that is still fading in would show its text as plain white.
         const blended = hasImages && !isOpen && hovered === item.id;
         return (
-          <motion.li
-            key={item.id}
-            className="border-b border-ink"
-            initial={{ opacity: 0, y: 48 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.2 }}
-            transition={{ duration: 0.7, delay: index * 0.09, ease: [0.22, 1, 0.36, 1] }}
-          >
+          <li key={item.id} data-id={item.id} className="border-b border-ink">
             <button
               type="button"
               aria-expanded={isOpen}
@@ -72,12 +105,11 @@ export function AccordionList({ items }: { items: AccordionItem[] }) {
             >
               <span className={`${labelClass} pt-2 font-bold md:self-start`}>{String(index + 1).padStart(2, "0")}</span>
 
-              <span className="relative inline-block self-start transition-transform duration-500 ease-out group-hover:translate-x-4">
+              <span data-shift="16" className="relative inline-block self-start">
                 <span
                   aria-hidden="true"
-                  className={`absolute inset-x-0 bottom-[6%] h-[30%] origin-left bg-highlight transition-transform duration-500 ease-out ${
-                    isOpen ? "scale-x-100" : "scale-x-0"
-                  }`}
+                  data-accordion="marker"
+                  className="absolute inset-x-0 bottom-[6%] h-[30%] origin-left scale-x-0 bg-highlight"
                 />
                 <span className="relative block font-display text-[clamp(3rem,9.5vw,9rem)] uppercase leading-[0.95]">
                   {item.title}
@@ -103,18 +135,16 @@ export function AccordionList({ items }: { items: AccordionItem[] }) {
               <div className="overflow-hidden">
                 <div className="grid gap-10 pb-12 pt-4 md:grid-cols-[4rem_minmax(0,1fr)] md:gap-x-8">
                   <div className="hidden md:block" />
-                  {/* The columns come up one after the other when the row opens. */}
                   <div
-                    className={`grid gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,0.7fr)] lg:gap-12 [&>*]:transition-[opacity,transform] [&>*]:duration-700 [&>*]:ease-out [&>*:nth-child(2)]:delay-100 [&>*:nth-child(3)]:delay-200 ${
-                      isOpen ? "[&>*]:translate-y-0 [&>*]:opacity-100" : "[&>*]:translate-y-6 [&>*]:opacity-0 [&>*]:delay-0"
-                    }`}
+                    data-accordion="columns"
+                    className="grid gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,0.7fr)] lg:gap-12"
                   >
                     {item.content}
                   </div>
                 </div>
               </div>
             </div>
-          </motion.li>
+          </li>
         );
       })}
     </ul>

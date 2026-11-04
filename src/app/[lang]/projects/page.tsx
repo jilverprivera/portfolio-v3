@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { RollText } from "@/components/roll-text";
 import { getAllProjectMeta } from "@/content/projects";
 import type { Locale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
@@ -25,14 +26,12 @@ export default async function ProjectsIndexPage({ params }: PageProps<"/[lang]/p
       <ul className="mt-20 grid grid-cols-1 gap-x-8 gap-y-16 md:grid-cols-2">
         {projects.map((p) => (
           <li key={p.slug}>
-            <Link href={`/projects/${p.slug}`} className="group flex flex-col gap-5">
+            <Link href={`/projects/${p.slug}`} data-press className="flex flex-col gap-5">
               {p.cover ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={p.cover}
-                  alt={t.project.cover(p.title)}
-                  className="aspect-video w-full rounded-[8px] border border-line object-cover object-top"
-                />
+                <span data-zoom className="block overflow-hidden rounded-[8px] border border-line">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={p.cover} alt={t.project.cover(p.title)} className="aspect-video w-full object-cover object-top" />
+                </span>
               ) : (
                 <div
                   role="img"
@@ -48,8 +47,8 @@ export default async function ProjectsIndexPage({ params }: PageProps<"/[lang]/p
                   <span aria-hidden="true">·</span>
                   <span>{p.status}</span>
                 </div>
-                <h2 className="text-[24px] font-medium leading-[1.25] text-ink underline decoration-transparent underline-offset-4 transition-colors group-hover:decoration-ink">
-                  {p.title}
+                <h2 className="text-[24px] font-medium leading-[1.25] text-ink">
+                  <RollText>{p.title}</RollText>
                 </h2>
                 <p className="line-clamp-3 text-[16px] leading-[1.6] text-ink-muted">{p.summary}</p>
                 <p className="mt-2 text-[14px] text-ink-muted">{p.stack.slice(0, 4).join(" · ")}</p>

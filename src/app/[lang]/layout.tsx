@@ -5,6 +5,7 @@ import { Anton, Space_Grotesk, Space_Mono } from "next/font/google";
 import GlowCursor from "@/components/GlowCursor";
 import { PageTransitions } from "@/components/page-transitions";
 import { LanguageSwitch } from "@/components/language-switch";
+import { MicroInteractions } from "@/components/micro-interactions";
 import { isLocale, locales } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
 import { LocaleProvider } from "@/i18n/locale-context";
@@ -50,13 +51,10 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
       className={`${spaceGrotesk.variable} ${anton.variable} ${spaceMono.variable} dark h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        {/* Loading a page always starts at the top instead of where it was left or at a #section in the URL.
-            It runs before the browser would restore the position or jump to the section, and drops the #section. */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `history.scrollRestoration="manual";if(location.hash)history.replaceState(history.state,"",location.pathname+location.search);scrollTo(0,0)`,
-          }}
-        />
+        {/* Loading a page always starts at the top instead of where it was left or at a #section in the URL
+            (public/scroll-top.js). An async script with a src is hoisted to the head as a resource, while an inline
+            one makes React warn whenever the layout renders again on the client. */}
+        <script src="/scroll-top.js" async />
         <LocaleProvider locale={lang}>
           {children}
           <LanguageSwitch />
@@ -72,6 +70,7 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
           {null}
         </GlowCursor>
         <PageTransitions />
+        <MicroInteractions />
         <Analytics />
       </body>
     </html>

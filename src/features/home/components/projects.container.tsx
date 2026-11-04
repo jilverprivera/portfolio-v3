@@ -48,6 +48,8 @@ export async function ProjectsContainer({ lang }: { lang: Locale }) {
 
         <Link
           href={`/projects/${project.slug}`}
+          data-lift
+          data-press
           className="flex h-fit flex-col gap-3 bg-ink p-6 text-paper transition-colors hover:bg-ink-soft"
         >
           <span className={`${label} text-highlight`}>{project.year}</span>
