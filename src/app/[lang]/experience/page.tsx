@@ -5,10 +5,12 @@ import { groupStack } from "@/content/experience";
 import { getEducation, getJobs } from "@/content/localized";
 import type { Locale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
+import { pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/experience">): Promise<Metadata> {
-  const t = getDictionary((await params).lang as Locale).meta;
-  return { title: t.experience, description: t.experienceDescription };
+  const lang = (await params).lang as Locale;
+  const t = getDictionary(lang).meta;
+  return pageMetadata({ lang, path: "/experience", title: t.experience, description: t.experienceDescription });
 }
 
 const label = "font-mono text-[13px] uppercase tracking-[0.1em] text-ink-muted";
@@ -28,13 +30,13 @@ export default async function ExperiencePage({ params }: PageProps<"/[lang]/expe
             </Link>
           </li>
           <li aria-hidden="true">/</li>
-          <li>
-            <h1 aria-current="page" className="text-[15px] font-normal text-ink">
-              {t.nav.experience}
-            </h1>
+          <li aria-current="page" className="text-ink">
+            {t.nav.experience}
           </li>
         </ol>
       </nav>
+
+      <h1 className="w-full px-6 pt-10 text-[36px] font-medium leading-[1.4] text-ink md:px-12">{t.nav.experience}</h1>
 
       <section className="w-full px-6 pt-24 md:px-12 md:pt-32">
         <Reveal

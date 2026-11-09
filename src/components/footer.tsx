@@ -13,7 +13,7 @@ const lastUpdate = (lang: Locale) =>
     timeZone: "America/Bogota",
   });
 
-const socials = [
+export const socials = [
   { label: "Github", href: "https://github.com/jilverprivera" },
   { label: "LinkedIn", href: "https://www.linkedin.com/in/jilverprivera" },
   { label: "Instagram", href: "https://www.instagram.com/jilverprivera" },

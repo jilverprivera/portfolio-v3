@@ -9,6 +9,7 @@ import { MicroInteractions } from "@/components/micro-interactions";
 import { isLocale, locales } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
 import { LocaleProvider } from "@/i18n/locale-context";
+import { SITE_URL } from "@/lib/seo";
 import "../globals.css";
 
 // Regular and medium are loaded too: with only the bold file, text set to normal or medium also rendered bold.
@@ -43,7 +44,7 @@ export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Prom
   const { lang } = await params;
   if (!isLocale(lang)) return {};
   const t = getDictionary(lang);
-  return { title: t.meta.title, description: t.meta.description };
+  return { metadataBase: new URL(SITE_URL), title: t.meta.title, description: t.meta.description };
 }
 
 export default async function RootLayout({ children, params }: LayoutProps<"/[lang]">) {

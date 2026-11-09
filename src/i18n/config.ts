@@ -1,5 +1,5 @@
 // Languages the site is written in. The locale never shows in the URL: the proxy rewrites each request
-// to /[lang]/… using the visitor's cookie, or their browser language on the first visit.
+// to /[lang]/… using the visitor's cookie, or the default language until they pick one.
 export const locales = ["en", "es"] as const;
 export type Locale = (typeof locales)[number];
 

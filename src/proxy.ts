@@ -1,21 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { defaultLocale, isLocale, LOCALE_COOKIE, locales, type Locale } from "@/i18n/config";
-
-// The first language in Accept-Language that the site supports, ignoring regions (es-CO -> es).
-function fromHeader(header: string | null): Locale | undefined {
-  if (!header) return undefined;
-  const ranked = header
-    .split(",")
-    .map((part) => {
-      const [tag, q] = part.trim().split(";q=");
-      return { lang: tag.toLowerCase().split("-")[0], q: q ? Number(q) : 1 };
-    })
-    .sort((a, b) => b.q - a.q);
-  return ranked.map((r) => r.lang).find(isLocale);
-}
+import { defaultLocale, isLocale, LOCALE_COOKIE, locales } from "@/i18n/config";
 
 // Every page lives under /[lang], but the URL never shows it: the request is rewritten to the
-// visitor's language, taken from their cookie or, on the first visit, from the browser.
+// visitor's chosen language, kept in a cookie, or to the default language until they pick one.
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -30,13 +17,13 @@ export function proxy(request: NextRequest) {
   }
 
   const cookie = request.cookies.get(LOCALE_COOKIE)?.value;
-  const locale = isLocale(cookie) ? cookie : (fromHeader(request.headers.get("accept-language")) ?? defaultLocale);
+  const locale = isLocale(cookie) ? cookie : defaultLocale;
 
   const url = request.nextUrl.clone();
   url.pathname = `/${locale}${pathname === "/" ? "" : pathname}`;
   const response = NextResponse.rewrite(url);
   // The same URL serves two languages, so caches must keep them apart.
-  response.headers.set("Vary", "Cookie, Accept-Language");
+  response.headers.set("Vary", "Cookie");
   return response;
 }
 

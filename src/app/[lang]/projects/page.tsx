@@ -1,13 +1,16 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { RollText } from "@/components/roll-text";
 import { getAllProjectMeta } from "@/content/projects";
 import type { Locale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
+import { pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/projects">): Promise<Metadata> {
-  const t = getDictionary((await params).lang as Locale).meta;
-  return { title: t.projects, description: t.projectsDescription };
+  const lang = (await params).lang as Locale;
+  const t = getDictionary(lang).meta;
+  return pageMetadata({ lang, path: "/projects", title: t.projects, description: t.projectsDescription });
 }
 
 // Index of all projects, with cards linking to each detail view.
@@ -24,13 +27,21 @@ export default async function ProjectsIndexPage({ params }: PageProps<"/[lang]/p
       </header>
 
       <ul className="mt-20 grid grid-cols-1 gap-x-8 gap-y-16 md:grid-cols-2">
-        {projects.map((p) => (
+        {projects.map((p, i) => (
           <li key={p.slug}>
             <Link href={`/projects/${p.slug}`} data-press className="flex flex-col gap-5">
               {p.cover ? (
                 <span data-zoom className="block overflow-hidden rounded-[8px] border border-line">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={p.cover} alt={t.project.cover(p.title)} className="aspect-video w-full object-cover object-top" />
+                  {/* Only the first row is on screen when the page opens. */}
+                  <Image
+                    src={p.cover}
+                    alt={t.project.cover(p.title)}
+                    width={1600}
+                    height={900}
+                    sizes="(min-width: 768px) 448px, calc(100vw - 32px)"
+                    loading={i < 2 ? "eager" : "lazy"}
+                    className="aspect-video w-full object-cover object-top"
+                  />
                 </span>
               ) : (
                 <div

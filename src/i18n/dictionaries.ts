@@ -4,11 +4,12 @@ import type { Locale } from "./config";
 const en = {
   meta: {
     title: "Jilver Pacheco | I create my own products and help design yours.",
-    description: "Software developer and electronic engineer portfolio",
-    projects: "Projects · Portfolio",
-    projectsDescription: "Projects: goals, features, decisions and architecture.",
-    experience: "Experience · Portfolio",
-    experienceDescription: "Professional experience, education and honors.",
+    description: "Software developer and electronic engineer with nearly 5 years building web and mobile platforms for fintech and SaaS, plus three products of my own.",
+    jobTitle: "Software Developer and Electronic Engineer",
+    projects: "Projects",
+    projectsDescription: "Case studies of the web, mobile and IoT products I've built: goals, features, technical decisions and architecture.",
+    experience: "Experience",
+    experienceDescription: "Professional experience of Jilver Pacheco as a software developer: fintech, multi-tenant platforms and enterprise solutions, plus education and honors.",
   },
   language: { label: "Language", switchTo: "Cambiar a español", short: { en: "EN", es: "ES" } },
   home: {
@@ -98,11 +99,12 @@ export type Dictionary = typeof en;
 const es: Dictionary = {
   meta: {
     title: "Jilver Pacheco | Creo mis propios productos y ayudo a diseñar los tuyos.",
-    description: "Portafolio de desarrollador de software e ingeniero electrónico",
-    projects: "Proyectos · Portafolio",
-    projectsDescription: "Proyectos: objetivos, funcionalidades, decisiones y arquitectura.",
-    experience: "Experiencia · Portafolio",
-    experienceDescription: "Experiencia profesional, formación y reconocimientos.",
+    description: "Desarrollador de software e ingeniero electrónico con casi 5 años creando plataformas web y móviles para fintech y SaaS, además de tres productos propios.",
+    jobTitle: "Desarrollador de software e ingeniero electrónico",
+    projects: "Proyectos",
+    projectsDescription: "Casos de estudio de los productos web, móviles e IoT que he construido: objetivos, funcionalidades, decisiones técnicas y arquitectura.",
+    experience: "Experiencia",
+    experienceDescription: "Experiencia profesional de Jilver Pacheco como desarrollador de software: fintech, plataformas multi-tenant y soluciones a medida, formación y reconocimientos.",
   },
   language: { label: "Idioma", switchTo: "Switch to English", short: { en: "EN", es: "ES" } },
   home: {

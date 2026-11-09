@@ -18,10 +18,8 @@ export function ProjectHero({ meta, lang }: { meta: ProjectMeta; lang: Locale })
               </Link>
             </li>
             <li aria-hidden="true">/</li>
-            <li>
-              <h1 aria-current="page" className="text-[15px] font-normal text-ink">
-                {meta.title}
-              </h1>
+            <li aria-current="page" className="text-ink">
+              {meta.title}
             </li>
           </ol>
         </nav>
@@ -36,6 +34,8 @@ export function ProjectHero({ meta, lang }: { meta: ProjectMeta; lang: Locale })
           </a>
         )}
       </div>
+
+      <h1 className="mt-10 w-full px-6 text-[36px] font-medium leading-[1.4] text-ink md:px-12">{meta.title}</h1>
 
       {!meta.hideCover && (
         <div className="mt-10 w-full px-6 md:px-12">
