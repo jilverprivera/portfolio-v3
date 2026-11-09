@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 import { Analytics } from "@vercel/analytics/next";
 import { Anton, Space_Grotesk, Space_Mono } from "next/font/google";
@@ -6,10 +6,11 @@ import GlowCursor from "@/components/GlowCursor";
 import { PageTransitions } from "@/components/page-transitions";
 import { LanguageSwitch } from "@/components/language-switch";
 import { MicroInteractions } from "@/components/micro-interactions";
+import { ServiceWorker } from "@/components/service-worker";
 import { isLocale, locales } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
 import { LocaleProvider } from "@/i18n/locale-context";
-import { SITE_URL } from "@/lib/seo";
+import { SITE_NAME, SITE_URL } from "@/lib/seo";
 import "../globals.css";
 
 // Regular and medium are loaded too: with only the bold file, text set to normal or medium also rendered bold.
@@ -32,8 +33,8 @@ const spaceMono = Space_Mono({
 });
 
 // Both languages are prerendered; the proxy picks one per visitor without changing the URL.
-// Any other first segment is a 404, so a file request that misses, such as a stale service worker asking for
-// /sw.js, never renders the pages with a language that does not exist.
+// Any other first segment is a 404, so a file request that misses never renders the pages with a language that
+// does not exist.
 export const dynamicParams = false;
 
 export function generateStaticParams() {
@@ -44,8 +45,15 @@ export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Prom
   const { lang } = await params;
   if (!isLocale(lang)) return {};
   const t = getDictionary(lang);
-  return { metadataBase: new URL(SITE_URL), title: t.meta.title, description: t.meta.description };
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: t.meta.title,
+    description: t.meta.description,
+    appleWebApp: { capable: true, title: SITE_NAME, statusBarStyle: "default" },
+  };
 }
+
+export const viewport: Viewport = { themeColor: "#f5f5f2" };
 
 export default async function RootLayout({ children, params }: LayoutProps<"/[lang]">) {
   const { lang } = await params;
@@ -77,6 +85,7 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
         <PageTransitions />
         <MicroInteractions />
         <Analytics />
+        <ServiceWorker />
       </body>
     </html>
   );
